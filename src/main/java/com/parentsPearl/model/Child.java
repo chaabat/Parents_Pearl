@@ -1,20 +1,24 @@
 package com.parentsPearl.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+ 
+
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@DiscriminatorValue("CHILD")
-@Table(name = "child")
+@Table(name = "children")
 @Data
-public class Child extends User{
-
+public class Child extends User {
     @Column(name = "age")
-    private Integer age;
+    private int age;
 
-  
+    @Column(name = "grade_level")
+    private String gradeLevel;
 
+    @Column(name = "interests")
+    private String interests;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_id", nullable = false)
+    private Parent parent; // The parent managing this child
 }

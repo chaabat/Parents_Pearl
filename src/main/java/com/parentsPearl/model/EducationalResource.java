@@ -7,14 +7,14 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.parentsPearl.model.enums.TaskStatus;
+import com.parentsPearl.model.enums.ResourceType;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tasks")
+@Table(name = "educational_resources")
 @Data
-public class Task {
+public class EducationalResource {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,23 +24,12 @@ public class Task {
 
     private String description;
 
-    @Column(name = "due_date")
-    private LocalDateTime dueDate;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TaskStatus status; // Enum: PENDING, COMPLETED
-
-    @ManyToOne
-    @JoinColumn(name = "assigned_to", nullable = false)
-    private User assignedTo; // Child
-
-    @ManyToOne
-    @JoinColumn(name = "created_by", nullable = false)
-    private User createdBy; // Parent
+    @Column(name = "resource_type", nullable = false)
+    private ResourceType resourceType; // Enum: ARTICLE, VIDEO, GAME
 
     @Column(nullable = false)
-    private int points; // Reward points for completing the task
+    private String url;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -50,5 +39,5 @@ public class Task {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-     
+    
 }

@@ -7,14 +7,12 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.parentsPearl.model.enums.TaskStatus;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tasks")
+@Table(name = "calendar_events")
 @Data
-public class Task {
+public class CalendarEvent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,23 +22,12 @@ public class Task {
 
     private String description;
 
-    @Column(name = "due_date")
-    private LocalDateTime dueDate;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TaskStatus status; // Enum: PENDING, COMPLETED
-
-    @ManyToOne
-    @JoinColumn(name = "assigned_to", nullable = false)
-    private User assignedTo; // Child
+    @Column(name = "event_date", nullable = false)
+    private LocalDateTime eventDate;
 
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy; // Parent
-
-    @Column(nullable = false)
-    private int points; // Reward points for completing the task
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -49,6 +36,4 @@ public class Task {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-     
 }
