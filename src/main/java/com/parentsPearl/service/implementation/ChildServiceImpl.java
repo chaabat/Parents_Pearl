@@ -62,4 +62,33 @@ public class ChildServiceImpl implements ChildService {
     public void deleteById(Long id) {
         childRepository.deleteById(id);
     }
+
+    @Override
+    public ChildResponse update(Long id, ChildRequest request) {
+        return childRepository.findById(id)
+                .map(existingChild -> {
+                    // Update fields
+                    existingChild.setFirstName(request.getFirstName());
+                    existingChild.setLastName(request.getLastName());
+                    existingChild.setAge(request.getAge());
+                    
+                    // Update parent if changed
+                    if (!existingChild.getParent().getId().equals(request.getParentId())) {
+                        Parent parent = (Parent) userRepository.findById(request.getParentId())
+                                .orElseThrow(() -> new RuntimeException("Parent not found"));
+                        existingChild.setParent(parent);
+                    }
+                    
+                    Child updated = childRepository.save(existingChild);
+                    return childMapper.toResponse(updated);
+                })
+                .orElseThrow(() -> new RuntimeException("Child not found with id: " + id));
+    }
+
+    @Override
+    public List<ChildResponse> findByParentId(Long parentId) {
+        return childRepository.findByParentId(parentId).stream()
+                .map(childMapper::toResponse)
+                .collect(Collectors.toList());
+    }
 }

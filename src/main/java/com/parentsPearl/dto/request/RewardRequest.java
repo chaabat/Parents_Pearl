@@ -15,4 +15,8 @@ public class RewardRequest {
     @NotNull(message = "Points required is required")
     @Min(value = 0, message = "Points required must be positive")
     private int pointsRequired;
+
+    @NotNull(message = "Quantity available is required")
+    @Min(value = 0, message = "Quantity available must be positive")
+    private int quantityAvailable;
 } 

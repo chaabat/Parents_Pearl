@@ -68,4 +68,42 @@ public class TaskServiceImpl implements TaskService {
     public void deleteById(Long id) {
         taskRepository.deleteById(id);
     }
+
+    @Override
+    public TaskResponse update(Long id, TaskRequest request) {
+        return taskRepository.findById(id)
+                .map(existingTask -> {
+                    // Update basic fields
+                    existingTask.setTitle(request.getTitle());
+                    existingTask.setDescription(request.getDescription());
+                    existingTask.setDueDate(request.getDueDate());
+                    existingTask.setStatus(request.getStatus());
+                    existingTask.setPoints(request.getPoints());
+                    
+                    // Update assigned user if changed
+                    if (!existingTask.getAssignedTo().getId().equals(request.getAssignedToId())) {
+                        User assignedTo = userRepository.findById(request.getAssignedToId())
+                                .orElseThrow(() -> new RuntimeException("Assigned user not found"));
+                        existingTask.setAssignedTo(assignedTo);
+                    }
+                    
+                    Task updated = taskRepository.save(existingTask);
+                    return taskMapper.toResponse(updated);
+                })
+                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
+    }
+
+    @Override
+    public List<TaskResponse> getTasksByAssignedTo(Long assignedToId) {
+        return taskRepository.findByAssignedToId(assignedToId).stream()
+                .map(taskMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TaskResponse> getTasksByCreatedBy(Long createdById) {
+        return taskRepository.findByCreatedById(createdById).stream()
+                .map(taskMapper::toResponse)
+                .collect(Collectors.toList());
+    }
 } 

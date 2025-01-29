@@ -10,4 +10,7 @@ public interface TaskService {
     Optional<TaskResponse> findById(Long id);
     TaskResponse save(TaskRequest task);
     void deleteById(Long id);
+    TaskResponse update(Long id, TaskRequest task);
+    List<TaskResponse> getTasksByAssignedTo(Long assignedToId);
+    List<TaskResponse> getTasksByCreatedBy(Long createdById);
 }

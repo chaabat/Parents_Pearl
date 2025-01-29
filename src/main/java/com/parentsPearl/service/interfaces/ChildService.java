@@ -10,4 +10,6 @@ public interface ChildService {
     Optional<ChildResponse> findById(Long id);
     ChildResponse save(ChildRequest child);
     void deleteById(Long id);
+    ChildResponse update(Long id, ChildRequest child);
+    List<ChildResponse> findByParentId(Long parentId);
 }

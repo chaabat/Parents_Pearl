@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 @Data
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,5 +44,7 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
- 
+    @Column(nullable = false)
+    private Integer points = 0;
+
 }
