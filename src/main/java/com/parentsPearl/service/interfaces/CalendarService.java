@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface CalendarService {
     List<CalendarEventResponse> findAll();
-    Optional<CalendarEventResponse> findById(Long id);
+    Optional<CalendarEventResponse> findById(String id);
     CalendarEventResponse save(CalendarEventRequest event);
-    void deleteById(Long id);
+    void deleteById(String id);
 }

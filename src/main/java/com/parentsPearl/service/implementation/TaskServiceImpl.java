@@ -3,35 +3,24 @@ package com.parentsPearl.service.implementation;
 import com.parentsPearl.dto.request.TaskRequest;
 import com.parentsPearl.dto.response.TaskResponse;
 import com.parentsPearl.model.Task;
-import com.parentsPearl.model.User;
-import com.parentsPearl.repository.TaskRepository;
+ import com.parentsPearl.repository.TaskRepository;
 import com.parentsPearl.repository.UserRepository;
 import com.parentsPearl.service.interfaces.TaskService;
 import com.parentsPearl.mapper.TaskMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
     
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
     private final UserRepository userRepository;
-    
-    @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository,
-                         TaskMapper taskMapper,
-                         UserRepository userRepository) {
-        this.taskRepository = taskRepository;
-        this.taskMapper = taskMapper;
-        this.userRepository = userRepository;
-    }
     
     @Override
     public List<TaskResponse> findAll() {
@@ -41,7 +30,7 @@ public class TaskServiceImpl implements TaskService {
     }
     
     @Override
-    public Optional<TaskResponse> findById(Long id) {
+    public Optional<TaskResponse> findById(String id) {
         return taskRepository.findById(id)
                 .map(taskMapper::toResponse);
     }
@@ -50,41 +39,40 @@ public class TaskServiceImpl implements TaskService {
     public TaskResponse save(TaskRequest request) {
         Task entity = taskMapper.toEntity(request);
         
-        // Set assigned user
-        User assignedTo = userRepository.findById(request.getAssignedToId())
+        // Verify assigned user exists
+        userRepository.findById(request.getAssignedToId())
                 .orElseThrow(() -> new RuntimeException("Assigned user not found"));
-        entity.setAssignedTo(assignedTo);
+        entity.setAssignedToId(request.getAssignedToId());
         
-        // Set creator (from security context)
-        User creator = userRepository.findById(1L) // TODO: Replace with actual logged-in user
+        // Set creator ID (from security context)
+        String creatorId = "1";  
+        userRepository.findById(creatorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        entity.setCreatedBy(creator);
+        entity.setCreatedById(creatorId);
         
         Task saved = taskRepository.save(entity);
         return taskMapper.toResponse(saved);
     }
     
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         taskRepository.deleteById(id);
     }
 
     @Override
-    public TaskResponse update(Long id, TaskRequest request) {
+    public TaskResponse update(String id, TaskRequest request) {
         return taskRepository.findById(id)
                 .map(existingTask -> {
-                    // Update basic fields
                     existingTask.setTitle(request.getTitle());
                     existingTask.setDescription(request.getDescription());
                     existingTask.setDueDate(request.getDueDate());
                     existingTask.setStatus(request.getStatus());
                     existingTask.setPoints(request.getPoints());
                     
-                    // Update assigned user if changed
-                    if (!existingTask.getAssignedTo().getId().equals(request.getAssignedToId())) {
-                        User assignedTo = userRepository.findById(request.getAssignedToId())
+                    if (!existingTask.getAssignedToId().equals(request.getAssignedToId())) {
+                        userRepository.findById(request.getAssignedToId())
                                 .orElseThrow(() -> new RuntimeException("Assigned user not found"));
-                        existingTask.setAssignedTo(assignedTo);
+                        existingTask.setAssignedToId(request.getAssignedToId());
                     }
                     
                     Task updated = taskRepository.save(existingTask);
@@ -94,14 +82,14 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskResponse> getTasksByAssignedTo(Long assignedToId) {
+    public List<TaskResponse> getTasksByAssignedTo(String assignedToId) {
         return taskRepository.findByAssignedToId(assignedToId).stream()
                 .map(taskMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<TaskResponse> getTasksByCreatedBy(Long createdById) {
+    public List<TaskResponse> getTasksByCreatedBy(String createdById) {
         return taskRepository.findByCreatedById(createdById).stream()
                 .map(taskMapper::toResponse)
                 .collect(Collectors.toList());

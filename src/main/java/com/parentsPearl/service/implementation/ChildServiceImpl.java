@@ -3,35 +3,24 @@ package com.parentsPearl.service.implementation;
 import com.parentsPearl.dto.request.ChildRequest;
 import com.parentsPearl.dto.response.ChildResponse;
 import com.parentsPearl.model.Child;
-import com.parentsPearl.model.Parent;
 import com.parentsPearl.repository.ChildRepository;
 import com.parentsPearl.repository.UserRepository;
 import com.parentsPearl.service.interfaces.ChildService;
 import com.parentsPearl.mapper.ChildMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@RequiredArgsConstructor
 public class ChildServiceImpl implements ChildService {
     
     private final ChildRepository childRepository;
     private final ChildMapper childMapper;
     private final UserRepository userRepository;
-    
-    @Autowired
-    public ChildServiceImpl(ChildRepository childRepository,
-                          ChildMapper childMapper,
-                          UserRepository userRepository) {
-        this.childRepository = childRepository;
-        this.childMapper = childMapper;
-        this.userRepository = userRepository;
-    }
     
     @Override
     public List<ChildResponse> findAll() {
@@ -41,7 +30,7 @@ public class ChildServiceImpl implements ChildService {
     }
     
     @Override
-    public Optional<ChildResponse> findById(Long id) {
+    public Optional<ChildResponse> findById(String id) {
         return childRepository.findById(id)
                 .map(childMapper::toResponse);
     }
@@ -50,33 +39,33 @@ public class ChildServiceImpl implements ChildService {
     public ChildResponse save(ChildRequest request) {
         Child entity = childMapper.toEntity(request);
         
-        Parent parent = (Parent) userRepository.findById(request.getParentId())
+        userRepository.findById(request.getParentId())
                 .orElseThrow(() -> new RuntimeException("Parent not found"));
-        entity.setParent(parent);
+        entity.setParentId(request.getParentId());
         
         Child saved = childRepository.save(entity);
         return childMapper.toResponse(saved);
     }
     
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         childRepository.deleteById(id);
     }
 
     @Override
-    public ChildResponse update(Long id, ChildRequest request) {
+    public ChildResponse update(String id, ChildRequest request) {
         return childRepository.findById(id)
                 .map(existingChild -> {
-                    // Update fields
                     existingChild.setFirstName(request.getFirstName());
                     existingChild.setLastName(request.getLastName());
                     existingChild.setAge(request.getAge());
+                    existingChild.setGradeLevel(request.getGradeLevel());
+                    existingChild.setInterests(request.getInterests());
                     
-                    // Update parent if changed
-                    if (!existingChild.getParent().getId().equals(request.getParentId())) {
-                        Parent parent = (Parent) userRepository.findById(request.getParentId())
+                    if (!existingChild.getParentId().equals(request.getParentId())) {
+                        userRepository.findById(request.getParentId())
                                 .orElseThrow(() -> new RuntimeException("Parent not found"));
-                        existingChild.setParent(parent);
+                        existingChild.setParentId(request.getParentId());
                     }
                     
                     Child updated = childRepository.save(existingChild);
@@ -86,7 +75,7 @@ public class ChildServiceImpl implements ChildService {
     }
 
     @Override
-    public List<ChildResponse> findByParentId(Long parentId) {
+    public List<ChildResponse> findByParentId(String parentId) {
         return childRepository.findByParentId(parentId).stream()
                 .map(childMapper::toResponse)
                 .collect(Collectors.toList());

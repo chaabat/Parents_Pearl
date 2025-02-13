@@ -1,10 +1,10 @@
 package com.parentsPearl.repository;
 
 import com.parentsPearl.model.Parent;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ParentRepository extends JpaRepository<Parent, Long> {
+public interface ParentRepository extends MongoRepository<Parent, String> {
 
 }

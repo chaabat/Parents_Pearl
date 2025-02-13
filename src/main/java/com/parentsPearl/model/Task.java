@@ -1,54 +1,30 @@
 package com.parentsPearl.model;
 
- 
-
-import jakarta.persistence.*;
-import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import com.parentsPearl.model.enums.TaskStatus;
+import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "tasks")
+@Document(collection = "tasks")
 @Data
 public class Task {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    private String id;
     private String title;
-
     private String description;
-
-    @Column(name = "due_date")
     private LocalDateTime dueDate;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TaskStatus status; // Enum: PENDING, COMPLETED
-
-    @ManyToOne
-    @JoinColumn(name = "assigned_to", nullable = false)
-    private User assignedTo; // Child
-
-    @ManyToOne
-    @JoinColumn(name = "created_by", nullable = false)
-    private User createdBy; // Parent
-
-    @Column(nullable = false)
-    private int points; // Reward points for completing the task
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    private TaskStatus status;
+    private String assignedToId; // Reference to User document
+    private String createdById; // Reference to User document
+    private int points;
+    
+    @CreatedDate
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    
+    @LastModifiedDate
     private LocalDateTime updatedAt;
-
-     
 }

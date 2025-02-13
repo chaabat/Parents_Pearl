@@ -1,43 +1,27 @@
 package com.parentsPearl.model;
 
- 
-
-import jakarta.persistence.*;
-import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import com.parentsPearl.model.enums.ResourceType;
+import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "educational_resources")
+@Document(collection = "educational_resources")
 @Data
 public class EducationalResource {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    private String id;
     private String title;
-
     private String description;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "resource_type", nullable = false)
-    private ResourceType resourceType; // Enum: ARTICLE, VIDEO, GAME
-
-    @Column(nullable = false)
+    private ResourceType resourceType;
     private String url;
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     
+    @CreatedDate
+    private LocalDateTime createdAt;
+    
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

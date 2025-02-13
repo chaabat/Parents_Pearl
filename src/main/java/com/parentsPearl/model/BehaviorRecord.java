@@ -1,40 +1,23 @@
 package com.parentsPearl.model;
 
- 
-
-import jakarta.persistence.*;
-import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-
 import com.parentsPearl.model.enums.BehaviorType;
+import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "behavior_records")
+@Document(collection = "behavior_records")
 @Data
 public class BehaviorRecord {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "child_id", nullable = false)
-    private User child;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "behavior_type", nullable = false)
-    private BehaviorType behaviorType; // Enum: POSITIVE, NEGATIVE
-
+    private String id;
+    private String childId;  // Reference to User document
+    private BehaviorType behaviorType;
     private String description;
-
-    @ManyToOne
-    @JoinColumn(name = "logged_by", nullable = false)
-    private User loggedBy; // Parent
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
+    private String loggedById;  // Reference to User document
     
+    @CreatedDate
+    private LocalDateTime createdAt;
 }

@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface RewardService {
     List<RewardResponse> findAll();
-    Optional<RewardResponse> findById(Long id);
+    Optional<RewardResponse> findById(String id);
     RewardResponse save(RewardRequest reward);
-    void deleteById(Long id);
-    RewardResponse update(Long id, RewardRequest reward);
-    RewardResponse claimReward(Long rewardId, Long claimedById);
+    void deleteById(String id);
+    RewardResponse update(String id, RewardRequest reward);
+    RewardResponse claimReward(String rewardId, String claimedById);
 }
