@@ -3,6 +3,7 @@ package com.parentsPearl.service.implementation;
 import com.parentsPearl.dto.request.ParentRequest;
 import com.parentsPearl.dto.response.ParentResponse;
 import com.parentsPearl.model.Parent;
+import com.parentsPearl.model.enums.Role;
 import com.parentsPearl.repository.ParentRepository;
 import com.parentsPearl.service.interfaces.ParentService;
 import com.parentsPearl.mapper.ParentMapper;
@@ -36,7 +37,7 @@ public class ParentServiceImpl implements ParentService {
     @Override
     public ParentResponse save(ParentRequest request) {
         Parent entity = parentMapper.toEntity(request);
-        entity.setUserType("PARENT");
+        entity.setRole(Role.PARENT);
         Parent saved = parentRepository.save(entity);
         return parentMapper.toResponse(saved);
     }

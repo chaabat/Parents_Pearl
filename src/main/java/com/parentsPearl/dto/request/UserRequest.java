@@ -23,4 +23,7 @@ public class UserRequest {
 
     @NotNull(message = "Role is required")
     private Role role;
+
+    @NotBlank
+    private String userType;
 }

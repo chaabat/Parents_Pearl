@@ -9,16 +9,12 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TaskMapper {
     
-    @Mapping(target = "assignedToId", source = "assignedTo.id")
-    @Mapping(target = "assignedToName", expression = "java(task.getAssignedTo().getFirstName() + \" \" + task.getAssignedTo().getLastName())")
-    @Mapping(target = "createdById", source = "createdBy.id")
-    @Mapping(target = "createdByName", expression = "java(task.getCreatedBy().getFirstName() + \" \" + task.getCreatedBy().getLastName())")
-    TaskResponse toResponse(Task task);
-    
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "assignedTo", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdById", ignore = true)
+    @Mapping(target = "assignedToId", ignore = true)
     Task toEntity(TaskRequest request);
+    
+    TaskResponse toResponse(Task task);
 } 
