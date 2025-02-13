@@ -1,46 +1,33 @@
 package com.parentsPearl.model;
- 
-
-import jakarta.persistence.*;
-import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import com.parentsPearl.model.enums.Role;
+import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "users")
+@Document(collection = "users")
 @Data
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    private String id;
     private String firstName;
-
-    @Column(nullable = false)
     private String lastName;
-
-    @Column(nullable = false, unique = true)
+    
+    @Indexed(unique = true)
     private String email;
-
-    @Column(nullable = false)
     private String password;
-
- @Enumerated(EnumType.STRING)
-    @Column(name = "role")
     private Role role;
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    private Integer points = 0;
+    private String userType; // For inheritance: "ADMIN", "PARENT", "CHILD"
+    
+    @CreatedDate
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    
+    @LastModifiedDate
     private LocalDateTime updatedAt;
-
- 
 }

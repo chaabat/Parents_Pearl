@@ -1,39 +1,26 @@
 package com.parentsPearl.model;
 
- 
-
-import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "calendar_events")
+@Document(collection = "calendar_events")
 @Data
 public class CalendarEvent {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    private String id;
     private String title;
-
     private String description;
-
-    @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
-
-    @ManyToOne
-    @JoinColumn(name = "created_by", nullable = false)
-    private User createdBy; // Parent
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    private String createdById;  // Reference to User document
+    
+    @CreatedDate
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 }

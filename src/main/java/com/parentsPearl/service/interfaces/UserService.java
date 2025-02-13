@@ -7,7 +7,14 @@ import java.util.Optional;
 
 public interface UserService {
     List<UserResponse> findAll();
-    Optional<UserResponse> findById(Long id);
+    Optional<UserResponse> findById(String id);
     UserResponse save(UserRequest user);
-    void deleteById(Long id);
+    void deleteById(String id);
+    UserResponse update(String id, UserRequest user);
+    void changePassword(String id, String newPassword);
+    void resetPassword(String email);
+    UserResponse findByEmail(String email);
+ 
+    
+
 }

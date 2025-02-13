@@ -7,7 +7,10 @@ import java.util.Optional;
 
 public interface TaskService {
     List<TaskResponse> findAll();
-    Optional<TaskResponse> findById(Long id);
+    Optional<TaskResponse> findById(String id);
     TaskResponse save(TaskRequest task);
-    void deleteById(Long id);
+    void deleteById(String id);
+    TaskResponse update(String id, TaskRequest task);
+    List<TaskResponse> getTasksByAssignedTo(String assignedToId);
+    List<TaskResponse> getTasksByCreatedBy(String createdById);
 }

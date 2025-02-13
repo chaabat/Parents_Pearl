@@ -18,6 +18,6 @@ public class ChildRequest extends UserRequest {
     
     private String interests;
     
-    @NotNull(message = "Parent ID is required")
-    private Long parentId;
+    @NotBlank(message = "Parent ID is required")
+    private String parentId;
 } 

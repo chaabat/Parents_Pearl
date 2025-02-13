@@ -1,24 +1,17 @@
 package com.parentsPearl.model;
 
- 
-
-import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "children")
+@Document(collection = "users")
 @Data
 public class Child extends User {
-    @Column(name = "age")
     private int age;
-
-    @Column(name = "grade_level")
     private String gradeLevel;
-
-    @Column(name = "interests")
     private String interests;
-
-    @ManyToOne
-    @JoinColumn(name = "parent_id", nullable = false)
-    private Parent parent; // The parent managing this child
+    private String parentId; // Reference to Parent document
+    
+    public Child() {
+        this.setUserType("CHILD");
+    }
 }

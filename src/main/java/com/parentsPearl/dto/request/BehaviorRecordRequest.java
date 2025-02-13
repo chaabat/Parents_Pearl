@@ -7,12 +7,11 @@ import lombok.Data;
 
 @Data
 public class BehaviorRecordRequest {
-    @NotNull(message = "Child ID is required")
-    private Long childId;
+    @NotBlank(message = "Child ID is required")
+    private String childId;
     
     @NotNull(message = "Behavior type is required")
     private BehaviorType behaviorType;
     
-    @NotBlank(message = "Description is required")
     private String description;
 } 

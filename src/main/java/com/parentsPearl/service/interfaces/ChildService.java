@@ -7,7 +7,9 @@ import java.util.Optional;
 
 public interface ChildService {
     List<ChildResponse> findAll();
-    Optional<ChildResponse> findById(Long id);
+    Optional<ChildResponse> findById(String id);
     ChildResponse save(ChildRequest child);
-    void deleteById(Long id);
+    void deleteById(String id);
+    ChildResponse update(String id, ChildRequest child);
+    List<ChildResponse> findByParentId(String parentId);
 }
