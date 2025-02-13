@@ -9,12 +9,12 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface RewardMapper {
     
-    @Mapping(target = "claimedById", source = "claimedBy.id")
-    @Mapping(target = "claimedByName", expression = "java(reward.getClaimedBy() != null ? reward.getClaimedBy().getFirstName() + \" \" + reward.getClaimedBy().getLastName() : null)")
-    RewardResponse toResponse(Reward reward);
-    
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "claimedBy", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(source = "claimedById", target = "claimedById")
     Reward toEntity(RewardRequest request);
+    
+    @Mapping(source = "claimedById", target = "claimedById")
+    RewardResponse toResponse(Reward reward);
 } 

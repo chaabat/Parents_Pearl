@@ -1,17 +1,16 @@
 package com.parentsPearl.dto.response;
 
-import com.parentsPearl.model.enums.BehaviorType;
 import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
 public class BehaviorRecordResponse {
-    private Long id;
-    private Long childId;
-    private String childName;
-    private BehaviorType behaviorType;
+    private String id;
     private String description;
-    private Long loggedById;
-    private String loggedByName;
+    private String childId;
+    private String type;
+    private Integer pointsImpact;
+    private LocalDateTime occurredAt;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 } 

@@ -6,15 +6,15 @@ import com.parentsPearl.model.Parent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {ChildMapper.class})
+@Mapper(componentModel = "spring")
 public interface ParentMapper {
     
-    @Mapping(target = "children", source = "children")
-    ParentResponse toResponse(Parent parent);
-    
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "children", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(source = "childrenIds", target = "childrenIds")
     Parent toEntity(ParentRequest request);
+    
+    @Mapping(source = "childrenIds", target = "childrenIds")
+    ParentResponse toResponse(Parent parent);
 } 
