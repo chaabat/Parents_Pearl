@@ -52,8 +52,10 @@ public class SecurityConfig {
                 }))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/files/**").permitAll()
-                .requestMatchers("/api/enums/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/parent/**").hasRole("PARENT")
+                .requestMatchers("/api/child/**").hasRole("CHILD")
+                .requestMatchers("/api/calendar/**", "/api/notifications/**").authenticated()
                 .anyRequest().authenticated())
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

@@ -23,9 +23,12 @@ public abstract class User {
     private String password;
     private Role role;
     private Integer points = 0;
+    private String status;
     
     @CreatedDate
     private LocalDateTime createdAt;
+    
+    private LocalDateTime deletedAt;
     
     @LastModifiedDate
     private LocalDateTime updatedAt;

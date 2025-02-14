@@ -1,5 +1,6 @@
 package com.parentsPearl.mapper;
 
+import com.parentsPearl.dto.request.ParentRegistrationRequest;
 import com.parentsPearl.dto.request.UserRequest;
 import com.parentsPearl.dto.response.UserResponse;
 import com.parentsPearl.model.Admin;
@@ -11,27 +12,25 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
+    UserResponse toResponse(User user);
+    UserResponse toResponse(Parent parent);
     
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    Parent toEntity(ParentRegistrationRequest request);
+    
+    @Mapping(target = "id", ignore = true)
     default User toEntity(UserRequest request) {
         switch (request.getRole()) {
-            case ADMIN:
-                return toAdmin(request);
             case PARENT:
-                return toParent(request);
+                return new Parent();
             case CHILD:
-                return toChild(request);
+                return new Child();
+            case ADMIN:
+                return new Admin();
             default:
                 throw new IllegalArgumentException("Invalid role: " + request.getRole());
         }
     }
-    
-    Admin toAdmin(UserRequest request);
-    Parent toParent(UserRequest request);
-    Child toChild(UserRequest request);
-    
-    UserResponse toResponse(User user);
 }
-    
