@@ -1,17 +1,14 @@
 package com.parentsPearl.service.implementation;
 
-import com.parentsPearl.dto.request.CalendarEventRequest;
-import com.parentsPearl.dto.response.CalendarEventResponse;
-import com.parentsPearl.model.CalendarEvent;
+import com.parentsPearl.dto.request.EventRequest;
+import com.parentsPearl.dto.response.EventResponse;
+import com.parentsPearl.model.Event;
 import com.parentsPearl.repository.CalendarRepository;
-import com.parentsPearl.repository.UserRepository;
 import com.parentsPearl.service.interfaces.CalendarService;
-import com.parentsPearl.mapper.CalendarEventMapper;
+import com.parentsPearl.mapper.EventMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,42 +16,42 @@ import java.util.stream.Collectors;
 public class CalendarServiceImpl implements CalendarService {
     
     private final CalendarRepository calendarRepository;
-    private final CalendarEventMapper calendarMapper;
-    private final UserRepository userRepository;
-    
+    private final EventMapper eventMapper;
+
     @Override
-    public List<CalendarEventResponse> findAll() {
+    public List<EventResponse> getEvents() {
         return calendarRepository.findAll().stream()
-                .map(calendarMapper::toResponse)
+                .map(eventMapper::toResponse)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
-    public Optional<CalendarEventResponse> findById(String id) {
+    public EventResponse createEvent(EventRequest request) {
+        Event event = eventMapper.toEntity(request);
+        Event saved = calendarRepository.save(event);
+        return eventMapper.toResponse(saved);
+    }
+
+    @Override
+    public EventResponse updateEvent(String id, EventRequest request) {
         return calendarRepository.findById(id)
-                .map(calendarMapper::toResponse);
+                .map(event -> {
+                    eventMapper.updateEntity(request, event);
+                    Event updated = calendarRepository.save(event);
+                    return eventMapper.toResponse(updated);
+                })
+                .orElseThrow(() -> new RuntimeException("Event not found"));
     }
-    
+
     @Override
-    public CalendarEventResponse save(CalendarEventRequest request) {
-        CalendarEvent entity = calendarMapper.toEntity(request);
-        
-        // Set the creator ID (from security context)
-        String creatorId = "1";  
-        userRepository.findById(creatorId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        entity.setCreatedById(creatorId);
-        
-        CalendarEvent saved = calendarRepository.save(entity);
-        return calendarMapper.toResponse(saved);
-    }
-    
-    @Override
-    public void deleteById(String id) {
+    public void deleteEvent(String id) {
         calendarRepository.deleteById(id);
     }
 
-   
-
-    
+    @Override
+    public List<EventResponse> getReminders() {
+        return calendarRepository.findByIsReminderTrue().stream()
+                .map(eventMapper::toResponse)
+                .collect(Collectors.toList());
+    }
 } 

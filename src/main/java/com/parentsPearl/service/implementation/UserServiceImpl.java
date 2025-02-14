@@ -10,9 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.parentsPearl.model.enums.Role;
+import com.parentsPearl.model.Parent;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +29,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserResponse> findAll() {
         return userRepository.findAll().stream()
-                .map(userMapper::toResponse)
+                .map(user -> userMapper.toResponse((Parent) user))
                 .collect(Collectors.toList());
     }
     
@@ -80,10 +84,7 @@ public class UserServiceImpl implements UserService {
         sendPasswordResetEmail(user.getEmail(), temporaryPassword);
     }
     
-    @Override
-    public void deleteById(String id) {
-        userRepository.deleteById(id);
-    }
+   
     
     @Override
     public UserResponse findByEmail(String email) {
@@ -98,5 +99,35 @@ public class UserServiceImpl implements UserService {
     
     private void sendPasswordResetEmail(String email, String temporaryPassword) {
         // TODO: Implement email sending logic
+    }
+
+    @Override
+    public void softDelete(String id) {
+        userRepository.findById(id)
+                .map(existingUser -> {
+                    existingUser.setDeletedAt(LocalDateTime.now());
+                    return userRepository.save(existingUser);
+                })
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+    }
+
+    @Override
+    public UserResponse updateStatus(String id, String status) {
+        return userRepository.findById(id)
+                .map(existingUser -> {
+                    existingUser.setStatus(status);
+                    User updated = userRepository.save(existingUser);
+                    return userMapper.toResponse(updated);
+                })
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+    }
+
+    @Override
+    public UserResponse updateRole(String id, String role) {
+        Parent user = (Parent) userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRole(Role.valueOf(role));
+        Parent updated = userRepository.save(user);
+        return userMapper.toResponse(updated);
     }
 } 

@@ -13,4 +13,8 @@ public class UserResponse {
     private Role role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    public void setToken(String newToken) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setToken'");
+    }
 }

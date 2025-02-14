@@ -7,6 +7,7 @@ import com.parentsPearl.exception.TokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -34,12 +35,12 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
     
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(Authentication authentication) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", userDetails.getAuthorities().stream()
+        claims.put("roles", authentication.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.toList()));
-        return createToken(claims, userDetails.getUsername(), expiration);
+        return createToken(claims, authentication.getName(), expiration);
     }
     
     public String generateRefreshToken(UserDetails userDetails) {
