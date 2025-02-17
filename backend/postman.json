@@ -1,0 +1,643 @@
+{
+    "info": {
+        "name": "Parents Pearl API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8080",
+            "type": "string"
+        },
+        {
+            "key": "admin_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "parent_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "child_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "child_id",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "pm.request.headers.add({",
+                    "    key: 'Content-Type',",
+                    "    value: 'application/json'",
+                    "});"
+                ]
+            }
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "pm.collectionVariables.set(\"parent_token\", jsonData.token);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/api/auth/login",
+                        "header": {
+                            "Content-Type": "application/json"
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": {
+                                "email": "parent@test.com",
+                                "password": "parent123"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Register Parent",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/api/auth/register/parent",
+                        "header": {
+                            "Content-Type": "application/json"
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"newparent@test.com\",\n    \"password\": \"parent123\"\n}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success",
+                            "status": "OK",
+                            "code": 200,
+                            "body": {
+                                "id": "65cd8f3e1d2c543b3a123456",
+                                "firstName": "John",
+                                "lastName": "Doe",
+                                "email": "newparent@test.com",
+                                "role": "PARENT",
+                                "status": "ACTIVE",
+                                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/api/auth/logout",
+                        "header": {
+                            "Authorization": "Bearer {{parent_token}}"
+                        }
+                    }
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/api/auth/refresh-token",
+                        "header": {
+                            "Authorization": "Bearer {{parent_token}}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Parent",
+            "item": [
+                {
+                    "name": "Child Management",
+                    "item": [
+                        {
+                            "name": "Create Child",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "pm.collectionVariables.set(\"child_id\", jsonData.id);"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "url": "{{base_url}}/api/parent/children",
+                                "header": {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer {{parent_token}}"
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": {
+                                        "firstName": "Jane",
+                                        "lastName": "Doe",
+                                        "email": "child@test.com",
+                                        "password": "child123"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Child",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/parent/children/{{child_id}}",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Update Child",
+                            "request": {
+                                "method": "PUT",
+                                "url": "{{base_url}}/api/parent/children/{{child_id}}",
+                                "header": {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer {{parent_token}}"
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": {
+                                        "firstName": "Jane Updated",
+                                        "lastName": "Doe Updated",
+                                        "email": "child.updated@test.com"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Delete Child",
+                            "request": {
+                                "method": "DELETE",
+                                "url": "{{base_url}}/api/parent/children/{{child_id}}",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Child Behavior",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/parent/children/{{child_id}}/behavior",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Child Progress",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/parent/children/{{child_id}}/progress",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Update Child Avatar",
+                            "request": {
+                                "method": "PUT",
+                                "url": "{{base_url}}/api/parent/children/{{child_id}}/avatar",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                },
+                                "body": {
+                                    "mode": "formdata",
+                                    "formdata": [
+                                        {
+                                            "key": "avatar",
+                                            "type": "file",
+                                            "src": "/path/to/avatar.jpg"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Task Management",
+                    "item": [
+                        {
+                            "name": "Create Task",
+                            "request": {
+                                "method": "POST",
+                                "url": "{{base_url}}/api/parent/tasks",
+                                "header": {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer {{parent_token}}"
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": {
+                                        "title": "Clean Room",
+                                        "description": "Clean your room before dinner",
+                                        "points": 10,
+                                        "deadline": "2024-03-20T18:00:00Z",
+                                        "childId": "{{child_id}}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get All Tasks",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/parent/tasks",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Update Task",
+                            "request": {
+                                "method": "PUT",
+                                "url": "{{base_url}}/api/parent/tasks/{task_id}",
+                                "header": {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer {{parent_token}}"
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": {
+                                        "title": "Updated Task",
+                                        "description": "Updated description",
+                                        "points": 15,
+                                        "deadline": "2024-03-21T18:00:00Z",
+                                        "status": "IN_PROGRESS"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Delete Task",
+                            "request": {
+                                "method": "DELETE",
+                                "url": "{{base_url}}/api/parent/tasks/{task_id}",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Reward Management",
+                    "item": [
+                        {
+                            "name": "Create Reward",
+                            "request": {
+                                "method": "POST",
+                                "url": "{{base_url}}/api/parent/rewards",
+                                "headers": {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer {{parent_token}}"
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": {
+                                        "title": "Extra TV Time",
+                                        "description": "30 minutes of extra TV time",
+                                        "points": 50,
+                                        "expiryDate": "2024-04-20T00:00:00Z",
+                                        "maxClaims": 1
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get All Rewards",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/parent/rewards"
+                            }
+                        },
+                        {
+                            "name": "Get Reward History",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/parent/rewards/history/{childId}"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Child",
+            "item": [
+                {
+                    "name": "Tasks",
+                    "item": [
+                        {
+                            "name": "Get Assigned Tasks",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/child/tasks",
+                                "header": {
+                                    "Authorization": "Bearer {{child_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Complete Task",
+                            "request": {
+                                "method": "POST",
+                                "url": "{{base_url}}/api/child/tasks/{task_id}/complete",
+                                "header": {
+                                    "Authorization": "Bearer {{child_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Progress",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/child/tasks/progress",
+                                "header": {
+                                    "Authorization": "Bearer {{child_token}}"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Rewards",
+                    "item": [
+                        {
+                            "name": "Get Available Rewards",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/child/rewards/available",
+                                "header": {
+                                    "Authorization": "Bearer {{child_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Claim Reward",
+                            "request": {
+                                "method": "POST",
+                                "url": "{{base_url}}/api/child/rewards/{reward_id}/claim",
+                                "header": {
+                                    "Authorization": "Bearer {{child_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Points",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/child/rewards/points",
+                                "header": {
+                                    "Authorization": "Bearer {{child_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Badges",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/child/rewards/badges",
+                                "header": {
+                                    "Authorization": "Bearer {{child_token}}"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Login Child",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "pm.collectionVariables.set(\"child_token\", jsonData.token);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/api/auth/login",
+                        "body": {
+                            "mode": "raw",
+                            "raw": {
+                                "email": "child@test.com",
+                                "password": "child123"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admin",
+            "item": [
+                {
+                    "name": "User Management",
+                    "item": [
+                        {
+                            "name": "Get All Users",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/admin/users",
+                                "header": {
+                                    "Authorization": "Bearer {{admin_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get User",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/admin/users/{user_id}",
+                                "header": {
+                                    "Authorization": "Bearer {{admin_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Update User Status",
+                            "request": {
+                                "method": "PUT",
+                                "url": "{{base_url}}/api/admin/users/{user_id}/status",
+                                "header": {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer {{admin_token}}"
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": {
+                                        "status": "BANNED",
+                                        "reason": "Violation of terms"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Update User Role",
+                            "request": {
+                                "method": "PUT",
+                                "url": "{{base_url}}/api/admin/users/{user_id}/role",
+                                "header": {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer {{admin_token}}"
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": {
+                                        "role": "ADMIN"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Delete User",
+                            "request": {
+                                "method": "DELETE",
+                                "url": "{{base_url}}/api/admin/users/{user_id}",
+                                "header": {
+                                    "Authorization": "Bearer {{admin_token}}"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Common",
+            "item": [
+                {
+                    "name": "Calendar",
+                    "item": [
+                        {
+                            "name": "Get Events",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/calendar/events",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Create Event",
+                            "request": {
+                                "method": "POST",
+                                "url": "{{base_url}}/api/calendar/events",
+                                "header": {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer {{parent_token}}"
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": {
+                                        "title": "Parent Meeting",
+                                        "description": "Monthly parent meeting",
+                                        "startDate": "2024-03-20T15:00:00Z",
+                                        "endDate": "2024-03-20T16:00:00Z",
+                                        "isReminder": true
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Reminders",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/calendar/reminders",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Notifications",
+                    "item": [
+                        {
+                            "name": "Get Notifications",
+                            "request": {
+                                "method": "GET",
+                                "url": "{{base_url}}/api/notifications",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Mark as Read",
+                            "request": {
+                                "method": "PUT",
+                                "url": "{{base_url}}/api/notifications/{notification_id}/read",
+                                "header": {
+                                    "Authorization": "Bearer {{parent_token}}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Update Preferences",
+                            "request": {
+                                "method": "PUT",
+                                "url": "{{base_url}}/api/notifications/preferences",
+                                "header": {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer {{parent_token}}"
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": {
+                                        "emailNotifications": true,
+                                        "pushNotifications": true,
+                                        "language": "en",
+                                        "timezone": "America/New_York"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
