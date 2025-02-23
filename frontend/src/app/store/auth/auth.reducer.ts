@@ -7,6 +7,7 @@ export const initialState: AuthState = {
   token: null,
   loading: false,
   error: null,
+  children: null,
 };
 
 export const authReducer = createReducer(
@@ -19,16 +20,16 @@ export const authReducer = createReducer(
       error: null,
     })
   ),
-  on(
-    AuthActions.loginSuccess,
-    (state, { user, token }): AuthState => ({
+  on(AuthActions.loginSuccess, (state, { user, token }): AuthState => {
+    console.log('Reducer: Setting user and token', { user, token }); // Debug log
+    return {
       ...state,
       user,
       token,
       loading: false,
       error: null,
-    })
-  ),
+    };
+  }),
   on(
     AuthActions.loginFailure,
     (state, { error }): AuthState => ({
@@ -37,5 +38,22 @@ export const authReducer = createReducer(
       error,
     })
   ),
-  on(AuthActions.logout, (): AuthState => initialState)
+  on(AuthActions.logout, (): AuthState => initialState),
+  on(AuthActions.register, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+  on(AuthActions.registerSuccess, (state, { user, token }) => ({
+    ...state,
+    user,
+    token,
+    loading: false,
+    error: null,
+  })),
+  on(AuthActions.registerFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  }))
 );

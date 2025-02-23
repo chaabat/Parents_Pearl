@@ -16,4 +16,49 @@ export const loginFailure = createAction(
   props<{ error: string }>()
 );
 
-export const logout = createAction('[Auth] Logout'); 
+export const register = createAction(
+  '[Auth] Register',
+  props<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    role: string;
+  }>()
+);
+
+export const registerSuccess = createAction(
+  '[Auth] Register Success',
+  props<{ user: User; token: string }>()
+);
+
+export const registerFailure = createAction(
+  '[Auth] Register Failure',
+  props<{ error: string }>()
+);
+
+export const logout = createAction('[Auth] Logout');
+
+export const updateProfile = createAction(
+  '[Auth] Update Profile',
+  props<{
+    firstName: string;
+    lastName: string;
+    email: string;
+  }>()
+);
+
+export const updateChildProfile = createAction(
+  '[Auth] Update Child Profile',
+  props<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  }>()
+);
+
+export const deleteChildProfile = createAction(
+  '[Auth] Delete Child Profile',
+  props<{ id: string }>()
+);
