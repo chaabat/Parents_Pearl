@@ -1,9 +1,15 @@
+export type UserRole = 'PARENT' | 'ADMIN' | 'CHILD';
+
 export interface User {
-  id: number;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
   role: string;
+}
+
+export interface Child extends User {
+  parentId: string;
 }
 
 export interface AuthState {
@@ -11,4 +17,5 @@ export interface AuthState {
   token: string | null;
   loading: boolean;
   error: string | null;
+  children: Child[] | null;
 }

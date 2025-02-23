@@ -1,0 +1,32 @@
+ <div class="min-h-screen bg-gray-100 p-6">
+      <div class="max-w-7xl mx-auto">
+        @switch (userRole$ | async) { @case ('ADMIN') {
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p class="mt-4 text-gray-600">Welcome to the admin control panel!</p>
+          <!-- Admin specific content -->
+        </div>
+        } @case ('PARENT') {
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Parent Dashboard</h1>
+          <p class="mt-4 text-gray-600">
+            Welcome to your parental control panel!
+          </p>
+          <!-- Parent specific content -->
+        </div>
+        } @case ('CHILD') {
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Child Dashboard</h1>
+          <p class="mt-4 text-gray-600">Welcome to your learning space!</p>
+          <!-- Child specific content -->
+        </div>
+        } @default {
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Welcome</h1>
+          <p class="mt-4 text-gray-600">
+            Please log in to access your dashboard.
+          </p>
+        </div>
+        } }
+      </div>
+    </div>

@@ -34,7 +34,13 @@ export class LoginComponent {
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      this.store.dispatch(AuthActions.login(this.loginForm.value));
+      console.log('Dispatching login action...');
+      this.store.dispatch(
+        AuthActions.login({
+          email: this.loginForm.value.email!,
+          password: this.loginForm.value.password!,
+        })
+      );
     }
   }
 }

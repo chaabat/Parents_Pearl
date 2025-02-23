@@ -1,0 +1,103 @@
+<div class="min-h-screen bg-gray-100 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white shadow rounded-lg p-6">
+        <!-- Profile Header -->
+        <h2 class="text-2xl font-bold mb-6">
+          @switch (userRole$ | async) {
+            @case ('ADMIN') {
+              Profile Administrateur
+            }
+            @case ('PARENT') {
+              Profile Parent
+            }
+            @case ('CHILD') {
+              Mon Profile
+            }
+          }
+        </h2>
+        
+        <!-- Profile Form -->
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Prénom</label>
+            <input 
+              type="text" 
+              formControlName="firstName" 
+              [readonly]="isReadOnly"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Nom</label>
+            <input 
+              type="text" 
+              formControlName="lastName" 
+              [readonly]="isReadOnly"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <input 
+              type="email" 
+              formControlName="email" 
+              [readonly]="isReadOnly"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+          </div>
+          
+          @if (!isReadOnly) {
+            <div>
+              <button 
+                type="submit" 
+                [disabled]="!profileForm.valid || profileForm.pristine"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
+              >
+                Mettre à jour
+              </button>
+            </div>
+          }
+        </form>
+
+        <!-- Children Section for Parents -->
+        @if ((userRole$ | async) === 'PARENT') {
+          <div class="mt-8">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-semibold">Profils Enfants</h3>
+              <button 
+                class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Ajouter un enfant
+              </button>
+            </div>
+            <div class="space-y-4">
+              @for (child of children$ | async; track child.id) {
+                <div class="border rounded-lg p-4 flex justify-between items-center">
+                  <div>
+                    <p class="font-medium">{{ child.firstName }} {{ child.lastName }}</p>
+                    <p class="text-sm text-gray-500">{{ child.email }}</p>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button 
+                      (click)="editChild(child.id)"
+                      class="px-3 py-1 text-sm text-indigo-600 hover:text-indigo-800"
+                    >
+                      Modifier
+                    </button>
+                    <button 
+                      (click)="deleteChild(child.id)"
+                      class="px-3 py-1 text-sm text-red-600 hover:text-red-800"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
