@@ -1,32 +1,104 @@
- <div class="min-h-screen bg-gray-100 p-6">
-      <div class="max-w-7xl mx-auto">
+<div class="flex">
+  <!-- Sidebar -->
+  <aside
+    class="fixed top-14 left-0 z-40 w-64 h-[calc(100vh-3.5rem)] transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0"
+  >
+    <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
+      @if ((userRole$ | async) === 'PARENT') {
+        <ul class="space-y-2 font-medium">
+          <li>
+            <a
+              routerLink="parent/children"
+              routerLinkActive="bg-gray-100"
+              class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
+            >
+              <svg
+                class="w-5 h-5 text-gray-500"
+                fill="currentColor"
+                viewBox="0 0 20 18"
+              >
+                <path
+                  d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Z"
+                />
+              </svg>
+              <span class="ms-3">Mes Enfants</span>
+            </a>
+          </li>
+          <li>
+            <a
+              routerLink="parent/tasks"
+              routerLinkActive="bg-gray-100"
+              class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
+            >
+              <svg
+                class="w-5 h-5 text-gray-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M5 3a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5Z"
+                />
+              </svg>
+              <span class="ms-3">Tâches</span>
+            </a>
+          </li>
+          <li>
+            <a
+              routerLink="parent/behavior"
+              routerLinkActive="bg-gray-100"
+              class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
+            >
+              <svg
+                class="w-5 h-5 text-gray-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Z" />
+              </svg>
+              <span class="ms-3">Comportement</span>
+            </a>
+          </li>
+          <li>
+            <a
+              routerLink="parent/calendar"
+              routerLinkActive="bg-gray-100"
+              class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
+            >
+              <svg
+                class="w-5 h-5 text-gray-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4Z"
+                />
+              </svg>
+              <span class="ms-3">Calendrier</span>
+            </a>
+          </li>
+        </ul>
+      }
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="sm:ml-64 w-full">
+    <div class="p-4 mt-14">
+      <!-- Dashboard Welcome Section -->
+      <div class="mb-8">
         @switch (userRole$ | async) { @case ('ADMIN') {
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p class="mt-4 text-gray-600">Welcome to the admin control panel!</p>
-          <!-- Admin specific content -->
-        </div>
+        <h1 class="text-3xl font-bold text-gray-900">Tableau de bord Admin</h1>
+        <p class="mt-4 text-gray-600">
+          Bienvenue dans votre panneau d'administration
+        </p>
         } @case ('PARENT') {
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Parent Dashboard</h1>
-          <p class="mt-4 text-gray-600">
-            Welcome to your parental control panel!
-          </p>
-          <!-- Parent specific content -->
-        </div>
-        } @case ('CHILD') {
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Child Dashboard</h1>
-          <p class="mt-4 text-gray-600">Welcome to your learning space!</p>
-          <!-- Child specific content -->
-        </div>
-        } @default {
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Welcome</h1>
-          <p class="mt-4 text-gray-600">
-            Please log in to access your dashboard.
-          </p>
-        </div>
+        <h1 class="text-3xl font-bold text-gray-900">Tableau de bord Parent</h1>
+        <p class="mt-4 text-gray-600">Bienvenue dans votre espace parental</p>
         } }
       </div>
+
+      <!-- Router outlet for child routes -->
+      <router-outlet></router-outlet>
     </div>
+  </div>
+</div>
