@@ -6,12 +6,14 @@
     aria-label="Sidebar"
   >
     <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
+      @if (userRole$ | async) as role { @if (role === 'PARENT') {
+      <!-- Parent Menu -->
       <ul class="space-y-2 font-medium">
         <li>
           <a
             routerLink="./children"
             routerLinkActive="bg-gray-100"
-            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
           >
             <svg
               class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"
@@ -29,7 +31,7 @@
           <a
             routerLink="./tasks"
             routerLinkActive="bg-gray-100"
-            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
           >
             <svg
               class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"
@@ -47,7 +49,7 @@
           <a
             routerLink="./behavior"
             routerLinkActive="bg-gray-100"
-            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
           >
             <svg
               class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"
@@ -63,7 +65,7 @@
           <a
             routerLink="./calendar"
             routerLinkActive="bg-gray-100"
-            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
           >
             <svg
               class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"
@@ -78,6 +80,27 @@
           </a>
         </li>
       </ul>
+      } @if (role === 'ADMIN') {
+      <!-- Admin Menu -->
+      <ul class="space-y-2 font-medium">
+        <li>
+          <a
+            routerLink="./users"
+            routerLinkActive="bg-gray-100"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
+          >
+            <svg
+              class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+            </svg>
+            <span class="ms-3">Utilisateurs</span>
+          </a>
+        </li>
+      </ul>
+      } }
     </div>
   </aside>
 

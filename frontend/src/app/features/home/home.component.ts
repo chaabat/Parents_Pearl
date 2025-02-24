@@ -12,6 +12,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class HomeComponent {
   heroTitle = "Parents Pearl - Gestion Familiale Intelligente";
   heroSubtitle = "Simplifiez la gestion de votre famille";
+  heroImage = "assets/images/hero/hero-bg.jpg";
 
   constructor(private authService: AuthService) {}
 
