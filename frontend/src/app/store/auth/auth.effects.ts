@@ -1,35 +1,39 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Router } from '@angular/router';
-import { map, mergeMap, catchError, tap, exhaustMap } from 'rxjs/operators';
+import {
+  map,
+  mergeMap,
+  catchError,
+  tap,
+  exhaustMap,
+  switchMap,
+} from 'rxjs/operators';
 import { of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import * as AuthActions from './auth.actions';
+import { User } from './auth.types';
 
 @Injectable()
 export class AuthEffects {
   login$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.login),
-      exhaustMap(action =>
-        this.authService.login(action.email, action.password).pipe(
-          map(response => {
-            console.log('Login success response:', response); // Debug log
-            return AuthActions.loginSuccess({
-              user: {
-                id: response.id,
-                email: response.email,
-                firstName: response.firstName,
-                lastName: response.lastName,
-                role: response.role
-              },
-              token: response.token
-            });
+      switchMap(({ email, password }) =>
+        this.authService.login(email, password).pipe(
+          map((response) => {
+            const user: User = {
+              id: response.id,
+              email: response.email,
+              firstName: response.firstName,
+              lastName: response.lastName,
+              role: response.role as 'ADMIN' | 'PARENT' | 'CHILD',
+            };
+            return AuthActions.loginSuccess({ user, token: response.token });
           }),
-          catchError(error => {
-            console.error('Login error:', error); // Debug log
-            return of(AuthActions.loginFailure({ error: error.error?.message || 'Login failed' }));
-          })
+          catchError((error) =>
+            of(AuthActions.loginFailure({ error: error.message }))
+          )
         )
       )
     )
@@ -50,22 +54,30 @@ export class AuthEffects {
   register$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.register),
-      mergeMap((action) =>
-        this.authService.register(action).pipe(
-          map((response) => AuthActions.registerSuccess({
-            user: {
-              id: response.id,
-              email: response.email,
-              firstName: response.firstName,
-              lastName: response.lastName,
-              role: response.role
-            },
-            token: response.token
-          })),
-          catchError((error) =>
-            of(AuthActions.registerFailure({ error: error.message }))
+      switchMap((action) =>
+        this.authService
+          .register({ 
+            email: action.email, 
+            password: action.password, 
+            firstName: action.firstName, 
+            lastName: action.lastName, 
+            role: action.role as 'PARENT' 
+          })
+          .pipe(
+            map((response) => {
+              const user: User = {
+                id: response.id,
+                email: response.email,
+                firstName: response.firstName,
+                lastName: response.lastName,
+                role: response.role as 'ADMIN' | 'PARENT' | 'CHILD',
+              };
+              return AuthActions.registerSuccess({ user, token: response.token });
+            }),
+            catchError((error) =>
+              of(AuthActions.registerFailure({ error: error.message }))
+            )
           )
-        )
       )
     )
   );

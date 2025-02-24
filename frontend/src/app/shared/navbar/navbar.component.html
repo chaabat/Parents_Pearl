@@ -1,4 +1,4 @@
-<nav class="bg-white shadow border-b border-gray-200">
+<nav class="fixed top-0 z-50 w-full bg-white border-b border-gray-200">
   <div class="px-3 py-3 lg:px-5 lg:pl-3">
     <div class="flex items-center justify-between">
       <div class="flex items-center justify-start">
@@ -38,10 +38,8 @@
         </button>
 
         <!-- Logo -->
-        <a routerLink="/" class="flex ms-2 md:me-24">
-          <span class="self-center text-xl font-semibold sm:text-2xl"
-            >Parents Pearl</span
-          >
+        <a [routerLink]="isAuthenticated ? '/dashboard' : '/'" class="flex ml-2 md:mr-24">
+          <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">Parents Pearl</span>
         </a>
       </div>
 

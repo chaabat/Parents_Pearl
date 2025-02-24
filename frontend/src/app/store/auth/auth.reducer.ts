@@ -8,6 +8,7 @@ export const initialState: AuthState = {
   loading: false,
   error: null,
   children: null,
+  isAuthenticated: false
 };
 
 export const authReducer = createReducer(

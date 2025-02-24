@@ -14,6 +14,7 @@ import * as AuthActions from '../../store/auth/auth.actions';
 export class NavbarComponent {
   isMenuOpen = false;
   user$ = this.store.select(state => state.auth.user);
+  isAuthenticated$ = this.store.select(state => !!state.auth.user);
 
   constructor(private store: Store<{ auth: AuthState }>) {}
 
@@ -23,5 +24,11 @@ export class NavbarComponent {
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  get isAuthenticated(): boolean {
+    let isAuth = false;
+    this.isAuthenticated$.subscribe(auth => isAuth = auth);
+    return isAuth;
   }
 }

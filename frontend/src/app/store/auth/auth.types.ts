@@ -5,7 +5,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role: 'ADMIN' | 'PARENT' | 'CHILD';
 }
 
 export interface Child extends User {
@@ -15,7 +15,8 @@ export interface Child extends User {
 export interface AuthState {
   user: User | null;
   token: string | null;
-  loading: boolean;
+  isAuthenticated: boolean;
   error: string | null;
+  loading: boolean;
   children: Child[] | null;
 }
