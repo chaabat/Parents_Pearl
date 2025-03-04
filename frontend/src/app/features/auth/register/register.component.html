@@ -1,20 +1,23 @@
 <div
   class="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-200 flex items-center justify-center p-4"
 >
-  <div class="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden">
+  <div class="max-w-2xl w-full bg-white rounded-xl shadow-lg overflow-hidden">
     <!-- Header -->
     <div
-      class="bg-primary-600 p-6 text-center bg-gradient-to-r from-purple-500 to-indigo-600"
+      class="bg-primary-600 p-8 text-center bg-gradient-to-r from-purple-500 to-indigo-600"
     >
-      <div class="mb-4 relative mx-auto w-32 h-32">
+      <div class="mb-6 relative mx-auto w-36 h-36">
         <div
-          class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg"
+          class="w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-lg"
         >
+          <!-- Image Preview -->
           <img
-            [src]="imagePreview || 'assets/default-avatar.png'"
+            [src]="imagePreview || defaultImage"
             alt="Profile picture"
             class="w-full h-full object-cover"
           />
+
+          <!-- Hidden file input -->
           <input
             type="file"
             accept="image/*"
@@ -22,85 +25,140 @@
             #fileInput
             (change)="onFileSelected($event)"
           />
-          <button
-            mat-mini-fab
-            color="primary"
-            class="absolute bottom-0 right-0 transform translate-x-1/4"
-            (click)="fileInput.click()"
-          >
-            <mat-icon>add_a_photo</mat-icon>
-          </button>
         </div>
+
+        <!-- Add Camera Button -->
+        <button
+          mat-mini-fab
+          color="primary"
+          class="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4"
+          (click)="fileInput.click()"
+          type="button"
+        >
+          <mat-icon>add_a_photo</mat-icon>
+        </button>
       </div>
-      <h1 class="text-2xl font-bold text-white">Create Account</h1>
+       
     </div>
 
+    <!-- Add error message for invalid file -->
+    <mat-error
+      class="text-center mb-4"
+      *ngIf="registerForm.get('picture')?.hasError('invalidFile')"
+    >
+      Please upload a valid image file (max 5MB)
+    </mat-error>
+
     <!-- Registration Form -->
-    <div class="p-6">
+    <div class="p-8">
       <form
         [formGroup]="registerForm"
         (ngSubmit)="onSubmit()"
-        class="space-y-4"
+        class="space-y-6"
       >
-        <!-- Name Field -->
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Full Name</mat-label>
-          <input matInput formControlName="name" placeholder="John Doe" />
-          <mat-icon matPrefix class="mr-2 text-gray-400">person</mat-icon>
-          <mat-error *ngIf="registerForm.get('name')?.hasError('required')">
-            Name is required
-          </mat-error>
-        </mat-form-field>
+        <!-- Name and Email with better spacing -->
+        <div class="grid md:grid-cols-2 gap-6">
+          <mat-form-field class="w-full">
+            <mat-label>Full Name</mat-label>
+            <input
+              matInput
+              formControlName="name"
+              placeholder="John Doe"
+              class="py-1"
+            />
+            <mat-icon matPrefix class="mr-2 text-gray-400">person</mat-icon>
+            <mat-error *ngIf="registerForm.get('name')?.hasError('required')">
+              Name is required
+            </mat-error>
+          </mat-form-field>
 
-        <!-- Email Field -->
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Email</mat-label>
-          <input
-            matInput
-            formControlName="email"
-            type="email"
-            placeholder="your@email.com"
-          />
-          <mat-icon matPrefix class="mr-2 text-gray-400">email</mat-icon>
-          <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
-            Email is required
-          </mat-error>
-          <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
-            Please enter a valid email
-          </mat-error>
-        </mat-form-field>
+          <mat-form-field class="w-full">
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              formControlName="email"
+              type="email"
+              placeholder="your@email.com"
+              class="py-1"
+            />
+            <mat-icon matPrefix class="mr-2 text-gray-400">email</mat-icon>
+            <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
+              Email is required
+            </mat-error>
+            <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
+              Please enter a valid email
+            </mat-error>
+          </mat-form-field>
+        </div>
 
-        <!-- Password Field -->
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Password</mat-label>
-          <input
-            matInput
-            formControlName="password"
-            [type]="hidePassword ? 'password' : 'text'"
-          />
-          <mat-icon matPrefix class="mr-2 text-gray-400">lock</mat-icon>
-          <button
-            mat-icon-button
-            matSuffix
-            (click)="hidePassword = !hidePassword"
-            type="button"
-          >
-            <mat-icon>{{
-              hidePassword ? "visibility_off" : "visibility"
-            }}</mat-icon>
-          </button>
-          <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
-            Password is required
-          </mat-error>
-        </mat-form-field>
+        <!-- Password fields with better spacing -->
+        <div class="grid md:grid-cols-2 gap-6">
+          <mat-form-field class="w-full">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              formControlName="password"
+              [type]="hidePassword ? 'password' : 'text'"
+              class="py-1"
+            />
+            <mat-icon matPrefix class="mr-2 text-gray-400">lock</mat-icon>
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="hidePassword = !hidePassword"
+              type="button"
+            >
+              <mat-icon>{{
+                hidePassword ? "visibility_off" : "visibility"
+              }}</mat-icon>
+            </button>
+            <mat-error
+              *ngIf="registerForm.get('password')?.hasError('required')"
+            >
+              Password is required
+            </mat-error>
+          </mat-form-field>
 
-        <!-- Date of Birth Field -->
-        <mat-form-field appearance="outline" class="w-full">
+          <mat-form-field class="w-full">
+            <mat-label>Confirm Password</mat-label>
+            <input
+              matInput
+              formControlName="confirmPassword"
+              [type]="hideConfirmPassword ? 'password' : 'text'"
+              class="py-1"
+            />
+            <mat-icon matPrefix class="mr-2 text-gray-400">lock</mat-icon>
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="hideConfirmPassword = !hideConfirmPassword"
+              type="button"
+            >
+              <mat-icon>{{
+                hideConfirmPassword ? "visibility_off" : "visibility"
+              }}</mat-icon>
+            </button>
+            <mat-error
+              *ngIf="registerForm.get('confirmPassword')?.hasError('required')"
+            >
+              Please confirm your password
+            </mat-error>
+            <mat-error
+              *ngIf="registerForm.get('confirmPassword')?.hasError('passwordMismatch')"
+            >
+              Passwords do not match
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Date of Birth with consistent styling -->
+        <mat-form-field class="w-full">
           <mat-label>Date of Birth</mat-label>
           <input
             matInput
             formControlName="dateOfBirth"
             [matDatepicker]="picker"
+            class="py-1"
           />
           <mat-datepicker-toggle
             matSuffix
@@ -114,25 +172,25 @@
           </mat-error>
         </mat-form-field>
 
-        <!-- Submit Button -->
+        <!-- Submit Button with better spacing -->
         <button
           mat-raised-button
           color="primary"
           type="submit"
-          class="w-full py-2"
+          class="w-full py-3 text-lg font-medium mt-6"
           [disabled]="!registerForm.valid"
         >
           <mat-icon class="mr-2">how_to_reg</mat-icon>
           Register
         </button>
 
-        <!-- Login Link -->
-        <div class="text-center mt-4">
-          <p class="text-gray-600">
+        <!-- Login Link with better spacing -->
+        <div class="text-center mt-6">
+          <p class="text-gray-600 text-lg">
             Already have an account?
             <a
               routerLink="/auth/login"
-              class="text-primary-600 hover:text-primary-700 font-medium"
+              class="text-primary-600 hover:text-primary-700 font-medium ml-1"
             >
               Sign in
             </a>
