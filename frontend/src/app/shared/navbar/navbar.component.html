@@ -1,0 +1,63 @@
+<mat-toolbar class="navbar" color="primary">
+  <div class="navbar-brand">
+    <button mat-icon-button [routerLink]="['/']">
+      <mat-icon>home</mat-icon>
+    </button>
+    <span class="brand-text">Parent Pearl</span>
+  </div>
+
+  <span class="spacer"></span>
+
+  <!-- Not authenticated -->
+  <ng-container *ngIf="!isAuthenticated">
+    <button mat-button [routerLink]="['/auth/login']" class="auth-button">
+      <mat-icon>login</mat-icon>
+      <span>Login</span>
+    </button>
+    <button
+      mat-raised-button
+      color="accent"
+      [routerLink]="['/auth/register']"
+      class="auth-button"
+    >
+      <mat-icon>person_add</mat-icon>
+      <span>Register</span>
+    </button>
+  </ng-container>
+
+  <!-- Authenticated -->
+  <ng-container *ngIf="isAuthenticated">
+    <div class="user-profile">
+      <button mat-button [matMenuTriggerFor]="menu" class="profile-button">
+        <div class="profile-content">
+          <div
+            class="avatar"
+            [style.background-image]="
+              user?.picture ? 'url(' + user.picture + ')' : ''
+            "
+          >
+            <mat-icon *ngIf="!user?.picture">account_circle</mat-icon>
+          </div>
+          <span class="username">{{ user?.name || "User" }}</span>
+          <mat-icon>arrow_drop_down</mat-icon>
+        </div>
+      </button>
+    </div>
+
+    <mat-menu #menu="matMenu" class="profile-menu">
+      <button mat-menu-item [routerLink]="['/profile']">
+        <mat-icon>person</mat-icon>
+        <span>Profile</span>
+      </button>
+      <button mat-menu-item [routerLink]="['/settings']">
+        <mat-icon>settings</mat-icon>
+        <span>Settings</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>exit_to_app</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  </ng-container>
+</mat-toolbar>

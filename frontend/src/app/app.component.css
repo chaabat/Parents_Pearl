@@ -1,0 +1,10 @@
+.content {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.example-card {
+  max-width: 400px;
+  margin: 0 auto;
+}
