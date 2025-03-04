@@ -1,0 +1,30 @@
+:host {
+  display: block;
+  height: 100vh;
+}
+
+.mat-form-field {
+  width: 100%;
+}
+
+/* Custom styles for Material components */
+::ng-deep .mat-form-field-outline {
+  background-color: white;
+}
+
+::ng-deep .mat-form-field.mat-focused .mat-form-field-label {
+  color: theme('colors.purple.600') !important;
+}
+
+::ng-deep .mat-form-field.mat-focused .mat-form-field-outline-thick {
+  color: theme('colors.purple.600') !important;
+}
+
+/* Button hover effect */
+.mat-raised-button:not([disabled]) {
+  transition: transform 0.2s;
+}
+
+.mat-raised-button:not([disabled]):hover {
+  transform: translateY(-1px);
+}

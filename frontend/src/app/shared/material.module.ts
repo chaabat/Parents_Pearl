@@ -10,6 +10,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 const materialModules = [
   MatButtonModule,
@@ -23,6 +25,8 @@ const materialModules = [
   MatSnackBarModule,
   MatMenuModule,
   MatDividerModule,
+  MatDatepickerModule,
+  MatNativeDateModule,
 ];
 
 @NgModule({

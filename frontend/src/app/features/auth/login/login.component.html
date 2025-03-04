@@ -1,1 +1,87 @@
-<p>login works!</p>
+<div
+  class="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-200 flex items-center justify-center p-4"
+>
+  <div class="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden">
+    <!-- Logo and Header -->
+    <div
+      class="bg-primary-600 p-6 text-center bg-gradient-to-r from-purple-500 to-indigo-600"
+    >
+      <h1 class="text-2xl font-bold text-white mb-2">
+        Welcome to Parent Pearl
+      </h1>
+      <p class="text-purple-100">Sign in to your account</p>
+    </div>
+
+    <!-- Login Form -->
+    <div class="p-6">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
+        <!-- Email Field -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            formControlName="email"
+            type="email"
+            placeholder="your@email.com"
+          />
+          <mat-icon matPrefix class="mr-2 text-gray-400">email</mat-icon>
+          <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+            Email is required
+          </mat-error>
+          <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+            Please enter a valid email
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Password Field -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            [type]="hidePassword ? 'password' : 'text'"
+          />
+          <mat-icon matPrefix class="mr-2 text-gray-400">lock</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            (click)="hidePassword = !hidePassword"
+            type="button"
+          >
+            <mat-icon>{{
+              hidePassword ? "visibility_off" : "visibility"
+            }}</mat-icon>
+          </button>
+          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+            Password is required
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Submit Button -->
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="w-full py-2"
+          [disabled]="!loginForm.valid"
+        >
+          <mat-icon class="mr-2">login</mat-icon>
+          Sign In
+        </button>
+
+        <!-- Register Link -->
+        <div class="text-center mt-4">
+          <p class="text-gray-600">
+            Don't have an account?
+            <a
+              routerLink="/auth/register"
+              class="text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Register here
+            </a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

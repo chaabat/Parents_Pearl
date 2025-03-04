@@ -1,15 +1,50 @@
 <app-navbar></app-navbar>
 
-<div class="content">
-  <mat-card class="example-card">
-    <mat-card-header>
-      <mat-card-title>Welcome</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <p>Your application is now using Angular Material!</p>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-raised-button color="primary">Action</button>
-    </mat-card-actions>
-  </mat-card>
+<div
+  *ngIf="!isAuthRoute"
+  class="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-200 p-8"
+>
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-primary-800 mb-4">
+        Welcome to Parent Pearl
+      </h1>
+      <p class="text-lg text-gray-700">Your Digital Parenting Assistant</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <mat-card class="p-6 hover:shadow-lg transition-all">
+        <mat-card-header>
+          <mat-card-title>For Parents</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="py-4">
+          <p>
+            Manage tasks, track progress, and reward your children's
+            achievements.
+          </p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="goToLogin()">
+            Get Started
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <mat-card class="p-6 hover:shadow-lg transition-all">
+        <mat-card-header>
+          <mat-card-title>For Children</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="py-4">
+          <p>Complete tasks, earn points, and unlock exciting rewards!</p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="accent" (click)="goToLogin()">
+            Join Now
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
 </div>
+
+<router-outlet></router-outlet>

@@ -1,1 +1,144 @@
-<p>register works!</p>
+<div
+  class="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-200 flex items-center justify-center p-4"
+>
+  <div class="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden">
+    <!-- Header -->
+    <div
+      class="bg-primary-600 p-6 text-center bg-gradient-to-r from-purple-500 to-indigo-600"
+    >
+      <div class="mb-4 relative mx-auto w-32 h-32">
+        <div
+          class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg"
+        >
+          <img
+            [src]="imagePreview || 'assets/default-avatar.png'"
+            alt="Profile picture"
+            class="w-full h-full object-cover"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            class="hidden"
+            #fileInput
+            (change)="onFileSelected($event)"
+          />
+          <button
+            mat-mini-fab
+            color="primary"
+            class="absolute bottom-0 right-0 transform translate-x-1/4"
+            (click)="fileInput.click()"
+          >
+            <mat-icon>add_a_photo</mat-icon>
+          </button>
+        </div>
+      </div>
+      <h1 class="text-2xl font-bold text-white">Create Account</h1>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="p-6">
+      <form
+        [formGroup]="registerForm"
+        (ngSubmit)="onSubmit()"
+        class="space-y-4"
+      >
+        <!-- Name Field -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Full Name</mat-label>
+          <input matInput formControlName="name" placeholder="John Doe" />
+          <mat-icon matPrefix class="mr-2 text-gray-400">person</mat-icon>
+          <mat-error *ngIf="registerForm.get('name')?.hasError('required')">
+            Name is required
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Email Field -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            formControlName="email"
+            type="email"
+            placeholder="your@email.com"
+          />
+          <mat-icon matPrefix class="mr-2 text-gray-400">email</mat-icon>
+          <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
+            Email is required
+          </mat-error>
+          <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
+            Please enter a valid email
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Password Field -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            [type]="hidePassword ? 'password' : 'text'"
+          />
+          <mat-icon matPrefix class="mr-2 text-gray-400">lock</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            (click)="hidePassword = !hidePassword"
+            type="button"
+          >
+            <mat-icon>{{
+              hidePassword ? "visibility_off" : "visibility"
+            }}</mat-icon>
+          </button>
+          <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
+            Password is required
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Date of Birth Field -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Date of Birth</mat-label>
+          <input
+            matInput
+            formControlName="dateOfBirth"
+            [matDatepicker]="picker"
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="picker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          <mat-error
+            *ngIf="registerForm.get('dateOfBirth')?.hasError('required')"
+          >
+            Date of birth is required
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Submit Button -->
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="w-full py-2"
+          [disabled]="!registerForm.valid"
+        >
+          <mat-icon class="mr-2">how_to_reg</mat-icon>
+          Register
+        </button>
+
+        <!-- Login Link -->
+        <div class="text-center mt-4">
+          <p class="text-gray-600">
+            Already have an account?
+            <a
+              routerLink="/auth/login"
+              class="text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Sign in
+            </a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
