@@ -2,6 +2,7 @@ package com.parentPearl.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Builder;
 import com.parentPearl.model.enums.TaskStatus;
 import com.parentPearl.model.enums.TaskType;
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.util.List;
 @Entity
 @Table(name = "tasks")
 @Data
+@Builder
 public class Task {
     
     @Id

@@ -1,0 +1,95 @@
+// src/custom-theme.scss
+
+// Import Angular Material theming functions
+@use "@angular/material" as mat;
+
+// Include the common styles for Angular Material
+@include mat.core();
+
+// Define the primary palette (Purple)
+$primary-palette: (
+  50: #f3e5f5,
+  100: #e1bee7,
+  200: #ce93d8,
+  300: #ba68c8,
+  400: #ab47bc,
+  500: #9c27b0,
+  600: #8e24aa,
+  700: #7b1fa2,
+  800: #6a1b9a,
+  900: #4a148c,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: white,
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+  ),
+);
+
+// Define the accent palette (Orange)
+$accent-palette: (
+  50: #fff3e0,
+  100: #ffe0b2,
+  200: #ffcc80,
+  300: #ffb74d,
+  400: #ffa726,
+  500: #ff9800,
+  600: #fb8c00,
+  700: #f57c00,
+  800: #ef6c00,
+  900: #e65100,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+  ),
+);
+
+// Create the palettes
+$parent-pearl-primary: mat.define-palette($primary-palette, 700);
+$parent-pearl-accent: mat.define-palette($accent-palette, 700);
+$parent-pearl-warn: mat.define-palette(mat.$red-palette);
+
+// Create the theme object
+$parent-pearl-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $parent-pearl-primary,
+      accent: $parent-pearl-accent,
+      warn: $parent-pearl-warn,
+    ),
+    typography: mat.define-typography-config(),
+    density: 0,
+  )
+);
+
+// Include theme styles for core and each component used in your app
+@include mat.all-component-themes($parent-pearl-theme);
+
+// Optional: Create a dark theme
+.dark-theme {
+  $dark-theme: mat.define-dark-theme(
+    (
+      color: (
+        primary: $parent-pearl-primary,
+        accent: $parent-pearl-accent,
+        warn: $parent-pearl-warn,
+      ),
+    )
+  );
+
+  @include mat.all-component-colors($dark-theme);
+}

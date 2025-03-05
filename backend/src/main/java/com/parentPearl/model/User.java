@@ -7,7 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDate;
+ 
+import java.util.Date;
 
 @Data
 @SuperBuilder
@@ -35,7 +36,7 @@ public class User {
     private String picture;
     
     @Column(name = "dateOfBirth")
-    private LocalDate dateOfBirth;
+    private Date dateOfBirth;
 
     @Column(name = "deleted")
     private boolean deleted;

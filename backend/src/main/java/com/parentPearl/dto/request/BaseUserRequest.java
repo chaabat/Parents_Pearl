@@ -4,7 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import java.time.LocalDate;
+ 
+import java.util.Date;
 
 @Data
 public abstract class BaseUserRequest {
@@ -21,7 +22,7 @@ public abstract class BaseUserRequest {
     private String picture;
     
     @NotNull(message = "Date of birth is required")
-    private LocalDate dateOfBirth;
+    private Date dateOfBirth;
 
     private boolean deleted;
 } 

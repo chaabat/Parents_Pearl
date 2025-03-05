@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.util.Date;
+
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
@@ -24,6 +26,7 @@ public class AuthRequest {
 
     // Optional fields for registration
     private String name;
-    private LocalDate dateOfBirth;
+    private Date dateOfBirth;
     private String picture;
+    private String role; 
 } 

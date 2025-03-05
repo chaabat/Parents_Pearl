@@ -10,6 +10,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestPart;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import com.parentPearl.model.User;
 import org.springframework.http.HttpStatus;
 import com.parentPearl.repository.UserRepository;
@@ -27,10 +34,22 @@ public class AuthController {
     private final AuthService authService;
     private final UserRepository userRepository;
 
-    @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody AuthRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity<RegisterResponse> register(
+    @RequestPart("userData") String userDataJson,
+    @RequestPart("file") MultipartFile file
+) {
+    try {
+        log.debug("Received userData: {}", userDataJson);
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule());
+        AuthRequest request = objectMapper.readValue(userDataJson, AuthRequest.class);
+        return ResponseEntity.ok(authService.register(request, file));
+    } catch (Exception e) {
+        log.error("Registration error", e);
+        throw new RuntimeException("Error processing registration: " + e.getMessage());
     }
+}
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {

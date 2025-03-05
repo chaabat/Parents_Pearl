@@ -26,9 +26,8 @@ import java.io.IOException;
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    @Lazy
-    private final AuthService authService;
-    private final TokenBlacklist tokenBlackList;
+    private final CustomUserDetailsService userDetailsService;
+    private final TokenBlacklist tokenBlacklist;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -55,9 +54,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             
             // Log pour debug
            log.info("Token reçu: " + token);
-            log.info("Est dans la liste noire? " + tokenBlackList.isBlacklisted(token));
+            log.info("Est dans la liste noire? " + tokenBlacklist.isBlacklisted(token));
 
-            if (tokenBlackList.isBlacklisted(token)) {
+            if (tokenBlacklist.isBlacklisted(token)) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.setContentType("application/json");
                 String jsonResponse = "{\"status\":\"UNAUTHORIZED\",\"message\":\"Token blacklisted. Please login again.\"}";
@@ -74,7 +73,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = authService.loadUserByEmail(email);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
             if (jwtUtil.validateToken(token, email)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

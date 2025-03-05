@@ -13,10 +13,10 @@
     </div>
 
     <!-- Login Form -->
-    <div class="p-6">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
+    <div class="p-6 space-y-6">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <!-- Email Field -->
-        <mat-form-field  class="w-full">
+        <mat-form-field class="w-full mb-4">
           <mat-label>Email</mat-label>
           <input
             matInput
@@ -34,7 +34,7 @@
         </mat-form-field>
 
         <!-- Password Field -->
-        <mat-form-field  class="w-full">
+        <mat-form-field class="w-full mb-4">
           <mat-label>Password</mat-label>
           <input
             matInput
@@ -60,28 +60,28 @@
         <!-- Submit Button -->
         <button
           mat-raised-button
-          color="primary"
+          color="accent"
           type="submit"
-          class="w-full py-2"
+          class="w-full py-3 text-lg font-medium submit-button"
           [disabled]="!loginForm.valid"
         >
-          <mat-icon class="mr-2">login</mat-icon>
+          <mat-icon class="accent">login</mat-icon>
           Sign In
         </button>
-
-        <!-- Register Link -->
-        <div class="text-center mt-4">
-          <p class="text-gray-600">
-            Don't have an account?
-            <a
-              routerLink="/auth/register"
-              class="text-primary-600 hover:text-primary-700 font-medium"
-            >
-              Register here
-            </a>
-          </p>
-        </div>
       </form>
+
+      <!-- Register Link -->
+      <div class="text-center mt-6">
+        <p class="text-gray-600">
+          Don't have an account?
+          <a
+            routerLink="/auth/register"
+            class="text-primary-600 hover:text-primary-700 font-medium"
+          >
+            Register here
+          </a>
+        </p>
+      </div>
     </div>
   </div>
 </div>

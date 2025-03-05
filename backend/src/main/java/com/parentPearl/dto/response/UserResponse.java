@@ -1,6 +1,6 @@
 package com.parentPearl.dto.response;
 
-import java.time.LocalDate;
+import java.util.Date;
 
 import com.parentPearl.model.enums.Role;
 import lombok.Data;
@@ -13,6 +13,6 @@ public class UserResponse {
     private String name;
     private String email;
     private String picture;
-    private LocalDate dateOfBirth;
+    private Date dateOfBirth;
     private Role role;
 }

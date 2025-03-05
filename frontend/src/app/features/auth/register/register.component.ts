@@ -13,6 +13,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { Store } from '@ngrx/store';
+import * as AuthActions from '../../../store/auth/auth.actions';
 
 interface FileEvent {
   target: HTMLInputElement;
@@ -35,7 +37,6 @@ interface FileEvent {
 export class RegisterComponent {
   registerForm: FormGroup;
   hidePassword = true;
-  hideConfirmPassword = true;
   imagePreview: string | null = null;
   defaultImage = 'assets/images/default-avatar.png';
   maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
@@ -44,16 +45,17 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private store: Store
   ) {
     this.registerForm = this.fb.group(
       {
         name: ['', [Validators.required, Validators.minLength(3)]],
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(6)]],
-        confirmPassword: ['', Validators.required],
+        
         dateOfBirth: ['', Validators.required],
-        picture: [null, [Validators.required, this.fileValidator.bind(this)]],
+        picture: [null, [ this.fileValidator.bind(this)]],
         role: ['PARENT'],
       },
       {
@@ -143,37 +145,20 @@ export class RegisterComponent {
     }
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.registerForm.valid) {
-      const formData = new FormData();
+      const formValue = this.registerForm.value;
+      const userData = {
+        ...formValue,
+        dateOfBirth: formValue.dateOfBirth?.toISOString(),
+        picture: this.registerForm.get('picture')?.value,
+        role: 'PARENT',
+      };
 
-      // Add all form fields to FormData
-      Object.keys(this.registerForm.value).forEach((key) => {
-        const value = this.registerForm.get(key)?.value;
-        if (value !== null && value !== undefined) {
-          // Handle Date objects
-          if (value instanceof Date) {
-            formData.append(key, value.toISOString());
-          }
-          // Handle File objects
-          else if (key === 'picture' && value instanceof File) {
-            formData.append(key, value, value.name);
-          }
-          // Handle other values
-          else {
-            formData.append(key, value);
-          }
-        }
-      });
+      // Log the form data before dispatch
+      console.log('Submitting registration data:', userData);
 
-      this.authService.register(formData).subscribe({
-        next: () => {
-          this.router.navigate(['/auth/login']);
-        },
-        error: (error) => {
-          console.error('Registration failed:', error);
-        },
-      });
+      this.store.dispatch(AuthActions.register({ userData }));
     }
   }
 }

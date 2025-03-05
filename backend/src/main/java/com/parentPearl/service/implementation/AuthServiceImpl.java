@@ -29,6 +29,8 @@ import com.parentPearl.security.UserPrincipal;
 import com.parentPearl.security.TokenBlacklist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
+import com.parentPearl.service.interfaces.FileStorageService;
 
 @Service
 @RequiredArgsConstructor
@@ -42,18 +44,26 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
     private final AuthenticationConfiguration authConfig;
     private final UserMapper userMapper;
     private final TokenBlacklist tokenBlacklist;
+    private final FileStorageService fileStorageService;
     private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     @Override
-    public RegisterResponse register(AuthRequest request) {
+    public RegisterResponse register(AuthRequest request, MultipartFile file) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already registered");
+        }
+
+        String picturePath = null;
+        if (file != null && !file.isEmpty()) {
+            picturePath = fileStorageService.storeFile(file);
         }
 
         Parent parent = Parent.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .picture(picturePath)
+                .dateOfBirth(request.getDateOfBirth())
                 .role(Role.PARENT)
                 .build();
 

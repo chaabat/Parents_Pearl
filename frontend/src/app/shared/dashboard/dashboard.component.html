@@ -1,0 +1,200 @@
+<div class="dashboard-container min-h-screen bg-gray-50">
+    <!-- Dashboard Header -->
+    <div class="bg-white shadow">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-6">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p class="text-sm text-gray-500">Welcome back, {{ userName }}</p>
+          </div>
+          <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-500">{{ currentDate | date:'EEEE, MMMM d, y' }}</span>
+            <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="User menu">
+              <mat-icon>account_circle</mat-icon>
+            </button>
+            <mat-menu #userMenu="matMenu">
+              <button mat-menu-item>
+                <mat-icon>person</mat-icon>
+                <span>Profile</span>
+              </button>
+              <button mat-menu-item>
+                <mat-icon>settings</mat-icon>
+                <span>Settings</span>
+              </button>
+              <button mat-menu-item>
+                <mat-icon>exit_to_app</mat-icon>
+                <span>Logout</span>
+              </button>
+            </mat-menu>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Dashboard Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Admin Dashboard -->
+      <div *ngIf="userRole === 'ADMIN'" class="admin-dashboard">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <!-- Stats Cards -->
+          <mat-card class="stats-card">
+            <mat-card-content>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-500">Total Users</p>
+                  <h3 class="text-2xl font-bold">{{ totalUsers }}</h3>
+                </div>
+                <div class="bg-indigo-100 p-3 rounded-full">
+                  <mat-icon class="text-indigo-600">people</mat-icon>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+  
+          <mat-card class="stats-card">
+            <mat-card-content>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-500">Active Users</p>
+                  <h3 class="text-2xl font-bold">{{ activeUsers }}</h3>
+                </div>
+                <div class="bg-green-100 p-3 rounded-full">
+                  <mat-icon class="text-green-600">person</mat-icon>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+  
+          <mat-card class="stats-card">
+            <mat-card-content>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-500">Tasks Created</p>
+                  <h3 class="text-2xl font-bold">{{ tasksCreated }}</h3>
+                </div>
+                <div class="bg-blue-100 p-3 rounded-full">
+                  <mat-icon class="text-blue-600">assignment</mat-icon>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+  
+          <mat-card class="stats-card">
+            <mat-card-content>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-500">Rewards Redeemed</p>
+                  <h3 class="text-2xl font-bold">{{ rewardsRedeemed }}</h3>
+                </div>
+                <div class="bg-purple-100 p-3 rounded-full">
+                  <mat-icon class="text-purple-600">card_giftcard</mat-icon>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+  
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- User Management -->
+          <mat-card class="lg:col-span-2">
+            <mat-card-header>
+              <mat-card-title>User Management</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="p-4">
+              <div class="flex justify-between items-center mb-4">
+                <div class="flex space-x-2">
+                  <button mat-stroked-button color="primary">
+                    <mat-icon>add</mat-icon> Add User
+                  </button>
+                  <button mat-stroked-button>
+                    <mat-icon>filter_list</mat-icon> Filter
+                  </button>
+                </div>
+                <div>
+                  <button mat-stroked-button (click)="generateReport()">
+                    <mat-icon>download</mat-icon> Export
+                  </button>
+                </div>
+              </div>
+              
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                          <span class="text-indigo-600 font-medium">SJ</span>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-900">Sarah Johnson</div>
+                          <div class="text-sm text-gray-500">sarah@example.com</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                        Parent
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Active
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button mat-icon-button color="primary">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                          <span class="text-indigo-600 font-medium">EJ</span>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-900">Emma Johnson</div>
+                          <div class="text-sm text-gray-500">emma@example.com</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                        Child
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Active
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button mat-icon-button color="primary">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </mat-card-content>
+          </mat-card>
+  
+          <!-- System Status -->
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>System Stat

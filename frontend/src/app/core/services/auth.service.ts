@@ -20,11 +20,23 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
-  register(formData: FormData): Observable<any> {
+  register(userData: any): Observable<any> {
+    const formData = new FormData();
+    const userDataCopy = { ...userData };
+    
+    // Handle file separately
+    if (userDataCopy.picture) {
+      formData.append('file', userDataCopy.picture);
+      delete userDataCopy.picture;
+    }
+
+    // Add the rest as JSON string
+    formData.append('userData', JSON.stringify(userDataCopy));
+
     return this.http.post(`${this.apiUrl}/register`, formData);
   }
 
-  login(credentials: { email: string; password: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials);
+  login(email: string, password: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/login`, { email, password });
   }
 }
