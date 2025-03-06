@@ -19,7 +19,7 @@ export class AuthEffects {
             localStorage.setItem('user', JSON.stringify(response.user));
             return AuthActions.loginSuccess({
               user: response.user,
-              token: ''
+              token: '',
             });
           }),
           catchError((error) =>
@@ -34,10 +34,8 @@ export class AuthEffects {
     () =>
       this.actions$.pipe(
         ofType(AuthActions.loginSuccess),
-        tap(({ user }) => {
-          // Navigate based on user role
-          const route = user.role === 'PARENT' ? '/parent' : '/child';
-          this.router.navigate([route]);
+        tap(() => {
+          this.router.navigate(['/dashboard']);
         })
       ),
     { dispatch: false }

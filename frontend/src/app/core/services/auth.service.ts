@@ -16,17 +16,12 @@ export class AuthService {
   currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    // Check for existing token and user data on startup
+    // Initialize auth state from localStorage
     const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    if (token && userData) {
-      const user = JSON.parse(userData);
-      // Add the base URL to the picture path if it exists
-      if (user.picture) {
-        user.picture = `${this.baseUrl}/uploads/images/${user.picture}`;
-      }
+    const user = localStorage.getItem('user');
+    if (token && user) {
       this.isAuthenticatedSubject.next(true);
-      this.currentUserSubject.next(user);
+      this.currentUserSubject.next(JSON.parse(user));
     }
   }
 
