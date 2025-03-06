@@ -16,14 +16,16 @@ body {
 
 /* src/styles.css */
 :root {
-  /* Primary color (Orange) */
-  --mat-primary-color: #5a189a;
+  /* Primary colors (Purple to Blue gradient) */
+  --mat-primary-color: #3f0d71; /* Deep purple */
   --mat-primary-lighter-color: #9d4edd;
-
-  /* Accent color (Purple) */
+  --mat-primary-darker-color: #240046;
+  --mat-primary-gradient: linear-gradient(135deg, #3f0d71, #3c096c, #5a189a, #7b2cbf);
+  
+  /* Secondary/accent colors (Orange) */
   --mat-accent-color: #ff6d00;
   --mat-accent-lighter-color: #ff9e00;
-  --mat-accent-darker-color: #3c096c;
+  --mat-accent-darker-color: #e65100;
 
   /* Update Angular Material's CSS variables */
   --mdc-filled-button-container-color: var(--mat-primary-color);
@@ -31,6 +33,12 @@ body {
 
   --mdc-protected-button-container-color: var(--mat-accent-color);
   --mdc-protected-button-label-text-color: white;
+}
+
+/* Apply gradient background to specific elements */
+.gradient-bg {
+  background: var(--mat-primary-gradient);
+  color: white;
 }
 
 /* Apply to all Material buttons */
@@ -41,6 +49,12 @@ body {
 
 .mat-mdc-raised-button.mat-accent {
   background-color: var(--mat-accent-color) !important;
+  color: white !important;
+}
+
+/* Gradient button option */
+.mat-mdc-raised-button.gradient {
+  background: var(--mat-primary-gradient) !important;
   color: white !important;
 }
 

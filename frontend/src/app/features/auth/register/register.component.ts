@@ -15,6 +15,10 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { Store } from '@ngrx/store';
 import * as AuthActions from '../../../store/auth/auth.actions';
+import {
+  selectAuthError,
+  selectAuthLoading,
+} from '../../../store/auth/auth.selectors';
 
 interface FileEvent {
   target: HTMLInputElement;
@@ -48,20 +52,14 @@ export class RegisterComponent {
     private router: Router,
     private store: Store
   ) {
-    this.registerForm = this.fb.group(
-      {
-        name: ['', [Validators.required, Validators.minLength(3)]],
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
-        
-        dateOfBirth: ['', Validators.required],
-        picture: [null, [ this.fileValidator.bind(this)]],
-        role: ['PARENT'],
-      },
-      {
-        validators: this.passwordMatchValidator,
-      }
-    );
+    this.registerForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      dateOfBirth: ['', [Validators.required]],
+      picture: [null, [this.fileValidator.bind(this)]],
+      role: ['PARENT'],
+    });
   }
 
   private passwordMatchValidator(form: FormGroup) {
@@ -75,20 +73,17 @@ export class RegisterComponent {
   }
 
   private fileValidator(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) {
-      return null;
+    const file = control.value;
+    if (file) {
+      if (!this.allowedFileTypes.includes(file.type)) {
+        return {
+          invalidFile: 'Please upload a valid image file (JPEG, PNG, or GIF)',
+        };
+      }
+      if (file.size > this.maxFileSize) {
+        return { invalidFile: 'File size must be less than 5MB' };
+      }
     }
-
-    const file = control.value as File;
-
-    if (!this.allowedFileTypes.includes(file.type)) {
-      return { invalidType: true };
-    }
-
-    if (file.size > this.maxFileSize) {
-      return { invalidSize: true };
-    }
-
     return null;
   }
 

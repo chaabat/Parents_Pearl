@@ -8,7 +8,6 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-navbar',
   standalone: true,
   imports: [CommonModule, MaterialModule, RouterLink],
-  providers: [AuthService],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
 })
@@ -20,10 +19,10 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit() {
     this.authService.isAuthenticated$.subscribe(
-      (isAuth: boolean) => (this.isAuthenticated = isAuth)
+      (isAuth) => (this.isAuthenticated = isAuth)
     );
 
-    this.authService.currentUser$.subscribe((user: any) => (this.user = user));
+    this.authService.currentUser$.subscribe((user) => (this.user = user));
   }
 
   logout() {

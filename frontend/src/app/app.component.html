@@ -398,3 +398,6 @@
 </div>
 
 <router-outlet></router-outlet>
+
+<!-- Add footer here, with the same condition as the hero section -->
+<app-footer *ngIf="!isAuthRoute"></app-footer>

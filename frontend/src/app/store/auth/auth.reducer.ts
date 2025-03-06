@@ -4,44 +4,48 @@ import { initialAuthState } from './auth.state';
 
 export const authReducer = createReducer(
   initialAuthState,
-  
+
   on(AuthActions.login, (state) => ({
     ...state,
     loading: true,
-    error: null
+    error: null,
   })),
-  
-  on(AuthActions.loginSuccess, (state, { user, token }) => ({
+
+  on(AuthActions.loginSuccess, (state, { user }) => ({
     ...state,
     user,
-    token,
-    loading: false,
-    error: null
+    isAuthenticated: true,
+    error: null,
   })),
-  
+
   on(AuthActions.loginFailure, (state, { error }) => ({
     ...state,
     loading: false,
-    error
+    error,
   })),
-  
+
   on(AuthActions.register, (state) => ({
     ...state,
     loading: true,
-    error: null
+    error: null,
   })),
-  
+
   on(AuthActions.registerSuccess, (state) => ({
     ...state,
     loading: false,
-    error: null
+    error: null,
   })),
-  
+
   on(AuthActions.registerFailure, (state, { error }) => ({
     ...state,
     loading: false,
-    error
+    error,
   })),
-  
-  on(AuthActions.logout, () => initialAuthState)
-); 
+
+  on(AuthActions.logout, (state) => ({
+    ...state,
+    user: null,
+    isAuthenticated: false,
+    error: null,
+  }))
+);

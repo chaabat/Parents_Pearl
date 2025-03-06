@@ -1,6 +1,3 @@
-
-
-
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { AuthService } from '../../core/services/auth.service';
 import * as AuthActions from './auth.actions';
@@ -14,10 +11,20 @@ export class AuthEffects {
   login$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.login),
-      mergeMap(({ email, password }) =>
-        this.authService.login(email, password).pipe(
-          map((response) => AuthActions.loginSuccess(response)),
-          catchError((error) => of(AuthActions.loginFailure({ error })))
+      mergeMap((action) =>
+        this.authService.login(action.email, action.password).pipe(
+          map((response) => {
+            // Store token and user data
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+            return AuthActions.loginSuccess({
+              user: response.user,
+              token: ''
+            });
+          }),
+          catchError((error) =>
+            of(AuthActions.loginFailure({ error: error.message }))
+          )
         )
       )
     )
@@ -41,7 +48,9 @@ export class AuthEffects {
       ofType(AuthActions.register),
       mergeMap(({ userData }) =>
         this.authService.register(userData).pipe(
-          map((response) => AuthActions.registerSuccess({ message: response.message })),
+          map((response) =>
+            AuthActions.registerSuccess({ message: response.message })
+          ),
           catchError((error) => of(AuthActions.registerFailure({ error })))
         )
       )

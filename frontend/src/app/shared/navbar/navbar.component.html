@@ -1,9 +1,9 @@
 <mat-toolbar class="navbar" color="primary">
-  <div class="navbar-brand">
+  <div class="navbar-brand ">
     <button mat-icon-button [routerLink]="['/']">
-      <mat-icon>home</mat-icon>
+      <mat-icon class="white">home</mat-icon>
     </button>
-    <span class="brand-text">Parent Pearl</span>
+    <span class="brand-text ">Parent Pearl</span>
   </div>
 
   <span class="spacer"></span>
@@ -11,7 +11,7 @@
   <!-- Not authenticated -->
   <ng-container *ngIf="!isAuthenticated">
     <button mat-button [routerLink]="['/auth/login']" class="auth-button">
-      <mat-icon>login</mat-icon>
+      <mat-icon class="accent">login</mat-icon>
       <span>Login</span>
     </button>
     <button
