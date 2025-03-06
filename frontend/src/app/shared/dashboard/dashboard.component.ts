@@ -9,7 +9,7 @@ import { CustomDatePipe } from '../../pipe/date.pipe';
   standalone: true,
   imports: [CommonModule, MaterialModule, CustomDatePipe],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css',
+  styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
   userName: string = '';
@@ -29,6 +29,7 @@ export class DashboardComponent implements OnInit {
       if (user) {
         this.userName = user.name;
         this.userRole = user.role;
+        console.log('Current user:', user); // Add this for debugging
       }
     });
   }
