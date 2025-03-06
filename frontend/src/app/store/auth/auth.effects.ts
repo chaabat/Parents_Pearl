@@ -14,11 +14,12 @@ export class AuthEffects {
       mergeMap((action) =>
         this.authService.login(action.email, action.password).pipe(
           map((response) => {
+            // Store token and user data
             localStorage.setItem('token', response.token);
             localStorage.setItem('user', JSON.stringify(response.user));
             return AuthActions.loginSuccess({
               user: response.user,
-              token: response.token,
+              token: '',
             });
           }),
           catchError((error) =>

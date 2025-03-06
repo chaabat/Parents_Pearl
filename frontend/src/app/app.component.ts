@@ -16,7 +16,7 @@ import { filter } from 'rxjs/operators';
     MaterialModule,
     NavbarComponent,
     FooterComponent,
-    HomeComponent
+    HomeComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',

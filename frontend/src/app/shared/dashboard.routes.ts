@@ -7,5 +7,5 @@ export const DASHBOARD_ROUTES: Routes = [
     path: '',
     component: DashboardComponent,
     canActivate: [AuthGuard],
-  }
+  },
 ];
