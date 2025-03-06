@@ -35,21 +35,24 @@ public class AuthController {
     private final UserRepository userRepository;
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-public ResponseEntity<RegisterResponse> register(
-    @RequestPart("userData") String userDataJson,
-    @RequestPart("file") MultipartFile file
-) {
-    try {
-        log.debug("Received userData: {}", userDataJson);
-        ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule());
-        AuthRequest request = objectMapper.readValue(userDataJson, AuthRequest.class);
-        return ResponseEntity.ok(authService.register(request, file));
-    } catch (Exception e) {
-        log.error("Registration error", e);
-        throw new RuntimeException("Error processing registration: " + e.getMessage());
+    public ResponseEntity<RegisterResponse> register(
+        @RequestPart("userData") String userDataJson,
+        @RequestPart(value = "file", required = false) MultipartFile file  // Make file optional
+    ) {
+        try {
+            log.debug("Received userData: {}", userDataJson);
+            log.debug("Received file: {}", file != null ? file.getOriginalFilename() : "no file");
+            
+            ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule());
+            AuthRequest request = objectMapper.readValue(userDataJson, AuthRequest.class);
+            
+            return ResponseEntity.ok(authService.register(request, file));
+        } catch (Exception e) {
+            log.error("Registration error", e);
+            throw new RuntimeException("Error processing registration: " + e.getMessage());
+        }
     }
-}
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {

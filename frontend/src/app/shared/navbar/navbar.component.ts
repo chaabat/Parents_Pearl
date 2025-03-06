@@ -14,6 +14,8 @@ import { AuthService } from '../../core/services/auth.service';
 export class NavbarComponent implements OnInit {
   isAuthenticated = false;
   user: any = null;
+  defaultImage =
+    'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741258917/uulqrw1ytrup4txl8abb.png';
 
   constructor(private authService: AuthService, private router: Router) {}
 
@@ -22,7 +24,14 @@ export class NavbarComponent implements OnInit {
       (isAuth) => (this.isAuthenticated = isAuth)
     );
 
-    this.authService.currentUser$.subscribe((user) => (this.user = user));
+    this.authService.currentUser$.subscribe((user) => {
+      this.user = user;
+      console.log('User picture:', user?.picture);
+    });
+  }
+
+  getProfileImage(): string {
+    return this.user?.picture || this.defaultImage;
   }
 
   logout() {

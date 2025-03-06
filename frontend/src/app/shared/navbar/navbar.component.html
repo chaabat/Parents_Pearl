@@ -1,9 +1,9 @@
 <mat-toolbar class="navbar" color="primary">
-  <div class="navbar-brand ">
+  <div class="navbar-brand">
     <button mat-icon-button [routerLink]="['/']">
       <mat-icon class="white">home</mat-icon>
     </button>
-    <span class="brand-text ">Parent Pearl</span>
+    <span class="brand-text">Parent Pearl</span>
   </div>
 
   <span class="spacer"></span>
@@ -32,12 +32,8 @@
         <div class="profile-content">
           <div
             class="avatar"
-            [style.background-image]="
-              user?.picture ? 'url(' + user.picture + ')' : ''
-            "
-          >
-            <mat-icon *ngIf="!user?.picture">account_circle</mat-icon>
-          </div>
+            [style.background-image]="'url(' + getProfileImage() + ')'"
+          ></div>
           <span class="username">{{ user?.name || "User" }}</span>
           <mat-icon>arrow_drop_down</mat-icon>
         </div>
@@ -49,10 +45,7 @@
         <mat-icon>person</mat-icon>
         <span>Profile</span>
       </button>
-      <button mat-menu-item [routerLink]="['/settings']">
-        <mat-icon>settings</mat-icon>
-        <span>Settings</span>
-      </button>
+
       <mat-divider></mat-divider>
       <button mat-menu-item (click)="logout()">
         <mat-icon>exit_to_app</mat-icon>
