@@ -57,7 +57,7 @@ export class AuthService {
       map((response: any) => {
         // Add the base URL to the picture path if it exists
         if (response.user.picture) {
-          response.user.picture = `${this.baseUrl}/uploads/images/${response.user.picture}`;
+          response.user.picture = `${environment.apiUrl}/uploads/images/${response.user.picture}`;
         }
         return response;
       }),

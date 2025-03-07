@@ -30,6 +30,7 @@ export class MainLayoutComponent implements OnInit {
     const userStr = localStorage.getItem('user');
     if (userStr) {
       const user = JSON.parse(userStr);
+      this.user = user;
       this.userRole = user.role;
     }
   }
@@ -39,12 +40,21 @@ export class MainLayoutComponent implements OnInit {
       if (user) {
         this.user = user;
         this.userRole = user.role;
-        console.log('Current user role:', this.userRole); // Debug log
+        console.log('Current user role:', this.userRole);
       }
     });
   }
 
   toggleSidebar() {
     this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  handleImageError(event: any) {
+    event.target.style.display = 'none';
+    // Show icon instead
+    const icon = event.target.nextElementSibling;
+    if (icon) {
+      icon.style.display = 'block';
+    }
   }
 }

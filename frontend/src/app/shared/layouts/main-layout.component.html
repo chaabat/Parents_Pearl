@@ -10,7 +10,7 @@
         <!-- Left side with toggle and title -->
         <div class="flex items-center">
           <button mat-icon-button (click)="toggleSidebar()" class="mr-4">
-            <mat-icon>{{ sidebarOpen ? 'menu_open' : 'menu' }}</mat-icon>
+            <mat-icon>{{ sidebarOpen ? "menu_open" : "menu" }}</mat-icon>
           </button>
           <h1 class="text-xl font-semibold text-gray-900">Dashboard</h1>
         </div>
@@ -18,7 +18,9 @@
         <div class="flex items-center space-x-4">
           <div class="flex items-center">
             <mat-icon class="text-accent mr-2">verified_user</mat-icon>
-            <span class="text-sm font-medium text-gray-700">{{ userRole }}</span>
+            <span class="text-sm font-medium text-gray-700">{{
+              userRole
+            }}</span>
           </div>
 
           <!-- Points display for CHILD -->
