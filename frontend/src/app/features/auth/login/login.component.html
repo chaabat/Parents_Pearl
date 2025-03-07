@@ -1,10 +1,20 @@
 <div
-  class="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-200 flex items-center justify-center p-4"
+  class="min-h-screen flex items-center justify-center p-4"
+  style="
+    background-image: url('https://res.cloudinary.com/dlwyetxjd/image/upload/v1741169930/iplsv6boxpppfb0rldxv.jpg');
+    background-size: cover;
+    background-position: center;
+  "
 >
   <div class="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden">
     <!-- Logo and Header -->
     <div
-      class="bg-primary-600 p-6 text-center bg-gradient-to-r from-purple-500 to-indigo-600"
+      class="p-6 text-center"
+      style="
+        background-image: url('https://res.cloudinary.com/dlwyetxjd/image/upload/v1741190272/z63tyzvmi1ffocivntkw.jpg');
+        background-size: cover;
+        background-position: center;
+      "
     >
       <h1 class="text-2xl font-bold text-white mb-2">
         Welcome to Parent Pearl
@@ -57,13 +67,27 @@
           </mat-error>
         </mat-form-field>
 
+        <!-- Error Message Display -->
+        <div
+          *ngIf="error$ | async as error"
+          class="bg-red-50 text-red-700 p-3 rounded-md mb-4 text-center text-sm"
+        >
+          <mat-icon class="align-middle mr-1">error_outline</mat-icon>
+          {{ error }}
+        </div>
+
+        <!-- Loading Spinner -->
+        <div *ngIf="loading$ | async" class="flex justify-center my-4">
+          <mat-spinner diameter="30"></mat-spinner>
+        </div>
+
         <!-- Submit Button -->
         <button
           mat-raised-button
-          color="accent"
+          color="primary"
           type="submit"
           class="w-full py-3 text-lg font-medium submit-button"
-          [disabled]="!loginForm.valid"
+          [disabled]="!loginForm.valid || (loading$ | async)"
         >
           <mat-icon class="accent">login</mat-icon>
           Sign In
@@ -76,7 +100,7 @@
           Don't have an account?
           <a
             routerLink="/auth/register"
-            class="text-primary-600 hover:text-primary-700 font-medium"
+            class="text-primary-600 hover:text-accent font-medium"
           >
             Register here
           </a>

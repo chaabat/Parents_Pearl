@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../shared/material.module';
 import {
@@ -38,13 +38,16 @@ interface FileEvent {
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit, OnDestroy {
   registerForm: FormGroup;
   hidePassword = true;
   imagePreview: string | null = null;
   defaultImage = 'assets/images/default-avatar.png';
   maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
   allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif'];
+  errorMessage: string = '';
+  loading$ = this.store.select(selectAuthLoading);
+  error$ = this.store.select(selectAuthError);
 
   constructor(
     private fb: FormBuilder,
@@ -60,6 +63,16 @@ export class RegisterComponent {
       picture: [null, [this.fileValidator.bind(this)]],
       role: ['PARENT'],
     });
+  }
+
+  ngOnInit(): void {
+    // Clear any existing errors when component initializes
+    this.store.dispatch(AuthActions.clearError());
+  }
+
+  ngOnDestroy() {
+    // Clear errors when component is destroyed
+    this.store.dispatch(AuthActions.clearError());
   }
 
   private passwordMatchValidator(form: FormGroup) {
@@ -142,18 +155,21 @@ export class RegisterComponent {
 
   onSubmit(): void {
     if (this.registerForm.valid) {
-      const formValue = this.registerForm.value;
-      const userData = {
-        ...formValue,
-        dateOfBirth: formValue.dateOfBirth?.toISOString(),
-        picture: this.registerForm.get('picture')?.value,
-        role: 'PARENT',
-      };
-
-      // Log the form data before dispatch
+      // Clear any previous errors before attempting registration
+      this.store.dispatch(AuthActions.clearError());
+      const userData = this.prepareFormData();
       console.log('Submitting registration data:', userData);
-
       this.store.dispatch(AuthActions.register({ userData }));
     }
+  }
+
+  private prepareFormData(): any {
+    const formValue = this.registerForm.value;
+    return {
+      ...formValue,
+      dateOfBirth: formValue.dateOfBirth?.toISOString(),
+      picture: this.registerForm.get('picture')?.value,
+      role: 'PARENT',
+    };
   }
 }

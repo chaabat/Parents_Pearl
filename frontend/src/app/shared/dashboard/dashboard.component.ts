@@ -1,46 +1,37 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../material.module';
-import { AuthService } from '../../core/services/auth.service';
+import { RouterModule } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { selectUser } from '../../store/auth/auth.selectors';
+import { SidebarComponent } from '../sidebar/sidebar.component';
 import { CustomDatePipe } from '../../pipe/date.pipe';
-import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, MaterialModule, CustomDatePipe, RouterModule],
+  imports: [
+    CommonModule,
+    MaterialModule,
+    RouterModule,
+    SidebarComponent,
+    CustomDatePipe,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
 })
 export class DashboardComponent implements OnInit {
-  userName: string = '';
-  userRole: string = '';
   currentDate = new Date();
-  sidebarOpen: boolean = true;
+  userRole: string | undefined;
+  user$ = this.store.select(selectUser);
   user: any;
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(private store: Store) {}
 
   ngOnInit() {
-    this.authService.currentUser$.subscribe((user) => {
-      if (user) {
-        this.userName = user.name;
-        this.userRole = user.role;
-        this.user = user;
-        console.log('Current user:', user);
-      }
+    this.user$.subscribe((user) => {
+      this.user = user;
+      this.userRole = user?.role;
     });
-  }
-
-  toggleSidebar(): void {
-    this.sidebarOpen = !this.sidebarOpen;
-  }
-
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 }

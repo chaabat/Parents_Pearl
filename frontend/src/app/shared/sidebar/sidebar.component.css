@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.accent {
+  color: #7b2cbf;
+}
+
+.white {
+  color: white;
+}

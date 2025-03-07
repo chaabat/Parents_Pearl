@@ -1,1 +1,120 @@
-<p>children works!</p>
+<div class="p-6">
+  <!-- Header Section -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Children Management</h1>
+    <button mat-raised-button color="primary" (click)="openAddChildDialog()">
+      <mat-icon>add</mat-icon>
+      Add Child
+    </button>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading$ | async" class="flex justify-center my-8">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Error Message -->
+  <mat-card *ngIf="error$ | async as error" class="mb-6 bg-red-50">
+    <mat-card-content class="text-red-600">
+      {{ error }}
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Children Grid -->
+  <div
+    *ngIf="children$ | async as children"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+  >
+    <mat-card
+      *ngFor="let child of children"
+      class="hover:shadow-lg transition-shadow"
+    >
+      <!-- Child Header -->
+      <mat-card-header>
+        <div mat-card-avatar>
+          <img
+            [src]="child.picture || 'assets/images/default-avatar.png'"
+            [alt]="child.name"
+            class="w-10 h-10 rounded-full object-cover"
+          />
+        </div>
+        <mat-card-title>{{ child.name }}</mat-card-title>
+        <mat-card-subtitle>Points: {{ child.totalPoints }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <!-- Child Content -->
+      <mat-card-content class="p-4">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="text-sm text-gray-600">
+            <div>Tasks: {{ child.tasks ? child.tasks.length : 0 }}</div>
+          </div>
+          <div class="text-sm text-gray-600">
+            <div>
+              Points History: {{ child.points ? child.points.length : 0 }}
+            </div>
+            <div>
+              Rewards Redeemed:
+              {{ child.rewardRedemptions ? child.rewardRedemptions.length : 0 }}
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <!-- Action Buttons -->
+      <mat-card-actions class="flex justify-end p-4">
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="menu"
+          aria-label="Child actions"
+        >
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="editChild(child)">
+            <mat-icon>edit</mat-icon>
+            <span>Edit Profile</span>
+          </button>
+          <button mat-menu-item (click)="managePoints(child)">
+            <mat-icon>stars</mat-icon>
+            <span>Manage Points</span>
+          </button>
+          <button mat-menu-item (click)="viewTasks(child)">
+            <mat-icon>assignment</mat-icon>
+            <span>View Tasks</span>
+          </button>
+          <button mat-menu-item (click)="viewPointHistory(child)">
+            <mat-icon>history</mat-icon>
+            <span>Point History</span>
+          </button>
+          <button
+            mat-menu-item
+            class="text-red-600"
+            (click)="deleteChild(child)"
+          >
+            <mat-icon class="text-red-600">delete</mat-icon>
+            <span>Delete</span>
+          </button>
+        </mat-menu>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="(children$ | async)?.length === 0" class="text-center py-12">
+    <mat-icon class="text-6xl text-gray-400">child_care</mat-icon>
+    <h2 class="text-xl font-semibold text-gray-600 mt-4">
+      No Children Added Yet
+    </h2>
+    <p class="text-gray-500 mt-2">
+      Start by adding your first child to manage their tasks and rewards.
+    </p>
+    <button
+      mat-raised-button
+      color="primary"
+      class="mt-4"
+      (click)="openAddChildDialog()"
+    >
+      Add Your First Child
+    </button>
+  </div>
+</div>

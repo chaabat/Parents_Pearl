@@ -1,7 +1,7 @@
 <div
-  class="min-h-screen flex items-center justify-center p-4"
+  class="h-screen flex items-center justify-center p-4"
   style="
-    background-image: url('https://res.cloudinary.com/dlwyetxjd/image/upload/v1741190272/z63tyzvmi1ffocivntkw.jpg');
+    background-image: url('https://res.cloudinary.com/dlwyetxjd/image/upload/v1741169930/iplsv6boxpppfb0rldxv.jpg');
     background-size: cover;
     background-position: center;
   "
@@ -9,18 +9,17 @@
   <div class="max-w-2xl w-full bg-white rounded-xl shadow-lg overflow-hidden">
     <!-- Header -->
     <div
-      class="  p-8 text-center "
+      class="p-4 text-center"
       style="
-    background-image: url('https://res.cloudinary.com/dlwyetxjd/image/upload/v1741190278/lx26ydvthzn0kfdcqndz.png');
-    background-size: cover;
-    background-position: center;
-  "
+        background-image: url('https://res.cloudinary.com/dlwyetxjd/image/upload/v1741190272/z63tyzvmi1ffocivntkw.jpg');
+        background-size: cover;
+        background-position: center;
+      "
     >
-      <div class="mb-6 relative mx-auto w-36 h-36">
+      <div class="mb-4 relative mx-auto w-28 h-28">
         <div
-          class="w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-lg"
+          class="w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg"
         >
-          <!-- Image Preview -->
           <img
             [src]="
               imagePreview ||
@@ -43,7 +42,7 @@
         <!-- Add Camera Button -->
         <button
           mat-mini-fab
-          color="primary"
+          color="white"
           class="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4"
           (click)="fileInput.click()"
           type="button"
@@ -58,8 +57,21 @@
       class="text-center mb-4"
       *ngIf="registerForm.get('picture')?.hasError('invalidFile')"
     >
-      Please upload a valid image file (max 5MB)
+      Please upload a valid image file (max 10MB)
     </mat-error>
+
+    <!-- Parenting Message -->
+    <div class="text-center px-8 pb-4 mt-4">
+      <p class="text-gray-600 italic">
+        "Being a parent means guiding your child with love, wisdom, and
+        patience. Register today to start your journey of raising the next
+        generation with care and dedication."
+      </p>
+      <p class="text-red-600 font-medium mt-2">
+        Note: You must be 18 years or older to register. If you're under 18,
+        please have a parent or guardian register on your behalf.
+      </p>
+    </div>
 
     <!-- Registration Form -->
     <div class="p-8">
@@ -154,13 +166,27 @@
 
         <!-- Date of Birth with consistent styling -->
 
+        <!-- Error Message Display -->
+        <div
+          *ngIf="error$ | async as error"
+          class="bg-red-50 text-red-700 p-3 rounded-md mb-4 text-center text-sm"
+        >
+          <mat-icon class="align-middle mr-1">error_outline</mat-icon>
+          {{ error }}
+        </div>
+
+        <!-- Loading Spinner -->
+        <div *ngIf="loading$ | async" class="flex justify-center my-4">
+          <mat-spinner diameter="30"></mat-spinner>
+        </div>
+
         <!-- Submit Button with better spacing -->
         <button
           mat-raised-button
           color="primary"
           type="submit"
           class="w-full py-3 text-lg font-medium mt-6"
-          [disabled]="!registerForm.valid"
+          [disabled]="!registerForm.valid || (loading$ | async)"
         >
           <mat-icon class="mr-2">how_to_reg</mat-icon>
           Register

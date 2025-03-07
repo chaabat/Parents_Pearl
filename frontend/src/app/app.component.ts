@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, Event, NavigationEnd } from '@angular/router';
 import { MaterialModule } from './shared/material.module';
 import { NavbarComponent } from './shared/navbar/navbar.component';
-import { FooterComponent } from './shared/footer/footer.component';
+
 import { HomeComponent } from './features/home/home.component';
 import { filter } from 'rxjs/operators';
 
@@ -15,7 +15,7 @@ import { filter } from 'rxjs/operators';
     RouterOutlet,
     MaterialModule,
     NavbarComponent,
-    FooterComponent,
+    
     HomeComponent,
   ],
   templateUrl: './app.component.html',

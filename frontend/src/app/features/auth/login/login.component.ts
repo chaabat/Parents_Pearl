@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../shared/material.module';
 import {
@@ -24,11 +24,12 @@ import {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit, OnDestroy {
   loginForm: FormGroup;
   hidePassword = true;
   loading$ = this.store.select(selectAuthLoading);
   error$ = this.store.select(selectAuthError);
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -42,8 +43,20 @@ export class LoginComponent {
     });
   }
 
+  ngOnInit() {
+    // Clear any existing errors when component initializes
+    this.store.dispatch(AuthActions.clearError());
+  }
+
+  ngOnDestroy() {
+    // Clear errors when component is destroyed
+    this.store.dispatch(AuthActions.clearError());
+  }
+
   onSubmit(): void {
     if (this.loginForm.valid) {
+      // Clear any previous errors before attempting login
+      this.store.dispatch(AuthActions.clearError());
       const { email, password } = this.loginForm.value;
       this.store.dispatch(AuthActions.login({ email, password }));
     }
