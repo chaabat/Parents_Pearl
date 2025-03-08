@@ -52,21 +52,35 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/register`, formData);
   }
 
-  login(email: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, { email, password }).pipe(
-      map((response: any) => {
-        // Add the base URL to the picture path if it exists
-        if (response.user.picture) {
-          response.user.picture = `${environment.apiUrl}/uploads/images/${response.user.picture}`;
+ // auth.service.ts
+login(email: string, password: string): Observable<any> {
+  return this.http
+    .post<any>(`${environment.apiUrl}/auth/login`, { email, password })
+    .pipe(
+      tap((response) => {
+        console.log('Login response in service:', response);
+        
+        // Check for token in different possible properties
+        const token = response.token || response.accessToken || response.jwt;
+        
+        if (token) {
+          console.log('Storing token in service:', token);
+          localStorage.setItem('token', token);
+          this.isAuthenticatedSubject.next(true);
+          
+          // Store user if available
+          if (response.user) {
+            localStorage.setItem('user', JSON.stringify(response.user));
+            this.currentUserSubject.next(response.user);
+          }
+        } else {
+          console.error('No token found in response in service:', response);
         }
-        return response;
-      }),
-      tap((response: any) => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
-        this.isAuthenticatedSubject.next(true);
-        this.currentUserSubject.next(response.user);
       })
     );
+}
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 }

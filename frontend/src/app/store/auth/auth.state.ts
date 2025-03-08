@@ -8,6 +8,7 @@ export interface AuthState {
     tasks?: any[];
     rewardRedemptions?: any[];
   } | null;
+  token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -15,6 +16,7 @@ export interface AuthState {
 
 export const initialAuthState: AuthState = {
   user: null,
+  token: null,
   isAuthenticated: false,
   loading: false,
   error: null

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Child, Task, Reward, Point, Parent } from '../models';
@@ -14,9 +14,7 @@ export class ParentService {
 
   // Profile Management
   getParentProfile(parentId: number): Observable<Parent> {
-    return this.http.get<Parent>(
-      `${this.apiUrl}/parents/${parentId}/profile`
-    );
+    return this.http.get<Parent>(`${this.apiUrl}/parents/${parentId}`);
   }
 
   updateParentProfile(
@@ -24,33 +22,38 @@ export class ParentService {
     profileData: Partial<Parent>
   ): Observable<Parent> {
     return this.http.put<Parent>(
-      `${this.apiUrl}/parents/${parentId}/profile`,
+      `${this.apiUrl}/parents/${parentId}`,
       profileData
     );
   }
 
-  // Children Management
-  getMyChildren(parentId: number): Observable<Child[]> {
-    return this.http.get<Child[]>(
-      `${this.apiUrl}/parents/${parentId}/children`
-    );
-  }
-
-  addChild(parentId: number, childData: Partial<Child>): Observable<Child> {
-    return this.http.post<Child>(
-      `${this.apiUrl}/parents/${parentId}/children`,
-      childData
-    );
-  }
+ // parent.service.ts
+getMyChildren(parentId: number): Observable<Child[]> {
+  const token = localStorage.getItem('token');
+  console.log('Service - Token when fetching children:', token);
+  
+  // Create explicit headers
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  });
+  
+  console.log('Service - Headers:', headers);
+  
+  return this.http.get<Child[]>(
+    `${this.apiUrl}/parents/${parentId}/children`,
+    { headers: headers }
+  );
+}
 
   updateChild(
     parentId: number,
     childId: number,
-    childData: Partial<Child>
+    child: Partial<Child>
   ): Observable<Child> {
     return this.http.put<Child>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}`,
-      childData
+      child
     );
   }
 
@@ -64,11 +67,11 @@ export class ParentService {
   createTask(
     parentId: number,
     childId: number,
-    taskData: Partial<Task>
+    task: Partial<Task>
   ): Observable<Task> {
     return this.http.post<Task>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks`,
-      taskData
+      task
     );
   }
 
@@ -76,11 +79,11 @@ export class ParentService {
     parentId: number,
     childId: number,
     taskId: number,
-    taskData: Partial<Task>
+    task: Partial<Task>
   ): Observable<Task> {
     return this.http.put<Task>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks/${taskId}`,
-      taskData
+      task
     );
   }
 
@@ -95,6 +98,24 @@ export class ParentService {
   }
 
   // Points Management
+  updateChildPoints(
+    parentId: number,
+    childId: number,
+    points: number,
+    reason: string
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/parents/${parentId}/children/${childId}/points`,
+      { points, reason }
+    );
+  }
+
+  getChildPointHistory(parentId: number, childId: number): Observable<Point[]> {
+    return this.http.get<Point[]>(
+      `${this.apiUrl}/parents/${parentId}/children/${childId}/points/child-history`
+    );
+  }
+
   awardPoints(
     parentId: number,
     childId: number,
@@ -107,45 +128,28 @@ export class ParentService {
     );
   }
 
-  getChildPointHistory(
-    parentId: number,
-    childId: number
-  ): Observable<Point[]> {
-    return this.http.get<Point[]>(
-      `${this.apiUrl}/points/parents/${parentId}/children/${childId}/points/history`
-    );
-  }
-
-  updateChildPoints(
-    parentId: number,
-    childId: number,
-    points: number
-  ): Observable<Child> {
-    return this.http.put<Child>(
-      `${this.apiUrl}/parents/${parentId}/children/${childId}/points`,
-      { points }
-    );
-  }
-
   // Rewards Management
-  createReward(
-    parentId: number,
-    rewardData: Partial<Reward>
-  ): Observable<Reward> {
+  createReward(parentId: number, reward: Partial<Reward>): Observable<Reward> {
     return this.http.post<Reward>(
       `${this.apiUrl}/parents/${parentId}/rewards`,
-      rewardData
+      reward
     );
   }
 
   updateReward(
     parentId: number,
     rewardId: number,
-    rewardData: Partial<Reward>
+    reward: Partial<Reward>
   ): Observable<Reward> {
     return this.http.put<Reward>(
       `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`,
-      rewardData
+      reward
+    );
+  }
+
+  deleteReward(parentId: number, rewardId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`
     );
   }
 
@@ -155,9 +159,17 @@ export class ParentService {
     );
   }
 
-  deleteReward(parentId: number, rewardId: number): Observable<void> {
-    return this.http.delete<void>(
-      `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`
+  addChild(parentId: number, child: any): Observable<Child> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<Child>(
+      `${this.apiUrl}/parents/${parentId}/children`,
+      child,
+      { headers }
     );
   }
 }

@@ -35,7 +35,17 @@ export const loadChildrenSuccess = createAction(
 
 export const addChild = createAction(
   '[Parent] Add Child',
-  props<{ parentId: number; child: Partial<Child> }>()
+  props<{ parentId: number; child: any }>()
+);
+
+export const addChildSuccess = createAction(
+  '[Parent] Add Child Success',
+  props<{ child: Child }>()
+);
+
+export const addChildFailure = createAction(
+  '[Parent] Add Child Failure',
+  props<{ error: any }>()
 );
 
 export const updateChild = createAction(

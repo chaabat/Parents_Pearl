@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import * as AuthActions from '../../../store/auth/auth.actions';
+import * as AuthSelectors from '../../../store/auth/auth.selectors';
 import {
   selectAuthError,
   selectAuthLoading,
@@ -55,10 +56,50 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      // Clear any previous errors before attempting login
-      this.store.dispatch(AuthActions.clearError());
-      const { email, password } = this.loginForm.value;
-      this.store.dispatch(AuthActions.login({ email, password }));
+      const credentials = this.loginForm.value;
+
+      this.store.dispatch(
+        AuthActions.login({
+          email: credentials.email,
+          password: credentials.password,
+        })
+      );
+
+      // Subscribe to auth state to handle token storage
+      this.store.select(AuthSelectors.selectAuthState).subscribe({
+        next: (authState) => {
+          if (authState.token) {
+            console.log('Storing token:', authState.token); // Debug log
+            localStorage.setItem('token', authState.token);
+          }
+          if (authState.error) {
+            console.error('Login error:', authState.error);
+          }
+        },
+        error: (error) => console.error('Auth state error:', error),
+      });
     }
   }
+
+  // login.component.ts
+login() {
+  // Your existing login code
+  this.store.dispatch(AuthActions.login({ 
+    email: this.loginForm.value.email, 
+    password: this.loginForm.value.password 
+  }));
+  
+  // Add this subscription to see the response
+  this.authService.login(this.loginForm.value.email, this.loginForm.value.password)
+    .subscribe(response => {
+      console.log('Direct login response:', response);
+      console.log('Token in response:', response.token);
+      
+      // Check if token is stored
+      setTimeout(() => {
+        const storedToken = localStorage.getItem('token');
+        console.log('Token in localStorage after login:', storedToken);
+      }, 1000);
+    });
+}
 }

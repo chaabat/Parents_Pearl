@@ -8,77 +8,58 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class AuthEffects {
-  login$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(AuthActions.login),
-      mergeMap(({ email, password }) =>
-        this.authService.login(email, password).pipe(
-          map((response) => {
-            // Store token and user data
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('user', JSON.stringify(response.user));
-            return AuthActions.loginSuccess({
-              user: response.user,
-              token: response.token,
-            });
-          }),
-          catchError((error) => {
-            let errorMessage =
-              '🤔 Oops! Something went wrong while trying to log you in.';
-
-            // First check the error message from the backend
-            if (error.error?.message) {
-              if (
-                error.error.message.includes('User not found') ||
-                error.error.message.includes('Utilisateur non trouvé')
-              ) {
-                errorMessage =
-                  "👤 We couldn't find an account with this email. Please check your email or create a new account.";
-              } else if (
-                error.error.message.includes('Invalid password') ||
-                error.error.message.includes('Mot de passe incorrect')
-              ) {
-                errorMessage =
-                  '🔐 The password you entered is incorrect. Please try again.';
-              } else if (
-                error.error.message.includes('Account locked') ||
-                error.error.message.includes('Compte bloqué')
-              ) {
-                errorMessage =
-                  '🚫 Your account has been temporarily locked. Please contact support.';
-              } else {
-                // If it's another backend message, use it directly
-                errorMessage = `⚠️ ${error.error.message}`;
-              }
-            } else {
-              // Fallback to HTTP status codes if no specific message
-              switch (error.status) {
-                case 400:
-                  errorMessage =
-                    '📝 Please check your login details and try again.';
-                  break;
-                case 429:
-                  errorMessage =
-                    '⏳ Too many attempts. Please wait a few minutes before trying again.';
-                  break;
-                case 500:
-                  errorMessage = '🛠️ Server error. Please try again later.';
-                  break;
-              }
-            }
-
-            return of(AuthActions.loginFailure({ error: errorMessage }));
-          })
-        )
+  // auth.effects.ts
+login$ = createEffect(() =>
+  this.actions$.pipe(
+    ofType(AuthActions.login),
+    mergeMap(({ email, password }) =>
+      this.authService.login(email, password).pipe(
+        map((response) => {
+          console.log('Login response in effect:', response);
+          
+          // Make sure we're getting the token from the right property
+          const token = response.token || response.accessToken || response.jwt;
+          
+          if (token) {
+            console.log('Storing token:', token);
+            localStorage.setItem('token', token);
+            
+            // Verify it was stored
+            const storedToken = localStorage.getItem('token');
+            console.log('Verified token in storage:', storedToken);
+          } else {
+            console.error('No token found in response:', response);
+          }
+          
+          return AuthActions.loginSuccess({
+            user: response.user || response,
+            token: token
+          });
+        }),
+        catchError((error) => {
+          console.error('Login error:', error);
+          return of(AuthActions.loginFailure({ error: error.message || 'Login failed' }));
+        })
       )
     )
-  );
+  )
+);
 
   loginSuccess$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.loginSuccess),
-        tap(() => {
+        tap((action) => {
+          // Ensure token is saved
+          if (action.token) {
+            console.log('Saving token after login success:', action.token);
+            localStorage.setItem('token', action.token);
+            
+            // IMPORTANT: Also save the user data
+            if (action.user) {
+              localStorage.setItem('user', JSON.stringify(action.user));
+            }
+          }
           this.router.navigate(['/dashboard']);
         })
       ),
@@ -146,6 +127,19 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(AuthActions.registerSuccess),
         tap(() => this.router.navigate(['/auth/login']))
+      ),
+    { dispatch: false }
+  );
+
+  logout$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(AuthActions.logout),
+        tap(() => {
+          // Clear token on logout
+          localStorage.removeItem('token');
+          this.router.navigate(['/auth/login']);
+        })
       ),
     { dispatch: false }
   );

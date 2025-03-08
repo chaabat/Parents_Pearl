@@ -2,22 +2,23 @@
   <!-- Header Section -->
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-gray-800">Children Management</h1>
-    <button mat-raised-button color="primary" (click)="openAddChildDialog()">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="openAddChildDialog(addChildDialog)"
+    >
       <mat-icon>add</mat-icon>
       Add Child
     </button>
   </div>
 
-  <!-- Loading Spinner -->
+  <!-- Loading & Error States -->
   <div *ngIf="loading$ | async" class="flex justify-center my-8">
     <mat-spinner diameter="40"></mat-spinner>
   </div>
 
-  <!-- Error Message -->
   <mat-card *ngIf="error$ | async as error" class="mb-6 bg-red-50">
-    <mat-card-content class="text-red-600">
-      {{ error }}
-    </mat-card-content>
+    <mat-card-content class="text-red-600">{{ error }}</mat-card-content>
   </mat-card>
 
   <!-- Children Grid -->
@@ -29,52 +30,60 @@
       *ngFor="let child of children"
       class="hover:shadow-lg transition-shadow"
     >
-      <!-- Child Header -->
-      <mat-card-header>
-        <div mat-card-avatar>
+      <mat-card-header class="pb-4">
+        <div mat-card-avatar class="relative">
           <img
-            [src]="child.picture || 'assets/images/default-avatar.png'"
+            [src]="
+              child.picture ||
+              'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
+            "
             [alt]="child.name"
-            class="w-10 h-10 rounded-full object-cover"
+            class="w-12 h-12 rounded-full object-cover"
+            (error)="onImageError($event)"
           />
+          <div
+            class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-4 h-4 border-2 border-white"
+          ></div>
         </div>
         <mat-card-title>{{ child.name }}</mat-card-title>
-        <mat-card-subtitle>Points: {{ child.totalPoints }}</mat-card-subtitle>
+        <mat-card-subtitle
+          >Total Points: {{ child.totalPoints }}</mat-card-subtitle
+        >
       </mat-card-header>
 
-      <!-- Child Content -->
-      <mat-card-content class="p-4">
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div class="text-sm text-gray-600">
-            <div>Tasks: {{ child.tasks ? child.tasks.length : 0 }}</div>
+      <mat-card-content class="px-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="text-sm">
+            <p class="text-gray-600">Email: {{ child.email }}</p>
+            <p class="text-gray-600">
+              Age: {{ child.dateOfBirth | date : "shortDate" }}
+            </p>
           </div>
-          <div class="text-sm text-gray-600">
-            <div>
-              Points History: {{ child.points ? child.points.length : 0 }}
-            </div>
-            <div>
-              Rewards Redeemed:
+          <div class="text-sm text-right">
+            <p class="text-gray-600">
+              Tasks: {{ child.tasks ? child.tasks.length : 0 }}
+            </p>
+            <p class="text-gray-600">
+              Rewards:
               {{ child.rewardRedemptions ? child.rewardRedemptions.length : 0 }}
-            </div>
+            </p>
           </div>
         </div>
       </mat-card-content>
 
-      <!-- Action Buttons -->
       <mat-card-actions class="flex justify-end p-4">
-        <button
-          mat-icon-button
-          [matMenuTriggerFor]="menu"
-          aria-label="Child actions"
-        >
+        <button mat-icon-button [matMenuTriggerFor]="menu">
           <mat-icon>more_vert</mat-icon>
         </button>
         <mat-menu #menu="matMenu">
-          <button mat-menu-item (click)="editChild(child)">
+          <button mat-menu-item (click)="editChild(child, editChildDialog)">
             <mat-icon>edit</mat-icon>
             <span>Edit Profile</span>
           </button>
-          <button mat-menu-item (click)="managePoints(child)">
+          <button
+            mat-menu-item
+            (click)="managePoints(child, managePointsDialog)"
+          >
             <mat-icon>stars</mat-icon>
             <span>Manage Points</span>
           </button>
@@ -82,14 +91,17 @@
             <mat-icon>assignment</mat-icon>
             <span>View Tasks</span>
           </button>
-          <button mat-menu-item (click)="viewPointHistory(child)">
+          <button
+            mat-menu-item
+            (click)="viewPointHistory(child, pointHistoryDialog)"
+          >
             <mat-icon>history</mat-icon>
             <span>Point History</span>
           </button>
           <button
             mat-menu-item
             class="text-red-600"
-            (click)="deleteChild(child)"
+            (click)="deleteChild(child, deleteChildDialog)"
           >
             <mat-icon class="text-red-600">delete</mat-icon>
             <span>Delete</span>
@@ -112,9 +124,288 @@
       mat-raised-button
       color="primary"
       class="mt-4"
-      (click)="openAddChildDialog()"
+      (click)="openAddChildDialog(addChildDialog)"
     >
       Add Your First Child
     </button>
   </div>
+
+  <!-- Dialog Templates -->
+  <!-- Add Child Dialog -->
+  <ng-template #addChildDialog let-dialogRef="dialogRef" let-data="data">
+    <h2 mat-dialog-title>Add New Child</h2>
+    <mat-dialog-content>
+      <form [formGroup]="childForm" class="flex flex-col gap-4">
+        <!-- Profile Picture Upload -->
+        <div class="mb-4 relative mx-auto w-24 h-24">
+          <div
+            class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg"
+          >
+            <img
+              [src]="
+                imagePreview ||
+                'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
+              "
+              alt="Profile picture"
+              class="w-full h-full object-cover"
+            />
+
+            <!-- Hidden file input -->
+            <input
+              type="file"
+              accept="image/*"
+              class="hidden"
+              #fileInput
+              (change)="onFileSelected($event)"
+            />
+          </div>
+
+          <!-- Add Camera Button -->
+          <button
+            mat-mini-fab
+            color="primary"
+            class="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4"
+            (click)="fileInput.click()"
+            type="button"
+          >
+            <mat-icon>add_a_photo</mat-icon>
+          </button>
+        </div>
+
+        <mat-form-field>
+          <mat-label>Name</mat-label>
+          <input matInput formControlName="name" required />
+          <mat-error *ngIf="childForm.get('name')?.hasError('required')">
+            Name is required
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" required />
+          <mat-error *ngIf="childForm.get('email')?.hasError('required')">
+            Email is required
+          </mat-error>
+          <mat-error *ngIf="childForm.get('email')?.hasError('email')">
+            Invalid email format
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Add password fields -->
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input matInput formControlName="password" type="password" required />
+          <mat-error *ngIf="childForm.get('password')?.hasError('required')">
+            Password is required
+          </mat-error>
+          <mat-error *ngIf="childForm.get('password')?.hasError('minlength')">
+            Password must be at least 6 characters
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Date of Birth</mat-label>
+          <input
+            matInput
+            [matDatepicker]="picker"
+            formControlName="dateOfBirth"
+            required
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="picker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          <mat-error *ngIf="childForm.get('dateOfBirth')?.hasError('required')">
+            Date of Birth is required
+          </mat-error>
+          <mat-error *ngIf="childForm.get('dateOfBirth')?.hasError('minAge')">
+            Must be at least
+            {{ childForm.get('dateOfBirth')?.errors?.['minAge'].requiredAge }}
+            years old. Current age:
+            {{ childForm.get('dateOfBirth')?.errors?.['minAge'].actualAge }}.
+          </mat-error>
+        </mat-form-field>
+      </form>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onSubmitChild(dialogRef)"
+        [disabled]="!childForm.valid"
+      >
+        Add Child
+      </button>
+    </mat-dialog-actions>
+  </ng-template>
+
+  <!-- Edit Child Dialog -->
+  <ng-template #editChildDialog let-dialogRef="dialogRef" let-data="data">
+    <h2 mat-dialog-title>Edit Child</h2>
+    <mat-dialog-content>
+      <form [formGroup]="childForm" class="flex flex-col gap-4">
+        <!-- Profile Picture Upload -->
+        <div class="mb-4 relative mx-auto w-24 h-24">
+          <div
+            class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg"
+          >
+            <img
+              [src]="
+                imagePreview ||
+                childForm.get('picture')?.value ||
+                'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
+              "
+              alt="Profile picture"
+              class="w-full h-full object-cover"
+            />
+
+            <!-- Hidden file input -->
+            <input
+              type="file"
+              accept="image/*"
+              class="hidden"
+              #fileInputEdit
+              (change)="onFileSelected($event)"
+            />
+          </div>
+
+          <!-- Add Camera Button -->
+          <button
+            mat-mini-fab
+            color="primary"
+            class="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4"
+            (click)="fileInputEdit.click()"
+            type="button"
+          >
+            <mat-icon>add_a_photo</mat-icon>
+          </button>
+        </div>
+
+        <mat-form-field>
+          <mat-label>Name</mat-label>
+          <input matInput formControlName="name" required />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" required />
+        </mat-form-field>
+
+        <!-- Password field in edit dialog - no confirmPassword field -->
+        <mat-form-field>
+          <mat-label>New Password</mat-label>
+          <input matInput formControlName="password" type="password" />
+          <mat-hint>Leave blank to keep current password</mat-hint>
+          <mat-error *ngIf="childForm.get('password')?.errors?.['minlength']">
+            Password must be at least 6 characters
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Date of Birth</mat-label>
+          <input
+            matInput
+            [matDatepicker]="editPicker"
+            formControlName="dateOfBirth"
+            required
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="editPicker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #editPicker></mat-datepicker>
+        </mat-form-field>
+      </form>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onSubmitChild(dialogRef)"
+        [disabled]="!childForm.valid"
+      >
+        Update
+      </button>
+    </mat-dialog-actions>
+  </ng-template>
+
+  <!-- Manage Points Dialog -->
+  <ng-template #managePointsDialog let-dialogRef="dialogRef" let-data="data">
+    <h2 mat-dialog-title>Manage Points for {{ data.child?.name }}</h2>
+    <mat-dialog-content>
+      <form [formGroup]="pointsForm" class="flex flex-col gap-4">
+        <mat-form-field>
+          <mat-label>Points</mat-label>
+          <input matInput type="number" formControlName="points" required />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Reason</mat-label>
+          <textarea
+            matInput
+            formControlName="reason"
+            required
+            rows="3"
+          ></textarea>
+        </mat-form-field>
+      </form>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onSubmitPoints(dialogRef)"
+        [disabled]="!pointsForm.valid"
+      >
+        Award Points
+      </button>
+    </mat-dialog-actions>
+  </ng-template>
+
+  <!-- Point History Dialog -->
+  <ng-template #pointHistoryDialog let-dialogRef="dialogRef" let-data="data">
+    <h2 mat-dialog-title>Point History for {{ data.child?.name }}</h2>
+    <mat-dialog-content>
+      <div class="max-h-96 overflow-y-auto">
+        <mat-list>
+          <mat-list-item *ngFor="let point of data.child?.points || []">
+            <div class="flex justify-between items-center w-full">
+              <span>{{ point.reason }}</span>
+              <span
+                [class.text-green-600]="point.points > 0"
+                [class.text-red-600]="point.points < 0"
+              >
+                {{ point.points > 0 ? "+" : "" }}{{ point.points }}
+              </span>
+            </div>
+            <mat-divider></mat-divider>
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Close</button>
+    </mat-dialog-actions>
+  </ng-template>
+
+  <!-- Delete Confirmation Dialog -->
+  <ng-template #deleteChildDialog let-dialogRef="dialogRef" let-data="data">
+    <h2 mat-dialog-title class="text-red-600">Delete Child</h2>
+    <mat-dialog-content>
+      <p>
+        Are you sure you want to delete {{ data.child?.name }}? This action
+        cannot be undone.
+      </p>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button mat-raised-button color="warn" mat-dialog-close="true">
+        Delete
+      </button>
+    </mat-dialog-actions>
+  </ng-template>
 </div>
