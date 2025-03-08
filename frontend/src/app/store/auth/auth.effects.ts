@@ -9,56 +9,57 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class AuthEffects {
   // auth.effects.ts
-login$ = createEffect(() =>
-  this.actions$.pipe(
-    ofType(AuthActions.login),
-    mergeMap(({ email, password }) =>
-      this.authService.login(email, password).pipe(
-        map((response) => {
-          console.log('Login response in effect:', response);
-          
-          // Make sure we're getting the token from the right property
-          const token = response.token || response.accessToken || response.jwt;
-          
-          if (token) {
-            console.log('Storing token:', token);
-            localStorage.setItem('token', token);
-            
-            // Verify it was stored
-            const storedToken = localStorage.getItem('token');
-            console.log('Verified token in storage:', storedToken);
-          } else {
-            console.error('No token found in response:', response);
-          }
-          
-          return AuthActions.loginSuccess({
-            user: response.user || response,
-            token: token
-          });
-        }),
-        catchError((error) => {
-          console.error('Login error:', error);
-          return of(AuthActions.loginFailure({ error: error.message || 'Login failed' }));
-        })
+  login$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.login),
+      mergeMap(({ email, password }) =>
+        this.authService.login(email, password).pipe(
+          map((response) => {
+            console.log('Login response in effect:', response);
+
+            // Make sure we're getting the token from the right property
+            const token =
+              response.token || response.accessToken || response.jwt;
+
+            if (token) {
+              console.log('Storing token:', token);
+              localStorage.setItem('token', token);
+
+              // Verify it was stored
+              const storedToken = localStorage.getItem('token');
+              console.log('Verified token in storage:', storedToken);
+            } else {
+              console.error('No token found in response:', response);
+            }
+
+            return AuthActions.loginSuccess({
+              user: response.user || response,
+              token: token,
+            });
+          }),
+          catchError((error) => {
+            console.error('Login error:', error);
+            return of(
+              AuthActions.loginFailure({
+                error: error.message || 'Login failed',
+              })
+            );
+          })
+        )
       )
     )
-  )
-);
+  );
 
   loginSuccess$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.loginSuccess),
         tap((action) => {
-          // Ensure token is saved
           if (action.token) {
-            console.log('Saving token after login success:', action.token);
             localStorage.setItem('token', action.token);
-            
-            // IMPORTANT: Also save the user data
-            if (action.user) {
-              localStorage.setItem('user', JSON.stringify(action.user));
-            }
+          }
+          if (action.user) {
+            localStorage.setItem('user', JSON.stringify(action.user));
           }
           this.router.navigate(['/dashboard']);
         })

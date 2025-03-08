@@ -27,24 +27,24 @@ export class ParentService {
     );
   }
 
- // parent.service.ts
-getMyChildren(parentId: number): Observable<Child[]> {
-  const token = localStorage.getItem('token');
-  console.log('Service - Token when fetching children:', token);
-  
-  // Create explicit headers
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  });
-  
-  console.log('Service - Headers:', headers);
-  
-  return this.http.get<Child[]>(
-    `${this.apiUrl}/parents/${parentId}/children`,
-    { headers: headers }
-  );
-}
+  // parent.service.ts
+  getMyChildren(parentId: number): Observable<Child[]> {
+    const token = localStorage.getItem('token');
+    console.log('Service - Token when fetching children:', token);
+
+    // Create explicit headers
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    console.log('Service - Headers:', headers);
+
+    return this.http.get<Child[]>(
+      `${this.apiUrl}/parents/${parentId}/children`,
+      { headers: headers }
+    );
+  }
 
   updateChild(
     parentId: number,
@@ -162,8 +162,8 @@ getMyChildren(parentId: number): Observable<Child[]> {
   addChild(parentId: number, child: any): Observable<Child> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     });
 
     return this.http.post<Child>(
