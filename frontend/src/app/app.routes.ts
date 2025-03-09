@@ -38,6 +38,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'parent/rewards',
+        loadComponent: () =>
+          import('./features/parent/rewards/rewards.component').then(
+            (m) => m.RewardsComponent
+          ),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

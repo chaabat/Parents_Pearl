@@ -146,35 +146,39 @@ export class ParentService {
   }
 
   // Rewards Management
-  createReward(parentId: number, reward: Partial<Reward>): Observable<Reward> {
-    return this.http.post<Reward>(
-      `${this.apiUrl}/parents/${parentId}/rewards`,
-      reward
-    );
-  }
+createReward(parentId: number, reward: Partial<Reward>): Observable<Reward> {
+  return this.http.post<Reward>(
+    `${this.apiUrl}/parents/${parentId}/rewards`,
+    reward,
+    { headers: this.getAuthHeaders() }
+  );
+}
 
-  updateReward(
-    parentId: number,
-    rewardId: number,
-    reward: Partial<Reward>
-  ): Observable<Reward> {
-    return this.http.put<Reward>(
-      `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`,
-      reward
-    );
-  }
+updateReward(
+  parentId: number,
+  rewardId: number,
+  reward: Partial<Reward>
+): Observable<Reward> {
+  return this.http.put<Reward>(
+    `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`,
+    reward,
+    { headers: this.getAuthHeaders() }
+  );
+}
 
-  deleteReward(parentId: number, rewardId: number): Observable<void> {
-    return this.http.delete<void>(
-      `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`
-    );
-  }
+deleteReward(parentId: number, rewardId: number): Observable<void> {
+  return this.http.delete<void>(
+    `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`,
+    { headers: this.getAuthHeaders() }
+  );
+}
 
-  getAllRewards(parentId: number): Observable<Reward[]> {
-    return this.http.get<Reward[]>(
-      `${this.apiUrl}/parents/${parentId}/rewards`
-    );
-  }
+getAllRewards(parentId: number): Observable<Reward[]> {
+  return this.http.get<Reward[]>(
+    `${this.apiUrl}/parents/${parentId}/rewards`,
+    { headers: this.getAuthHeaders() }
+  );
+}
 
   addChild(parentId: number, child: any): Observable<Child> {
     const token = localStorage.getItem('token');

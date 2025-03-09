@@ -121,21 +121,6 @@ export const updateChildPoints = createAction(
 );
 
 // Rewards Actions
-export const createReward = createAction(
-  '[Parent] Create Reward',
-  props<{ parentId: number; reward: Partial<Reward> }>()
-);
-
-export const updateReward = createAction(
-  '[Parent] Update Reward',
-  props<{ parentId: number; rewardId: number; reward: Partial<Reward> }>()
-);
-
-export const deleteReward = createAction(
-  '[Parent] Delete Reward',
-  props<{ parentId: number; rewardId: number }>()
-);
-
 export const loadRewards = createAction(
   '[Parent] Load Rewards',
   props<{ parentId: number }>()
@@ -144,6 +129,36 @@ export const loadRewards = createAction(
 export const loadRewardsSuccess = createAction(
   '[Parent] Load Rewards Success',
   props<{ rewards: Reward[] }>()
+);
+
+export const createReward = createAction(
+  '[Parent] Create Reward',
+  props<{ parentId: number; reward: Partial<Reward> }>()
+);
+
+export const createRewardSuccess = createAction(
+  '[Parent] Create Reward Success',
+  props<{ reward: Reward }>()
+);
+
+export const updateReward = createAction(
+  '[Parent] Update Reward',
+  props<{ parentId: number; rewardId: number; reward: Partial<Reward> }>()
+);
+
+export const updateRewardSuccess = createAction(
+  '[Parent] Update Reward Success',
+  props<{ reward: Reward }>()
+);
+
+export const deleteReward = createAction(
+  '[Parent] Delete Reward',
+  props<{ parentId: number; rewardId: number }>()
+);
+
+export const deleteRewardSuccess = createAction(
+  '[Parent] Delete Reward Success',
+  props<{ rewardId: number }>()
 );
 
 // Error Actions
