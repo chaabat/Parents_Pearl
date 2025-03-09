@@ -145,12 +145,14 @@ export class TasksComponent implements OnInit {
       return;
     }
 
+    const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+
     this.taskForm.patchValue({
       title: task.title,
       description: task.description,
       pointValue: task.pointValue,
       taskType: task.taskType,
-      dueDate: task.dueDate,
+      dueDate: dueDate,
       choices: task.choices?.join(','),
       correctAnswer: task.correctAnswer,
       childId: task.childId,
@@ -161,14 +163,16 @@ export class TasksComponent implements OnInit {
       data: { task },
     });
 
+    this.dialogRef = dialogRef;
+
     dialogRef.afterClosed().subscribe((result) => {
       if (result && this.parentId) {
         const taskData = this.formatTaskData(result);
         this.store.dispatch(
           ParentActions.updateTask({
             parentId: this.parentId,
-            childId: task.childId!, // Add non-null assertion since we checked above
-            taskId: task.id!, // Add non-null assertion since we checked above
+            childId: task.childId!,
+            taskId: task.id!,
             task: taskData,
           })
         );
@@ -213,4 +217,3 @@ export class TasksComponent implements OnInit {
     }
   }
 }
-

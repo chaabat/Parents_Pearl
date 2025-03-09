@@ -194,4 +194,38 @@ export class ParentEffects {
       )
     )
   );
+
+  updateTask$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ParentActions.updateTask),
+      mergeMap(({ parentId, childId, taskId, task }) =>
+        this.parentService.updateTask(parentId, childId, taskId, task).pipe(
+          mergeMap((updatedTask) => [
+            ParentActions.updateTaskSuccess({ task: updatedTask }),
+            ParentActions.loadTasks({ parentId }),
+          ]),
+          catchError((error) =>
+            of(ParentActions.parentActionFailure({ error }))
+          )
+        )
+      )
+    )
+  );
+
+  deleteTask$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ParentActions.deleteTask),
+      mergeMap(({ parentId, childId, taskId }) =>
+        this.parentService.deleteTask(parentId, childId, taskId).pipe(
+          mergeMap(() => [
+            ParentActions.deleteTaskSuccess({ taskId }),
+            ParentActions.loadTasks({ parentId }),
+          ]),
+          catchError((error) =>
+            of(ParentActions.parentActionFailure({ error }))
+          )
+        )
+      )
+    )
+  );
 }

@@ -82,22 +82,24 @@ export class ParentService {
     );
   }
 
+  private getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+  }
+
   updateTask(
     parentId: number,
     childId: number,
     taskId: number,
     task: Partial<Task>
   ): Observable<Task> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
-
     return this.http.put<Task>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks/${taskId}`,
       task,
-      { headers }
+      { headers: this.getAuthHeaders() }
     );
   }
 
@@ -106,15 +108,9 @@ export class ParentService {
     childId: number,
     taskId: number
   ): Observable<void> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
-
     return this.http.delete<void>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks/${taskId}`,
-      { headers }
+      { headers: this.getAuthHeaders() }
     );
   }
 
