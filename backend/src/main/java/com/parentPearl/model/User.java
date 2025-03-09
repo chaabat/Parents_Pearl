@@ -10,6 +10,8 @@ import lombok.experimental.SuperBuilder;
  
 import java.util.Date;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 @Data
 @SuperBuilder
 @NoArgsConstructor
@@ -36,6 +38,7 @@ public class User {
     private String picture;
     
     @Column(name = "dateOfBirth")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date dateOfBirth;
 
     @Column(name = "deleted")

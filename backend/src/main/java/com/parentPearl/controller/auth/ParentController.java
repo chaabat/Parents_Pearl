@@ -17,6 +17,7 @@ import java.util.List;
 @RequestMapping("/api/parents")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('PARENT')")
+
 public class ParentController {
 
     private final ParentService parentService;

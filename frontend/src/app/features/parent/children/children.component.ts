@@ -23,7 +23,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 
 import { Child, Role } from '../../../core/models';
 import * as ParentActions from '../../../store/parent/parent.actions';
@@ -354,40 +354,41 @@ export class ChildrenComponent implements OnInit {
   }
 
   loadChildren() {
-    const parentId = 3; // Or whatever ID you're using
-    
-    // Get token directly
-    const token = localStorage.getItem('token');
-    console.log('Direct test - Token:', token);
-    
-    // Create explicit headers
-    const headers = new HttpHeaders()
-      .set('Authorization', `Bearer ${token}`)
-      .set('Content-Type', 'application/json');
-    
-    console.log('Direct test - Headers:', headers);
-    
-    // Make direct HTTP request with explicit headers
-    this.http.get<any>(`${environment.apiUrl}/parents/${parentId}/children`, { 
-      headers: headers,
-      observe: 'response' // This will let us see the full response including headers
-    }).subscribe({
-      next: (response) => {
-        console.log('Direct test - Success!', response);
-        console.log('Direct test - Response headers:', response.headers);
-        this.children$ = response.body;
-      },
-      error: (error) => {
-        console.error('Direct test - Error:', error);
-        console.log('Direct test - Request that failed:', error.request);
-        
-        // Try to extract more information about the failed request
-        if (error.error instanceof ErrorEvent) {
-          console.error('Direct test - Client-side error:', error.error.message);
+    // Get parent ID from auth state
+    this.store.select(AuthSelectors.selectUser).pipe(
+      take(1) // Take only the first emission
+    ).subscribe({
+      next: (user) => {
+        if (user?.id) {
+          const token = localStorage.getItem('token');
+          console.log('Loading children for parent:', user.id);
+          
+          const headers = new HttpHeaders()
+            .set('Authorization', `Bearer ${token}`)
+            .set('Content-Type', 'application/json');
+          
+          this.http.get<any>(`${environment.apiUrl}/parents/${user.id}/children`, { 
+            headers: headers,
+            observe: 'response'
+          }).subscribe({
+            next: (response) => {
+              console.log('Children loaded successfully:', response.body);
+              this.children$ = of(response.body); // Convert to Observable
+            },
+            error: (error) => {
+              console.error('Error loading children:', error);
+              if (error.error instanceof ErrorEvent) {
+                console.error('Client-side error:', error.error.message);
+              } else {
+                console.error(`Server error ${error.status}:`, error.error);
+              }
+            }
+          });
         } else {
-          console.error(`Direct test - Server returned code ${error.status}, body:`, error.error);
+          console.error('No authenticated user found');
         }
-      }
+      },
+      error: (error) => console.error('Error getting user:', error)
     });
   }
 

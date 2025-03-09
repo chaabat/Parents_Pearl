@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { ParentService } from '../../core/services/parent.service';
 import * as ParentActions from './parent.actions';
 import { catchError, map, mergeMap, of } from 'rxjs';
- @Injectable()
+@Injectable()
 export class ParentEffects {
   constructor(
     private actions$: Actions,
@@ -60,9 +60,13 @@ export class ParentEffects {
       mergeMap(({ parentId, child }) => {
         console.log('Effect: Adding child:', child, 'for parent:', parentId);
         return this.parentService.addChild(parentId, child).pipe(
-          map((response) => {
+          mergeMap((response) => {
             console.log('Child added successfully:', response);
-            return ParentActions.addChildSuccess({ child: response });
+            // Return array of actions to dispatch
+            return [
+              ParentActions.addChildSuccess({ child: response }),
+              ParentActions.loadChildren({ parentId }), // Automatically reload children
+            ];
           }),
           catchError((error) => {
             console.error('Error adding child:', error);
