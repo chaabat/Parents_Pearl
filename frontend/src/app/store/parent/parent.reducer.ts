@@ -68,5 +68,34 @@ export const parentReducer = createReducer(
     ...state,
     error,
     loading: false,
+  })),
+
+  // Tasks
+  on(ParentActions.loadTasksSuccess, (state, { tasks }) => ({
+    ...state,
+    tasks,
+    loading: false,
+    error: null,
+  })),
+
+  on(ParentActions.createTaskSuccess, (state, { task }) => ({
+    ...state,
+    tasks: [...state.tasks, task],
+    loading: false,
+    error: null,
+  })),
+
+  on(ParentActions.updateTaskSuccess, (state, { task }) => ({
+    ...state,
+    tasks: state.tasks.map((t) => (t.id === task.id ? task : t)),
+    loading: false,
+    error: null,
+  })),
+
+  on(ParentActions.deleteTaskSuccess, (state, { taskId }) => ({
+    ...state,
+    tasks: state.tasks.filter((task) => task.id !== taskId),
+    loading: false,
+    error: null,
   }))
 );

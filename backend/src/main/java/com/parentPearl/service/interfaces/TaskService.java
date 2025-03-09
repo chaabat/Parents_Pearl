@@ -13,6 +13,7 @@ public interface TaskService {
     void deleteTask(Long parentId, Long childId, Long taskId);
     
     // Parent view operations
+    List<TaskResponse> getAllTasks(Long parentId);
     List<TaskResponse> getChildTasks(Long parentId, Long childId);
     List<TaskResponse> getChildTasksByStatus(Long parentId, Long childId, TaskStatus status);
     List<TaskResponse> searchChildTasks(Long parentId, Long childId, String keyword);

@@ -9,6 +9,10 @@ export const selectParentProfile = createSelector(
   selectParentState,
   (state) => state.parent
 );
+export const selectTasks = createSelector(
+  selectParentState,
+  (state) => state.tasks
+);
 
 export const selectParentId = createSelector(
   selectParentProfile,

@@ -162,4 +162,36 @@ export class ParentEffects {
       )
     )
   );
+
+  // Task Effects
+  loadTasks$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ParentActions.loadTasks),
+      mergeMap(({ parentId }) =>
+        this.parentService.getTasks(parentId).pipe(
+          map((tasks) => ParentActions.loadTasksSuccess({ tasks })),
+          catchError((error) =>
+            of(ParentActions.parentActionFailure({ error }))
+          )
+        )
+      )
+    )
+  );
+
+  createTask$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ParentActions.createTask),
+      mergeMap(({ parentId, childId, task }) =>
+        this.parentService.createTask(parentId, childId, task).pipe(
+          mergeMap((newTask) => [
+            ParentActions.createTaskSuccess({ task: newTask }),
+            ParentActions.loadTasks({ parentId }), // Reload tasks after creation
+          ]),
+          catchError((error) =>
+            of(ParentActions.parentActionFailure({ error }))
+          )
+        )
+      )
+    )
+  );
 }

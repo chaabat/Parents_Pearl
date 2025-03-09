@@ -59,24 +59,44 @@ export const deleteChild = createAction(
 );
 
 // Task Actions
+export const loadTasks = createAction(
+  '[Parent] Load Tasks',
+  props<{ parentId: number }>()
+);
+
+export const loadTasksSuccess = createAction(
+  '[Parent] Load Tasks Success',
+  props<{ tasks: Task[] }>()
+);
+
 export const createTask = createAction(
   '[Parent] Create Task',
   props<{ parentId: number; childId: number; task: Partial<Task> }>()
 );
 
+export const createTaskSuccess = createAction(
+  '[Parent] Create Task Success',
+  props<{ task: Task }>()
+);
+
 export const updateTask = createAction(
   '[Parent] Update Task',
-  props<{
-    parentId: number;
-    childId: number;
-    taskId: number;
-    task: Partial<Task>;
-  }>()
+  props<{ parentId: number; childId: number; taskId: number; task: Partial<Task> }>()
+);
+
+export const updateTaskSuccess = createAction(
+  '[Parent] Update Task Success',
+  props<{ task: Task }>()
 );
 
 export const deleteTask = createAction(
   '[Parent] Delete Task',
   props<{ parentId: number; childId: number; taskId: number }>()
+);
+
+export const deleteTaskSuccess = createAction(
+  '[Parent] Delete Task Success',
+  props<{ taskId: number }>()
 );
 
 // Points Actions

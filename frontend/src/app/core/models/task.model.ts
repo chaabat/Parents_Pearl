@@ -1,23 +1,27 @@
 export enum TaskStatus {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
 }
 
 export enum TaskType {
   MAZE = 'MAZE',
-  TRUE_FALSE = 'TRUE_FALSE'
+  TRUE_FALSE = 'TRUE_FALSE',
+  HOMEWORK = 'HOMEWORK',
+  QUIZ = 'QUIZ',
+  READING = 'READING',
+  VIDEO = 'VIDEO',
 }
 
 export interface Task {
-  id: number;
+  id?: number;
   title: string;
   description: string;
   pointValue: number;
-  dueDate?: Date;
-  status: TaskStatus;
+  dueDate: string;
   taskType: TaskType;
   choices?: string[];
   correctAnswer: string;
-  childId: number;
-} 
+  status?: TaskStatus;
+  childId?: number;
+}

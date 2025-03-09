@@ -187,4 +187,11 @@ public class TaskServiceImpl implements TaskService {
         
         return taskMapper.toResponse(task);
     }
+
+    @Override
+    public List<TaskResponse> getAllTasks(Long parentId) {
+        return taskRepository.findAllByParentId(parentId).stream()
+                .map(taskMapper::toResponse)
+                .collect(Collectors.toList());
+    }
 } 

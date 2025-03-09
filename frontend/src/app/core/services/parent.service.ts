@@ -69,9 +69,16 @@ export class ParentService {
     childId: number,
     task: Partial<Task>
   ): Observable<Task> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
     return this.http.post<Task>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks`,
-      task
+      task,
+      { headers }
     );
   }
 
@@ -81,9 +88,16 @@ export class ParentService {
     taskId: number,
     task: Partial<Task>
   ): Observable<Task> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
     return this.http.put<Task>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks/${taskId}`,
-      task
+      task,
+      { headers }
     );
   }
 
@@ -92,8 +106,15 @@ export class ParentService {
     childId: number,
     taskId: number
   ): Observable<void> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
     return this.http.delete<void>(
-      `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks/${taskId}`
+      `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks/${taskId}`,
+      { headers }
     );
   }
 
@@ -171,5 +192,17 @@ export class ParentService {
       child,
       { headers }
     );
+  }
+
+  getTasks(parentId: number): Observable<Task[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    return this.http.get<Task[]>(`${this.apiUrl}/parents/${parentId}/tasks`, {
+      headers,
+    });
   }
 }

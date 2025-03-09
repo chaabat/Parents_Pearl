@@ -31,6 +31,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'parent/tasks',
+        loadComponent: () =>
+          import('./features/parent/tasks/tasks.component').then(
+            (m) => m.TasksComponent
+          ),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

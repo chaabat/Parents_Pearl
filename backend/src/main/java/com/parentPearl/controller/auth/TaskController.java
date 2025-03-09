@@ -82,6 +82,13 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getTaskDetails(parentId, taskId));
     }
 
+    @PreAuthorize("hasRole('PARENT')")
+    @GetMapping("/api/parents/{parentId}/tasks")
+    public ResponseEntity<List<TaskResponse>> getAllTasks(
+            @PathVariable Long parentId) {
+        return ResponseEntity.ok(taskService.getAllTasks(parentId));
+    }
+
     // Child endpoints
     @PreAuthorize("hasRole('CHILD')")
     @GetMapping("/api/children/{childId}/my-tasks")
