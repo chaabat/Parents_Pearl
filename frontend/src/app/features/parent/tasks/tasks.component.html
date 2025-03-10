@@ -1,284 +1,779 @@
-<div class="p-6">
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Task Management</h1>
+<div class="min-h-screen bg-gray-50 p-6">
+  <!-- Header with animated gradient background -->
+  <div
+    class="bg-gradient-to-r from-[#3f0d71] to-[#5a189a] rounded-xl shadow-lg mb-8 p-6 transition-all duration-500 hover:shadow-xl"
+  >
+    <div
+      class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+    >
+      <div class="text-white">
+        <h1 class="text-3xl font-bold">Learning Tasks</h1>
+        <p class="text-blue-200 mt-1">
+          Create and manage educational tasks with multiple-choice questions
+        </p>
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <button
+          mat-raised-button
+          class="bg-white text-[#2563eb] hover:bg-blue-100"
+          (click)="openAddTaskDialog(addTaskDialog)"
+        >
+          <mat-icon class="white">add_circle</mat-icon>
+          Create New Task
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and View Options -->
+  <div
+    class="bg-white rounded-xl shadow p-4 mb-6 transition-all duration-300 hover:shadow-md"
+  >
+    <div
+      class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"
+    >
+      <div class="flex items-center">
+        <h2 class="text-lg font-semibold text-gray-700 mr-4">Tasks</h2>
+        <mat-form-field class="w-full md:w-64">
+          <mat-label>Search tasks</mat-label>
+          <input matInput placeholder="Search by title or description" />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button
+          mat-button
+          [matMenuTriggerFor]="filterMenu"
+          class="text-gray-700"
+        >
+          <mat-icon>filter_list</mat-icon> Filter
+        </button>
+        <mat-menu #filterMenu="matMenu">
+          <button mat-menu-item>
+            <mat-icon>all_inclusive</mat-icon> All Tasks
+          </button>
+          <button mat-menu-item><mat-icon>pending</mat-icon> Pending</button>
+          <button mat-menu-item>
+            <mat-icon>check_circle</mat-icon> Completed
+          </button>
+          <button mat-menu-item><mat-icon>error</mat-icon> Failed</button>
+        </mat-menu>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading$ | async" class="flex justify-center items-center p-8">
+    <mat-spinner diameter="40" color="primary"></mat-spinner>
+  </div>
+
+  <!-- No Tasks Message -->
+  <div
+    *ngIf="(tasks$ | async)?.length === 0 && !(loading$ | async)"
+    class="bg-white rounded-xl shadow p-8 text-center"
+  >
+    <img
+      src="/assets/images/empty-tasks.svg"
+      alt="No tasks"
+      class="w-48 h-48 mx-auto mb-4 opacity-70"
+    />
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">No tasks found</h3>
+    <p class="text-gray-500 mb-6">
+      Create educational tasks for children to complete and earn points
+    </p>
     <button
       mat-raised-button
       color="primary"
+      class="bg-[#2563eb]"
       (click)="openAddTaskDialog(addTaskDialog)"
-      class="bg-blue-600"
     >
-      <mat-icon class="white">add</mat-icon>
-      Add New Task
+      <mat-icon>add_circle</mat-icon> Create First Task
     </button>
   </div>
 
-  <!-- Tasks Table -->
-  <div class="bg-white rounded-lg shadow overflow-hidden">
+  <!-- Tasks Table View -->
+  <div
+    *ngIf="((tasks$ | async)?.length ?? 0 > 0) && !(loading$ | async)"
+    class="bg-white rounded-xl shadow-md overflow-hidden"
+  >
     <mat-table [dataSource]="tasks$" class="w-full">
       <!-- Title Column -->
       <ng-container matColumnDef="title">
-        <mat-header-cell *matHeaderCellDef>Title</mat-header-cell>
-        <mat-cell *matCellDef="let task">{{ task.title }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
+          >Title</mat-header-cell
+        >
+        <mat-cell *matCellDef="let task" class="font-medium">
+          <div class="flex items-center">
+            <div
+              class="w-2 h-2 rounded-full mr-2"
+              [ngClass]="getStatusColor(task.status)"
+            ></div>
+            {{ task.title }}
+          </div>
+        </mat-cell>
       </ng-container>
 
       <!-- Description Column -->
       <ng-container matColumnDef="description">
-        <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
-        <mat-cell *matCellDef="let task">{{ task.description }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
+          >Description</mat-header-cell
+        >
+        <mat-cell
+          *matCellDef="let task"
+          class="text-gray-600 max-w-xs truncate"
+          >{{ task.description }}</mat-cell
+        >
       </ng-container>
 
       <!-- Points Column -->
       <ng-container matColumnDef="pointValue">
-        <mat-header-cell *matHeaderCellDef>Points</mat-header-cell>
-        <mat-cell *matCellDef="let task">{{ task.pointValue }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
+          >Points</mat-header-cell
+        >
+        <mat-cell *matCellDef="let task">
+          <div class="flex items-center">
+            <mat-icon class="text-amber-500 mr-1 text-sm">stars</mat-icon>
+            <span class="font-medium">{{ task.pointValue }}</span>
+          </div>
+        </mat-cell>
       </ng-container>
 
       <!-- Task Type Column -->
       <ng-container matColumnDef="taskType">
-        <mat-header-cell *matHeaderCellDef>Type</mat-header-cell>
-        <mat-cell *matCellDef="let task">{{ task.taskType }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
+          >Type</mat-header-cell
+        >
+        <mat-cell *matCellDef="let task">
+          <span
+            class="px-2 py-1 rounded-full text-xs font-medium"
+            [ngClass]="getTaskTypeClass(task.taskType)"
+          >
+            {{ task.taskType }}
+          </span>
+        </mat-cell>
       </ng-container>
 
       <!-- Status Column -->
       <ng-container matColumnDef="status">
-        <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
+          >Status</mat-header-cell
+        >
         <mat-cell *matCellDef="let task">
-          <span [ngClass]="getStatusColor(task.status)">{{ task.status }}</span>
+          <div
+            *ngIf="selectedTask"
+            class="text-xs font-medium"
+            [ngClass]="getStatusClass(selectedTask?.status)"
+          >
+            {{ selectedTask?.status }}
+          </div>
         </mat-cell>
       </ng-container>
 
       <!-- Due Date Column -->
       <ng-container matColumnDef="dueDate">
-        <mat-header-cell *matHeaderCellDef>Due Date</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
+          >Due Date</mat-header-cell
+        >
         <mat-cell *matCellDef="let task">
-          {{ task.dueDate | date }}
+          <div
+            class="flex items-center"
+            [ngClass]="
+              isOverdue(task.dueDate) ? 'text-red-600' : 'text-gray-600'
+            "
+          >
+            <mat-icon class="text-sm mr-1">event</mat-icon>
+            {{ task.dueDate | date : "MMM d, y" }}
+          </div>
         </mat-cell>
       </ng-container>
 
       <!-- Actions Column -->
       <ng-container matColumnDef="actions">
-        <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
+          >Actions</mat-header-cell
+        >
         <mat-cell *matCellDef="let task">
           <button
             mat-icon-button
             color="primary"
             (click)="editTask(task, editTaskDialog)"
+            matTooltip="Edit Task"
           >
             <mat-icon>edit</mat-icon>
           </button>
           <button
             mat-icon-button
+            color="accent"
+            (click)="viewTaskDetails(task)"
+            matTooltip="View Details"
+          >
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button
+            mat-icon-button
             color="warn"
             (click)="deleteTask(task, deleteTaskDialog)"
+            matTooltip="Delete Task"
           >
             <mat-icon>delete</mat-icon>
           </button>
         </mat-cell>
       </ng-container>
 
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      <mat-header-row
+        *matHeaderRowDef="displayedColumns"
+        class="bg-gray-50"
+      ></mat-header-row>
+      <mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        class="hover:bg-blue-50 transition-colors duration-150 cursor-pointer"
+        (click)="viewTaskDetails(row)"
+      ></mat-row>
     </mat-table>
 
-    <!-- Loading Spinner -->
-    <div *ngIf="loading$ | async" class="flex justify-center items-center p-4">
-      <mat-spinner diameter="40"></mat-spinner>
-    </div>
+    <mat-paginator
+      [pageSize]="10"
+      [pageSizeOptions]="[5, 10, 25, 100]"
+      showFirstLastButtons
+    ></mat-paginator>
+  </div>
 
-    <!-- No Tasks Message -->
+  <!-- Card View (Alternative View) -->
+  <div
+    *ngIf="false"
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+  >
     <div
-      *ngIf="(tasks$ | async)?.length === 0"
-      class="text-center py-8 text-gray-500"
+      *ngFor="let task of tasks$ | async"
+      class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden"
     >
-      No tasks found. Create a new task to get started.
+      <div class="h-2 w-full" [ngClass]="getStatusColorBar(task.status)"></div>
+      <div class="p-6">
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="text-lg font-bold text-gray-800">{{ task.title }}</h3>
+          <div
+            *ngIf="selectedTask"
+            class="text-xs font-medium"
+            [ngClass]="getStatusClass(selectedTask?.status)"
+          >
+            {{ selectedTask?.status }}
+          </div>
+        </div>
+
+        <p class="text-gray-600 mb-4 line-clamp-2">{{ task.description }}</p>
+
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center">
+            <mat-icon class="text-amber-500 mr-1">stars</mat-icon>
+            <span class="font-medium">{{ task.pointValue }} points</span>
+          </div>
+
+          <span
+            class="px-2 py-1 rounded-full text-xs font-medium"
+            [ngClass]="getTaskTypeClass(task.taskType)"
+          >
+            {{ task.taskType }}
+          </span>
+        </div>
+
+        <div
+          class="flex items-center text-gray-600 mb-4"
+          [ngClass]="isOverdue(task.dueDate) ? 'text-red-600' : ''"
+        >
+          <mat-icon class="text-sm mr-1">event</mat-icon>
+          <span>Due: {{ task.dueDate | date : "MMM d, y" }}</span>
+        </div>
+
+        <!-- Multiple Choice Preview -->
+        <div *ngIf="task.choices" class="bg-gray-50 p-3 rounded-lg mb-4">
+          <div class="text-sm font-medium text-gray-700 mb-2">
+            Answer Choices:
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div
+              *ngFor="let choice of getChoicesArray(task.choices)"
+              class="bg-white p-2 rounded border border-gray-200 text-sm text-center"
+            >
+              {{ choice }}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2">
+          <button
+            mat-icon-button
+            color="primary"
+            (click)="editTask(task, editTaskDialog); $event.stopPropagation()"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="accent"
+            (click)="viewTaskDetails(task); $event.stopPropagation()"
+          >
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="warn"
+            (click)="
+              deleteTask(task, deleteTaskDialog); $event.stopPropagation()
+            "
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Add Task Dialog Template -->
   <ng-template #addTaskDialog>
-    <h2 mat-dialog-title>Add New Task</h2>
-    <mat-dialog-content>
-      <form [formGroup]="taskForm" class="flex flex-col gap-4">
-        <mat-form-field>
-          <mat-label>Title</mat-label>
-          <input matInput formControlName="title" required />
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Description</mat-label>
-          <textarea matInput formControlName="description" required></textarea>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Points Value</mat-label>
-          <input
-            matInput
-            type="number"
-            formControlName="pointValue"
-            required
-            min="0"
-          />
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Task Type</mat-label>
-          <mat-select formControlName="taskType" required>
-            <mat-option *ngFor="let type of taskTypes" [value]="type">
-              {{ type }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Due Date</mat-label>
-          <input
-            matInput
-            [matDatepicker]="picker"
-            formControlName="dueDate"
-            required
-          />
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="picker"
-          ></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Choices (comma-separated)</mat-label>
-          <input matInput formControlName="choices" placeholder="30,35,40,45" />
-          <mat-hint>Enter choices separated by commas</mat-hint>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Correct Answer</mat-label>
-          <input matInput formControlName="correctAnswer" required />
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Assign to Child</mat-label>
-          <mat-select formControlName="childId" required>
-            <mat-option
-              *ngFor="let child of children$ | async"
-              [value]="child.id"
-            >
-              {{ child.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Cancel</button>
-      <button
-        mat-raised-button
-        color="primary"
-        [disabled]="!taskForm.valid"
-        (click)="dialogRef.close(taskForm.value)"
+    <div class="p-2">
+      <h2
+        mat-dialog-title
+        class="text-xl font-bold text-[#2563eb] flex items-center"
       >
-        Add Task
-      </button>
-    </mat-dialog-actions>
+        <mat-icon class="mr-2">add_task</mat-icon> Create New Learning Task
+      </h2>
+      <mat-dialog-content>
+        <form [formGroup]="taskForm" class="flex flex-col gap-4 mt-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <mat-form-field class="w-full">
+              <mat-label>Title</mat-label>
+              <input
+                matInput
+                formControlName="title"
+                required
+                placeholder="Enter task title"
+              />
+              <mat-error *ngIf="taskForm.get('title')?.hasError('required')"
+                >Title is required</mat-error
+              >
+            </mat-form-field>
+
+            <mat-form-field class="w-full">
+              <mat-label>Points Value</mat-label>
+              <input
+                matInput
+                type="number"
+                formControlName="pointValue"
+                required
+                min="0"
+              />
+              <mat-icon matSuffix class="text-amber-500">stars</mat-icon>
+              <mat-error
+                *ngIf="taskForm.get('pointValue')?.hasError('required')"
+                >Points value is required</mat-error
+              >
+              <mat-error *ngIf="taskForm.get('pointValue')?.hasError('min')"
+                >Must be at least 0 points</mat-error
+              >
+            </mat-form-field>
+          </div>
+
+          <mat-form-field class="w-full">
+            <mat-label>Description</mat-label>
+            <textarea
+              matInput
+              formControlName="description"
+              required
+              rows="3"
+              placeholder="Describe the task"
+            ></textarea>
+            <mat-error *ngIf="taskForm.get('description')?.hasError('required')"
+              >Description is required</mat-error
+            >
+          </mat-form-field>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <mat-form-field class="w-full">
+              <mat-label>Task Type</mat-label>
+              <mat-select formControlName="taskType" required>
+                <mat-option *ngFor="let type of taskTypes" [value]="type">
+                  <div class="flex items-center">
+                    <mat-icon class="mr-2">{{
+                      getTaskTypeIcon(type)
+                    }}</mat-icon>
+                    {{ type }}
+                  </div>
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="taskForm.get('taskType')?.hasError('required')"
+                >Task type is required</mat-error
+              >
+            </mat-form-field>
+
+            <mat-form-field class="w-full">
+              <mat-label>Due Date</mat-label>
+              <input
+                matInput
+                [matDatepicker]="picker"
+                formControlName="dueDate"
+                required
+              />
+              <mat-datepicker-toggle
+                matSuffix
+                [for]="picker"
+              ></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="taskForm.get('dueDate')?.hasError('required')"
+                >Due date is required</mat-error
+              >
+            </mat-form-field>
+          </div>
+
+          <!-- Multiple Choice Section with Visual Enhancement -->
+          <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <h3 class="text-blue-800 font-medium mb-3 flex items-center">
+              <mat-icon class="mr-2">quiz</mat-icon> Multiple Choice Options
+            </h3>
+
+            <mat-form-field class="w-full">
+              <mat-label>Answer Choices (comma-separated)</mat-label>
+              <input
+                matInput
+                formControlName="choices"
+                placeholder="30,35,40,45"
+              />
+              <mat-hint>Enter choices separated by commas</mat-hint>
+            </mat-form-field>
+
+            <!-- Preview of choices -->
+            <div
+              *ngIf="taskForm.get('choices')?.value"
+              class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-3"
+            >
+              <div
+                *ngFor="let choice of getFormChoicesArray()"
+                class="bg-white p-2 rounded border border-blue-200 text-center text-blue-800"
+              >
+                {{ choice }}
+              </div>
+            </div>
+
+            <mat-form-field class="w-full mt-3">
+              <mat-label>Correct Answer</mat-label>
+              <input matInput formControlName="correctAnswer" required />
+              <mat-icon matSuffix class="text-green-500">check_circle</mat-icon>
+              <mat-error
+                *ngIf="taskForm.get('correctAnswer')?.hasError('required')"
+                >Correct answer is required</mat-error
+              >
+            </mat-form-field>
+          </div>
+
+          <mat-form-field class="w-full">
+            <mat-label>Assign to Child</mat-label>
+            <mat-select formControlName="childId" required>
+              <mat-option
+                *ngFor="let child of children$ | async"
+                [value]="child.id"
+              >
+                {{ child.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="taskForm.get('childId')?.hasError('required')"
+              >Child assignment is required</mat-error
+            >
+          </mat-form-field>
+        </form>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close class="text-gray-600">
+          Cancel
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          class="bg-[#2563eb]"
+          [disabled]="!taskForm.valid"
+          (click)="dialogRef.close(taskForm.value)"
+        >
+          Create Task
+        </button>
+      </mat-dialog-actions>
+    </div>
   </ng-template>
 
   <!-- Edit Task Dialog Template -->
   <ng-template #editTaskDialog>
-    <h2 mat-dialog-title>Edit Task</h2>
-    <mat-dialog-content>
-      <form [formGroup]="taskForm" class="flex flex-col gap-4">
-        <mat-form-field>
-          <mat-label>Title</mat-label>
-          <input matInput formControlName="title" required />
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Description</mat-label>
-          <textarea matInput formControlName="description" required></textarea>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Points Value</mat-label>
-          <input
-            matInput
-            type="number"
-            formControlName="pointValue"
-            required
-            min="0"
-          />
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Task Type</mat-label>
-          <mat-select formControlName="taskType" required>
-            <mat-option *ngFor="let type of taskTypes" [value]="type">
-              {{ type }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Due Date</mat-label>
-          <input
-            matInput
-            [matDatepicker]="editPicker"
-            formControlName="dueDate"
-            required
-          />
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="editPicker"
-          ></mat-datepicker-toggle>
-          <mat-datepicker #editPicker></mat-datepicker>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Choices (comma-separated)</mat-label>
-          <input matInput formControlName="choices" placeholder="30,35,40,45" />
-          <mat-hint>Enter choices separated by commas</mat-hint>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Correct Answer</mat-label>
-          <input matInput formControlName="correctAnswer" required />
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Assign to Child</mat-label>
-          <mat-select formControlName="childId" required>
-            <mat-option
-              *ngFor="let child of children$ | async"
-              [value]="child.id"
-            >
-              {{ child.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Cancel</button>
-      <button
-        mat-raised-button
-        color="primary"
-        [disabled]="!taskForm.valid"
-        (click)="dialogRef.close(taskForm.value)"
+    <div class="p-2">
+      <h2
+        mat-dialog-title
+        class="text-xl font-bold text-[#2563eb] flex items-center"
       >
-        Update Task
-      </button>
-    </mat-dialog-actions>
+        <mat-icon class="mr-2">edit</mat-icon> Edit Learning Task
+      </h2>
+      <mat-dialog-content>
+        <form [formGroup]="taskForm" class="flex flex-col gap-4 mt-4">
+          <!-- Same form fields as Add Task Dialog with identical styling -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <mat-form-field class="w-full">
+              <mat-label>Title</mat-label>
+              <input matInput formControlName="title" required />
+              <mat-error *ngIf="taskForm.get('title')?.hasError('required')"
+                >Title is required</mat-error
+              >
+            </mat-form-field>
+
+            <mat-form-field class="w-full">
+              <mat-label>Points Value</mat-label>
+              <input
+                matInput
+                type="number"
+                formControlName="pointValue"
+                required
+                min="0"
+              />
+              <mat-icon matSuffix class="text-amber-500">stars</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field class="w-full">
+            <mat-label>Description</mat-label>
+            <textarea
+              matInput
+              formControlName="description"
+              required
+              rows="3"
+            ></textarea>
+          </mat-form-field>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <mat-form-field class="w-full">
+              <mat-label>Task Type</mat-label>
+              <mat-select formControlName="taskType" required>
+                <mat-option *ngFor="let type of taskTypes" [value]="type">
+                  <div class="flex items-center">
+                    <mat-icon class="mr-2">{{
+                      getTaskTypeIcon(type)
+                    }}</mat-icon>
+                    {{ type }}
+                  </div>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field class="w-full">
+              <mat-label>Due Date</mat-label>
+              <input
+                matInput
+                [matDatepicker]="editPicker"
+                formControlName="dueDate"
+                required
+              />
+              <mat-datepicker-toggle
+                matSuffix
+                [for]="editPicker"
+              ></mat-datepicker-toggle>
+              <mat-datepicker #editPicker></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <!-- Multiple Choice Section with Visual Enhancement -->
+          <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <h3 class="text-blue-800 font-medium mb-3 flex items-center">
+              <mat-icon class="mr-2">quiz</mat-icon> Multiple Choice Options
+            </h3>
+
+            <mat-form-field class="w-full">
+              <mat-label>Answer Choices (comma-separated)</mat-label>
+              <input
+                matInput
+                formControlName="choices"
+                placeholder="30,35,40,45"
+              />
+              <mat-hint>Enter choices separated by commas</mat-hint>
+            </mat-form-field>
+
+            <!-- Preview of choices -->
+            <div
+              *ngIf="taskForm.get('choices')?.value"
+              class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-3"
+            >
+              <div
+                *ngFor="let choice of getFormChoicesArray()"
+                class="bg-white p-2 rounded border border-blue-200 text-center text-blue-800"
+              >
+                {{ choice }}
+              </div>
+            </div>
+
+            <mat-form-field class="w-full mt-3">
+              <mat-label>Correct Answer</mat-label>
+              <input matInput formControlName="correctAnswer" required />
+              <mat-icon matSuffix class="text-green-500">check_circle</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field class="w-full">
+            <mat-label>Assign to Child</mat-label>
+            <mat-select formControlName="childId" required>
+              <mat-option
+                *ngFor="let child of children$ | async"
+                [value]="child.id"
+              >
+                {{ child.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </form>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close class="text-gray-600">
+          Cancel
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          class="bg-[#2563eb]"
+          [disabled]="!taskForm.valid"
+          (click)="dialogRef.close(taskForm.value)"
+        >
+          Update Task
+        </button>
+      </mat-dialog-actions>
+    </div>
   </ng-template>
 
   <!-- Delete Task Dialog Template -->
   <ng-template #deleteTaskDialog let-data>
-    <h2 mat-dialog-title>Delete Task</h2>
-    <mat-dialog-content>
-      Are you sure you want to delete this task?
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-raised-button color="warn" [mat-dialog-close]="true">
-        Delete
-      </button>
-    </mat-dialog-actions>
+    <div class="p-4">
+      <h2
+        mat-dialog-title
+        class="text-xl font-bold text-gray-800 flex items-center"
+      >
+        <mat-icon class="mr-2 text-red-500">warning</mat-icon> Delete Task
+      </h2>
+      <mat-dialog-content>
+        <p class="my-4 text-gray-600">
+          Are you sure you want to delete this task? This action cannot be
+          undone.
+        </p>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close class="text-gray-600">
+          Cancel
+        </button>
+        <button mat-raised-button color="warn" [mat-dialog-close]="true">
+          Delete
+        </button>
+      </mat-dialog-actions>
+    </div>
+  </ng-template>
+
+  <!-- Task Details Dialog -->
+  <ng-template #taskDetailsDialog>
+    <div *ngIf="selectedTask">
+      <h2 mat-dialog-title>Task Details</h2>
+      <mat-dialog-content>
+        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+          <!-- Task Details -->
+          <div class="flex justify-between items-center mb-4">
+            <span
+              class="px-2 py-1 rounded-full text-xs font-medium"
+              [ngClass]="getTaskTypeClass(selectedTask.taskType)"
+            >
+              {{ selectedTask.taskType }}
+            </span>
+            <div
+              *ngIf="selectedTask"
+              class="text-xs font-medium"
+              [ngClass]="getStatusClass(selectedTask?.status)"
+            >
+              {{ selectedTask?.status }}
+            </div>
+          </div>
+
+          <h3 class="text-sm font-medium text-gray-500 mb-1">Description</h3>
+          <p class="text-gray-700 mb-4">{{ selectedTask.description }}</p>
+
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 mb-1">
+                Points Value
+              </h3>
+              <div class="flex items-center text-amber-600 font-bold">
+                <mat-icon class="text-amber-500 mr-1">stars</mat-icon>
+                {{ selectedTask.pointValue }} points
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 mb-1">Due Date</h3>
+              <div
+                class="flex items-center"
+                [ngClass]="
+                  isOverdue(selectedTask.dueDate)
+                    ? 'text-red-600'
+                    : 'text-gray-700'
+                "
+              >
+                <mat-icon class="text-sm mr-1">event</mat-icon>
+                {{ selectedTask.dueDate | date : "MMM d, y" }}
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-medium text-gray-500 mb-1">
+                Assigned To
+              </h3>
+              <div *ngIf="selectedTask?.childId">
+                {{ getChildName(selectedTask?.childId) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Multiple Choice Question Preview -->
+          <div
+            *ngIf="selectedTask.choices"
+            class="bg-white p-4 rounded-lg border border-gray-200 mb-4"
+          >
+            <h3
+              class="text-sm font-medium text-gray-700 mb-3 flex items-center"
+            >
+              <mat-icon class="mr-2 text-blue-500">quiz</mat-icon> Multiple
+              Choice Question
+            </h3>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div
+                *ngFor="let choice of getChoicesArray(selectedTask.choices)"
+                class="p-3 rounded-lg border text-center transition-colors duration-200"
+                [ngClass]="
+                  choice === selectedTask.correctAnswer
+                    ? 'bg-green-50 border-green-200 text-green-800'
+                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200'
+                "
+              >
+                {{ choice }}
+                <mat-icon
+                  *ngIf="choice === selectedTask.correctAnswer"
+                  class="ml-1 text-green-500 text-sm"
+                  >check_circle</mat-icon
+                >
+              </div>
+            </div>
+
+            <div
+              class="flex items-center text-green-700 bg-green-50 p-2 rounded-lg"
+            >
+              <mat-icon class="mr-2 text-green-500">check_circle</mat-icon>
+              <span
+                >Correct Answer:
+                <strong>{{ selectedTask.correctAnswer }}</strong></span
+              >
+            </div>
+          </div>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close class="text-gray-600">Close</button>
+      </mat-dialog-actions>
+    </div>
   </ng-template>
 </div>

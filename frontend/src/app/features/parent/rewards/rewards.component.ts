@@ -2,6 +2,7 @@ import { Component, OnInit, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../shared/material.module';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   FormBuilder,
   FormGroup,
@@ -45,16 +46,24 @@ export class RewardsComponent implements OnInit {
   constructor(
     private store: Store,
     public dialog: MatDialog,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private snackBar: MatSnackBar
   ) {
     this.rewards$ = this.store.select(ParentSelectors.selectRewards);
     this.loading$ = this.store.select(ParentSelectors.selectParentLoading);
     this.error$ = this.store.select(ParentSelectors.selectParentError);
 
     this.rewardForm = this.fb.group({
-      name: ['', Validators.required],
-      description: ['', Validators.required],
-      pointCost: [0, [Validators.required, Validators.min(1)]],
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      description: ['', [Validators.required, Validators.minLength(10)]],
+      pointCost: [0, [Validators.required, Validators.min(1), Validators.max(1000)]],
+    });
+
+    // Subscribe to errors
+    this.error$.subscribe(error => {
+      if (error) {
+        this.showErrorMessage(error.message || 'An error occurred');
+      }
     });
   }
 
@@ -76,20 +85,26 @@ export class RewardsComponent implements OnInit {
 
     this.dialogRef = this.dialog.open(addDialog, {
       width: '500px',
+      disableClose: true
     });
 
     this.dialogRef.afterClosed().subscribe((result: Reward) => {
       if (result && this.parentId) {
-        const reward = {
-          ...result,
-          parentId: this.parentId,
-        };
-        this.store.dispatch(
-          ParentActions.createReward({
+        if (this.rewardForm.valid) {
+          const reward = {
+            ...result,
             parentId: this.parentId,
-            reward,
-          })
-        );
+          };
+          this.store.dispatch(
+            ParentActions.createReward({
+              parentId: this.parentId,
+              reward,
+            })
+          );
+          this.showSuccessMessage('Reward created successfully');
+        } else {
+          this.showErrorMessage('Please fill all required fields correctly');
+        }
       }
     });
   }
@@ -103,23 +118,29 @@ export class RewardsComponent implements OnInit {
 
     this.dialogRef = this.dialog.open(editDialog, {
       width: '500px',
+      disableClose: true,
       data: { reward },
     });
 
     this.dialogRef.afterClosed().subscribe((result: Reward) => {
       if (result && this.parentId && reward.id) {
-        const updatedReward = {
-          ...result,
-          id: reward.id,
-          parentId: this.parentId,
-        };
-        this.store.dispatch(
-          ParentActions.updateReward({
+        if (this.rewardForm.valid) {
+          const updatedReward = {
+            ...result,
+            id: reward.id,
             parentId: this.parentId,
-            rewardId: reward.id,
-            reward: updatedReward,
-          })
-        );
+          };
+          this.store.dispatch(
+            ParentActions.updateReward({
+              parentId: this.parentId,
+              rewardId: reward.id,
+              reward: updatedReward,
+            })
+          );
+          this.showSuccessMessage('Reward updated successfully');
+        } else {
+          this.showErrorMessage('Please fill all required fields correctly');
+        }
       }
     });
   }
@@ -138,7 +159,43 @@ export class RewardsComponent implements OnInit {
             rewardId: reward.id,
           })
         );
+        this.showSuccessMessage('Reward deleted successfully');
       }
     });
   }
-}
+
+  getErrorMessage(controlName: string): string {
+    const control = this.rewardForm.get(controlName);
+    if (control?.hasError('required')) {
+      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} is required`;
+    }
+    if (control?.hasError('minlength')) {
+      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} must be at least ${control.errors?.['minlength'].requiredLength} characters`;
+    }
+    if (control?.hasError('min')) {
+      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} must be at least ${control.errors?.['min'].min}`;
+    }
+    if (control?.hasError('max')) {
+      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} must be less than ${control.errors?.['max'].max}`;
+    }
+    return '';
+  }
+
+  private showSuccessMessage(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showErrorMessage(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['error-snackbar']
+    });
+  }
+} 

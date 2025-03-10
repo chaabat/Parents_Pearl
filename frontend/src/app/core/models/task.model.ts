@@ -14,14 +14,14 @@ export enum TaskType {
 }
 
 export interface Task {
-  id?: number;
+  id: number;
   title: string;
   description: string;
   pointValue: number;
-  dueDate: string;
   taskType: TaskType;
+  status: TaskStatus;
+  childId: number;
+  dueDate: string | Date;
   choices?: string[];
-  correctAnswer: string;
-  status?: TaskStatus;
-  childId?: number;
+  correctAnswer?: string;
 }
