@@ -25,6 +25,13 @@ export const PARENT_ROUTES: Routes = [
       import('./rewards/rewards.component').then((m) => m.RewardsComponent),
   },
   {
+    path: 'parent/points',
+    canActivate: [RoleGuard],
+    data: { roles: [Role.PARENT] },
+    loadComponent: () =>
+      import('./profil/profil.component').then((m) => m.ProfilComponent),
+  },
+  {
     path: '',
     redirectTo: 'parent/children',
     pathMatch: 'full',

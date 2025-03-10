@@ -3,11 +3,14 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { ParentService } from '../../core/services/parent.service';
 import * as ParentActions from './parent.actions';
 import { catchError, map, mergeMap, of } from 'rxjs';
+import { Store } from '@ngrx/store';
+
 @Injectable()
 export class ParentEffects {
   constructor(
     private actions$: Actions,
-    private parentService: ParentService
+    private parentService: ParentService,
+    private store: Store
   ) {}
 
   // Profile Effects
@@ -83,24 +86,34 @@ export class ParentEffects {
       ofType(ParentActions.loadPointHistory),
       mergeMap(({ parentId, childId }) =>
         this.parentService.getChildPointHistory(parentId, childId).pipe(
-          map((points) => ParentActions.loadPointHistorySuccess({ points })),
-          catchError((error) =>
-            of(ParentActions.parentActionFailure({ error }))
-          )
+          map((points) => {
+            console.log('Point history loaded:', points);
+            return ParentActions.loadPointHistorySuccess({ points });
+          }),
+          catchError((error) => {
+            console.error('Error in loadPointHistory effect:', error);
+            return of(
+              ParentActions.parentActionFailure({
+                error: 'Failed to load point history. Please try again.',
+              })
+            );
+          })
         )
       )
     )
   );
 
-  awardPoints$ = createEffect(() =>
+  addPoints$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(ParentActions.awardPoints),
+      ofType(ParentActions.addPoints),
       mergeMap(({ parentId, childId, points, reason }) =>
-        this.parentService.awardPoints(parentId, childId, points, reason).pipe(
-          map(() => ParentActions.loadPointHistory({ parentId, childId })),
-          catchError((error) =>
-            of(ParentActions.parentActionFailure({ error }))
-          )
+        this.parentService.addPoints(parentId, childId, points, reason).pipe(
+          map((response) => {
+            // After successful points update, trigger children reload
+            this.store.dispatch(ParentActions.loadChildren({ parentId }));
+            return ParentActions.addPointsSuccess({ points: response });
+          }),
+          catchError((error) => of(ParentActions.addPointsFailure({ error })))
         )
       )
     )

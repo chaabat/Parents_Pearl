@@ -81,7 +81,12 @@ export const createTaskSuccess = createAction(
 
 export const updateTask = createAction(
   '[Parent] Update Task',
-  props<{ parentId: number; childId: number; taskId: number; task: Partial<Task> }>()
+  props<{
+    parentId: number;
+    childId: number;
+    taskId: number;
+    task: Partial<Task>;
+  }>()
 );
 
 export const updateTaskSuccess = createAction(
@@ -100,11 +105,6 @@ export const deleteTaskSuccess = createAction(
 );
 
 // Points Actions
-export const awardPoints = createAction(
-  '[Parent] Award Points',
-  props<{ parentId: number; childId: number; points: number; reason: string }>()
-);
-
 export const loadPointHistory = createAction(
   '[Parent] Load Point History',
   props<{ parentId: number; childId: number }>()
@@ -118,6 +118,26 @@ export const loadPointHistorySuccess = createAction(
 export const updateChildPoints = createAction(
   '[Parent] Update Child Points',
   props<{ parentId: number; childId: number; points: number }>()
+);
+
+export const addPoints = createAction(
+  '[Parent] Add Points',
+  props<{
+    parentId: number;
+    childId: number;
+    points: number;
+    reason: string;
+  }>()
+);
+
+export const addPointsSuccess = createAction(
+  '[Parent] Add Points Success',
+  props<{ points: any }>()
+);
+
+export const addPointsFailure = createAction(
+  '[Parent] Add Points Failure',
+  props<{ error: any }>()
 );
 
 // Rewards Actions

@@ -39,18 +39,21 @@ function ageValidator(minAge: number, maxAge: number): ValidatorFn {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
-    
+
     if (age < minAge || age > maxAge) {
-      return { 
-        ageRange: { 
-          min: minAge, 
-          max: maxAge, 
-          actual: age 
-        } 
+      return {
+        ageRange: {
+          min: minAge,
+          max: maxAge,
+          actual: age,
+        },
       };
     }
     return null;
@@ -80,6 +83,7 @@ export class ChildrenComponent implements OnInit {
   pointsForm: FormGroup;
   imagePreview: string | null = null;
   selectedFile: File | null = null;
+  pointHistory$: Observable<any[]>;
 
   constructor(
     private store: Store,
@@ -87,31 +91,28 @@ export class ChildrenComponent implements OnInit {
     private dialog: MatDialog,
     private fb: FormBuilder,
     private http: HttpClient
-    
   ) {
     this.children$ = this.store.select(ParentSelectors.selectChildren);
     this.loading$ = this.store.select(ParentSelectors.selectParentLoading);
     this.error$ = this.store.select(ParentSelectors.selectParentError);
+    this.pointHistory$ = this.store.select(ParentSelectors.selectPointHistory);
 
     // Initialize forms
-    this.childForm = this.fb.group(
-      {
-        name: ['', Validators.required],
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
-        dateOfBirth: ['', [Validators.required, ageValidator(6, 18)]],
-        picture: [''],
-        role: [Role.CHILD],
-        totalPoints: [0],
-        tasks: [[]],
-        points: [[]],
-        rewardRedemptions: [[]],
-      },
-     
-    );
+    this.childForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      dateOfBirth: ['', [Validators.required, ageValidator(6, 18)]],
+      picture: [''],
+      role: [Role.CHILD],
+      totalPoints: [0],
+      tasks: [[]],
+      points: [[]],
+      rewardRedemptions: [[]],
+    });
 
     this.pointsForm = this.fb.group({
-      points: [0, [Validators.required, Validators.min(0)]],
+      points: [0, [Validators.required]],
       reason: ['', Validators.required],
     });
   }
@@ -123,14 +124,16 @@ export class ChildrenComponent implements OnInit {
         if (user?.id) {
           this.parentId = user.id;
           console.log('Loading children for parent:', this.parentId);
-          this.store.dispatch(ParentActions.loadChildren({ parentId: user.id }));
+          this.store.dispatch(
+            ParentActions.loadChildren({ parentId: user.id })
+          );
         }
       },
       error: (error) => {
         console.error('Error getting user:', error);
-      }
+      },
     });
-  
+
     // Subscribe to children updates
     this.children$.subscribe({
       next: (children) => {
@@ -138,7 +141,7 @@ export class ChildrenComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading children:', error);
-      }
+      },
     });
   }
 
@@ -189,19 +192,11 @@ export class ChildrenComponent implements OnInit {
       email: child.email,
       dateOfBirth: child.dateOfBirth,
       picture: child.picture,
-      role: Role.CHILD,
-      totalPoints: child.totalPoints || 0,
-      tasks: child.tasks || [],
-      points: child.points || [],
-      rewardRedemptions: child.rewardRedemptions || [],
     });
 
     const dialogRef = this.dialog.open(editDialog, {
       width: '500px',
-      data: {
-        form: this.childForm,
-        child,
-      },
+      data: { child: child },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -222,42 +217,87 @@ export class ChildrenComponent implements OnInit {
 
     const dialogRef = this.dialog.open(pointsDialog, {
       width: '400px',
-      data: {
-        form: this.pointsForm,
-        child,
-      },
+      data: { child: child },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result && this.parentId) {
-        this.store.dispatch(
-          ParentActions.awardPoints({
-            parentId: this.parentId,
-            childId: child.id,
-            points: result.points,
-            reason: result.reason,
-          })
-        );
+        const points = Number(result.points);
+        if (!isNaN(points)) {
+          this.store.dispatch(
+            ParentActions.addPoints({
+              parentId: this.parentId,
+              childId: child.id,
+              points: points,
+              reason: result.reason || '',
+            })
+          );
+
+          // Reload children after points update
+          this.store.dispatch(
+            ParentActions.loadChildren({
+              parentId: this.parentId,
+            })
+          );
+
+          // Reload point history if dialog is open
+          this.store.dispatch(
+            ParentActions.loadPointHistory({
+              parentId: this.parentId,
+              childId: child.id,
+            })
+          );
+        }
       }
     });
   }
 
   viewTasks(child: Child): void {
-    // Navigate to tasks page
-    this.router.navigate(['/dashboard/tasks', child.id]);
+    this.router.navigate(['/parent/tasks'], {
+      queryParams: { childId: child.id },
+    });
   }
 
   viewPointHistory(child: Child, historyDialog: TemplateRef<any>): void {
-    this.dialog.open(historyDialog, {
-      width: '600px',
-      data: { child },
-    });
+    // Load point history before opening dialog
+    if (this.parentId) {
+      // Clear any previous errors
+      this.store.dispatch(ParentActions.parentActionFailure({ error: null }));
+
+      // Load point history
+      this.store.dispatch(
+        ParentActions.loadPointHistory({
+          parentId: this.parentId,
+          childId: child.id,
+        })
+      );
+
+      const dialogRef = this.dialog.open(historyDialog, {
+        width: '600px',
+        data: { child: child },
+        disableClose: false,
+      });
+
+      // Subscribe to point history errors
+      const errorSub = this.error$.subscribe((error) => {
+        if (error) {
+          console.error('Error loading point history:', error);
+
+          dialogRef.close();
+        }
+      });
+
+      // Clean up subscription when dialog closes
+      dialogRef.afterClosed().subscribe(() => {
+        errorSub.unsubscribe();
+      });
+    }
   }
 
   deleteChild(child: Child, deleteDialog: TemplateRef<any>): void {
     const dialogRef = this.dialog.open(deleteDialog, {
       width: '400px',
-      data: { child },
+      data: { child: child },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -284,7 +324,7 @@ export class ChildrenComponent implements OnInit {
               formData.picture = imageUrl;
             }
             dialogRef.close(formData);
-            
+
             // Reset file selection
             this.selectedFile = null;
             this.imagePreview = null;
@@ -301,9 +341,16 @@ export class ChildrenComponent implements OnInit {
     }
   }
 
-  onSubmitPoints(dialogRef: any): void {
+  onSubmitPoints(dialogRef: MatDialogRef<any>): void {
     if (this.pointsForm.valid) {
-      dialogRef.close(this.pointsForm.value);
+      const formValue = this.pointsForm.value;
+      const points = Number(formValue.points);
+      if (!isNaN(points)) {
+        dialogRef.close({
+          points: points,
+          reason: formValue.reason,
+        });
+      }
     }
   }
 
@@ -313,8 +360,6 @@ export class ChildrenComponent implements OnInit {
     img.src =
       'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png';
   }
-
- 
 
   // Add file handling methods
   onFileSelected(event: any) {
@@ -341,10 +386,10 @@ export class ChildrenComponent implements OnInit {
     if (!this.selectedFile) {
       return of(''); // Return an empty string instead of null
     }
-  
+
     const formData = new FormData();
     formData.append('file', this.selectedFile);
-  
+
     return this.http
       .post<{ imageUrl: string }>(
         `${environment.apiUrl}/upload/images`,
@@ -355,42 +400,45 @@ export class ChildrenComponent implements OnInit {
 
   loadChildren() {
     // Get parent ID from auth state
-    this.store.select(AuthSelectors.selectUser).pipe(
-      take(1) // Take only the first emission
-    ).subscribe({
-      next: (user) => {
-        if (user?.id) {
-          const token = localStorage.getItem('token');
-          console.log('Loading children for parent:', user.id);
-          
-          const headers = new HttpHeaders()
-            .set('Authorization', `Bearer ${token}`)
-            .set('Content-Type', 'application/json');
-          
-          this.http.get<any>(`${environment.apiUrl}/parents/${user.id}/children`, { 
-            headers: headers,
-            observe: 'response'
-          }).subscribe({
-            next: (response) => {
-              console.log('Children loaded successfully:', response.body);
-              this.children$ = of(response.body); // Convert to Observable
-            },
-            error: (error) => {
-              console.error('Error loading children:', error);
-              if (error.error instanceof ErrorEvent) {
-                console.error('Client-side error:', error.error.message);
-              } else {
-                console.error(`Server error ${error.status}:`, error.error);
-              }
-            }
-          });
-        } else {
-          console.error('No authenticated user found');
-        }
-      },
-      error: (error) => console.error('Error getting user:', error)
-    });
-  }
+    this.store
+      .select(AuthSelectors.selectUser)
+      .pipe(
+        take(1) // Take only the first emission
+      )
+      .subscribe({
+        next: (user) => {
+          if (user?.id) {
+            const token = localStorage.getItem('token');
+            console.log('Loading children for parent:', user.id);
 
- 
+            const headers = new HttpHeaders()
+              .set('Authorization', `Bearer ${token}`)
+              .set('Content-Type', 'application/json');
+
+            this.http
+              .get<any>(`${environment.apiUrl}/parents/${user.id}/children`, {
+                headers: headers,
+                observe: 'response',
+              })
+              .subscribe({
+                next: (response) => {
+                  console.log('Children loaded successfully:', response.body);
+                  this.children$ = of(response.body); // Convert to Observable
+                },
+                error: (error) => {
+                  console.error('Error loading children:', error);
+                  if (error.error instanceof ErrorEvent) {
+                    console.error('Client-side error:', error.error.message);
+                  } else {
+                    console.error(`Server error ${error.status}:`, error.error);
+                  }
+                },
+              });
+          } else {
+            console.error('No authenticated user found');
+          }
+        },
+        error: (error) => console.error('Error getting user:', error),
+      });
+  }
 }

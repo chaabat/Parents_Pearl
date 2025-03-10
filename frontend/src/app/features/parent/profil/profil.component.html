@@ -1,0 +1,109 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Profile Settings</h1>
+
+    <ng-container *ngIf="(loading$ | async) === false; else loading">
+      <ng-container *ngIf="(error$ | async) === null; else error">
+        <form
+          [formGroup]="parentForm"
+          (ngSubmit)="onSubmit()"
+          class="space-y-6"
+        >
+          <!-- Profile Picture Upload -->
+          <div class="flex flex-col items-center mb-6">
+            <div
+              class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg cursor-pointer"
+              (click)="triggerFileInput()"
+            >
+              <img
+                [src]="
+                  imagePreview ||
+                  parentForm.get('picture')?.value ||
+                  'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
+                "
+                (error)="onImageError($event)"
+                alt="Profile picture"
+                class="w-full h-full object-cover"
+              />
+            </div>
+
+            <!-- Hidden file input -->
+            <input
+              type="file"
+              accept="image/*"
+              class="hidden"
+              #fileInputEdit
+              (change)="onFileSelected($event)"
+            />
+
+            <button
+              type="button"
+              mat-button
+              color="primary"
+              class="mt-2"
+              (click)="triggerFileInput()"
+            >
+              Change Picture
+            </button>
+          </div>
+
+          <!-- Name Field -->
+          <mat-form-field class="w-full">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name" required />
+            <mat-error *ngIf="parentForm.get('name')?.hasError('required')">
+              Name is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Email Field -->
+          <mat-form-field class="w-full">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" required />
+            <mat-error *ngIf="parentForm.get('email')?.hasError('required')">
+              Email is required
+            </mat-error>
+            <mat-error *ngIf="parentForm.get('email')?.hasError('email')">
+              Please enter a valid email address
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Phone Field -->
+          <mat-form-field class="w-full">
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="password" type="password" />
+            <mat-error *ngIf="parentForm.get('password')?.hasError('pattern')">
+              Please enter a valid password
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Submit Button -->
+          <div class="flex justify-end">
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="!parentForm.valid || (loading$ | async)"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </ng-container>
+    </ng-container>
+  </div>
+
+  <!-- Loading Template -->
+  <ng-template #loading>
+    <div class="flex justify-center py-8">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  </ng-template>
+
+  <!-- Error Template -->
+  <ng-template #error>
+    <div class="text-center py-8 text-red-600">
+      {{ error$ | async }}
+    </div>
+  </ng-template>
+</div>

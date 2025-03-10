@@ -45,6 +45,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'parent/profil',
+        loadComponent: () =>
+          import('./features/parent/profil/profil.component').then(
+            (m) => m.ProfilComponent
+          ),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

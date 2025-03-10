@@ -324,8 +324,8 @@
       <button
         mat-raised-button
         color="primary"
-        (click)="onSubmitChild(dialogRef)"
         [disabled]="!childForm.valid"
+        (click)="onSubmitChild(dialogRef)"
       >
         Update
       </button>
@@ -334,12 +334,19 @@
 
   <!-- Manage Points Dialog -->
   <ng-template #managePointsDialog let-dialogRef="dialogRef" let-data="data">
-    <h2 mat-dialog-title>Manage Points for {{ data.child?.name }}</h2>
+    <h2 mat-dialog-title>Manage Points for {{ data?.child?.name }}</h2>
     <mat-dialog-content>
       <form [formGroup]="pointsForm" class="flex flex-col gap-4">
         <mat-form-field>
-          <mat-label>Points</mat-label>
-          <input matInput type="number" formControlName="points" required />
+          <mat-label>Points (positive or negative)</mat-label>
+          <input
+            matInput
+            type="number"
+            formControlName="points"
+            required
+            placeholder="Enter points (e.g., 10 or -5)"
+          />
+          <mat-hint>Use positive numbers to award ,negative to deduct</mat-hint>
         </mat-form-field>
 
         <mat-form-field>
@@ -349,6 +356,7 @@
             formControlName="reason"
             required
             rows="3"
+            placeholder="Explain why points are being awarded or deducted"
           ></textarea>
         </mat-form-field>
       </form>
@@ -368,23 +376,41 @@
 
   <!-- Point History Dialog -->
   <ng-template #pointHistoryDialog let-dialogRef="dialogRef" let-data="data">
-    <h2 mat-dialog-title>Point History for {{ data.child?.name }}</h2>
+    <h2 mat-dialog-title>Point History for {{ data?.child?.name }}</h2>
     <mat-dialog-content>
       <div class="max-h-96 overflow-y-auto">
-        <mat-list>
-          <mat-list-item *ngFor="let point of data.child?.points || []">
-            <div class="flex justify-between items-center w-full">
-              <span>{{ point.reason }}</span>
-              <span
-                [class.text-green-600]="point.points > 0"
-                [class.text-red-600]="point.points < 0"
+        <ng-container *ngIf="(loading$ | async) === false; else loading">
+          <ng-container *ngIf="(error$ | async) === null; else error">
+            <ng-container *ngIf="pointHistory$ | async as points">
+              <div
+                *ngIf="points.length === 0"
+                class="text-center py-4 text-gray-500"
               >
-                {{ point.points > 0 ? "+" : "" }}{{ point.points }}
-              </span>
-            </div>
-            <mat-divider></mat-divider>
-          </mat-list-item>
-        </mat-list>
+                No point history available
+              </div>
+              <mat-list *ngIf="points.length > 0">
+                <mat-list-item *ngFor="let point of points">
+                  <div class="flex justify-between items-center w-full py-2">
+                    <div class="flex flex-col">
+                      <span class="text-gray-800">{{ point.reason }}</span>
+                      <span class="text-sm text-gray-500">{{
+                        point.createdAt | date : "medium"
+                      }}</span>
+                    </div>
+                    <span
+                      [class.text-green-600]="point.points > 0"
+                      [class.text-red-600]="point.points < 0"
+                      class="font-semibold"
+                    >
+                      {{ point.points > 0 ? "+" : "" }}{{ point.points }}
+                    </span>
+                  </div>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
+              </mat-list>
+            </ng-container>
+          </ng-container>
+        </ng-container>
       </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -392,12 +418,24 @@
     </mat-dialog-actions>
   </ng-template>
 
+  <ng-template #loading>
+    <div class="flex justify-center py-4">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  </ng-template>
+
+  <ng-template #error>
+    <div class="text-center py-4 text-red-600">
+      Error loading point history. Please try again.
+    </div>
+  </ng-template>
+
   <!-- Delete Confirmation Dialog -->
   <ng-template #deleteChildDialog let-dialogRef="dialogRef" let-data="data">
     <h2 mat-dialog-title class="text-red-600">Delete Child</h2>
     <mat-dialog-content>
       <p>
-        Are you sure you want to delete {{ data.child?.name }}? This action
+        Are you sure you want to delete {{ data?.child?.name }}? This action
         cannot be undone.
       </p>
     </mat-dialog-content>

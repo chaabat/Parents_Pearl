@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Child, Task, Reward, Point, Parent } from '../models';
@@ -14,7 +14,9 @@ export class ParentService {
 
   // Profile Management
   getParentProfile(parentId: number): Observable<Parent> {
-    return this.http.get<Parent>(`${this.apiUrl}/parents/${parentId}`);
+    return this.http.get<Parent>(`${this.apiUrl}/parents/${parentId}`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   updateParentProfile(
@@ -23,7 +25,8 @@ export class ParentService {
   ): Observable<Parent> {
     return this.http.put<Parent>(
       `${this.apiUrl}/parents/${parentId}`,
-      profileData
+      profileData,
+      { headers: this.getAuthHeaders() }
     );
   }
 
@@ -33,10 +36,7 @@ export class ParentService {
     console.log('Service - Token when fetching children:', token);
 
     // Create explicit headers
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
+    const headers = this.getAuthHeaders();
 
     console.log('Service - Headers:', headers);
 
@@ -53,13 +53,15 @@ export class ParentService {
   ): Observable<Child> {
     return this.http.put<Child>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}`,
-      child
+      child,
+      { headers: this.getAuthHeaders() }
     );
   }
 
   deleteChild(parentId: number, childId: number): Observable<void> {
     return this.http.delete<void>(
-      `${this.apiUrl}/parents/${parentId}/children/${childId}`
+      `${this.apiUrl}/parents/${parentId}/children/${childId}`,
+      { headers: this.getAuthHeaders() }
     );
   }
 
@@ -115,82 +117,90 @@ export class ParentService {
   }
 
   // Points Management
-  updateChildPoints(
-    parentId: number,
-    childId: number,
-    points: number,
-    reason: string
-  ): Observable<void> {
-    return this.http.post<void>(
-      `${this.apiUrl}/parents/${parentId}/children/${childId}/points`,
-      { points, reason }
-    );
-  }
-
   getChildPointHistory(parentId: number, childId: number): Observable<Point[]> {
     return this.http.get<Point[]>(
-      `${this.apiUrl}/parents/${parentId}/children/${childId}/points/child-history`
-    );
-  }
-
-  awardPoints(
-    parentId: number,
-    childId: number,
-    points: number,
-    reason: string
-  ): Observable<Point> {
-    return this.http.post<Point>(
-      `${this.apiUrl}/parents/${parentId}/children/${childId}/points`,
-      { points, reason }
+      `${this.apiUrl}/points/parents/${parentId}/children/${childId}/points`,
+      {
+        headers: this.getAuthHeaders(),
+        params: {
+          sort: 'createdAt,desc',
+        },
+      }
     );
   }
 
   // Rewards Management
-createReward(parentId: number, reward: Partial<Reward>): Observable<Reward> {
-  return this.http.post<Reward>(
-    `${this.apiUrl}/parents/${parentId}/rewards`,
-    reward,
-    { headers: this.getAuthHeaders() }
-  );
-}
+  createReward(parentId: number, reward: Partial<Reward>): Observable<Reward> {
+    return this.http.post<Reward>(
+      `${this.apiUrl}/parents/${parentId}/rewards`,
+      reward,
+      { headers: this.getAuthHeaders() }
+    );
+  }
 
-updateReward(
-  parentId: number,
-  rewardId: number,
-  reward: Partial<Reward>
-): Observable<Reward> {
-  return this.http.put<Reward>(
-    `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`,
-    reward,
-    { headers: this.getAuthHeaders() }
-  );
-}
+  updateReward(
+    parentId: number,
+    rewardId: number,
+    reward: Partial<Reward>
+  ): Observable<Reward> {
+    return this.http.put<Reward>(
+      `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`,
+      reward,
+      { headers: this.getAuthHeaders() }
+    );
+  }
 
-deleteReward(parentId: number, rewardId: number): Observable<void> {
-  return this.http.delete<void>(
-    `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`,
-    { headers: this.getAuthHeaders() }
-  );
-}
+  deleteReward(parentId: number, rewardId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
 
-getAllRewards(parentId: number): Observable<Reward[]> {
-  return this.http.get<Reward[]>(
-    `${this.apiUrl}/parents/${parentId}/rewards`,
-    { headers: this.getAuthHeaders() }
-  );
-}
+  getAllRewards(parentId: number): Observable<Reward[]> {
+    return this.http.get<Reward[]>(
+      `${this.apiUrl}/parents/${parentId}/rewards`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
 
+  // Child Management
   addChild(parentId: number, child: any): Observable<Child> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
-
     return this.http.post<Child>(
       `${this.apiUrl}/parents/${parentId}/children`,
       child,
-      { headers }
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  editChild(parentId: number, childId: number, child: any): Observable<Child> {
+    return this.http.put<Child>(
+      `${this.apiUrl}/parents/${parentId}/children/${childId}`,
+      child,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  addPoints(
+    parentId: number,
+    childId: number,
+    points: number,
+    reason: string
+  ): Observable<any> {
+    // Create URLSearchParams for form data
+    const params = new URLSearchParams();
+    params.append('points', Math.round(points).toString()); // Ensure it's a whole number
+    params.append('reason', reason);
+
+    return this.http.post(
+      `${this.apiUrl}/parents/${parentId}/children/${childId}/points`,
+      params.toString(),
+      {
+        headers: new HttpHeaders({
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        }),
+      }
     );
   }
 
