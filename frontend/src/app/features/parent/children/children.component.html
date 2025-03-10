@@ -431,17 +431,15 @@
   </ng-template>
 
   <!-- Delete Confirmation Dialog -->
-  <ng-template #deleteChildDialog let-dialogRef="dialogRef" let-data="data">
-    <h2 mat-dialog-title class="text-red-600">Delete Child</h2>
+  <ng-template #deleteChildDialog let-data>
+    <h2 mat-dialog-title class="text-red-600">Delete Child Account</h2>
     <mat-dialog-content>
-      <p>
-        Are you sure you want to delete {{ data?.child?.name }}? This action
-        cannot be undone.
-      </p>
+      <p>Are you sure you want to delete {{ data?.child?.name }}? This action
+        cannot be undone.</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-raised-button color="warn" mat-dialog-close="true">
+      <button mat-button [mat-dialog-close]="false">Cancel</button>
+      <button mat-raised-button color="warn" [mat-dialog-close]="true">
         Delete
       </button>
     </mat-dialog-actions>

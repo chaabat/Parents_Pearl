@@ -68,7 +68,13 @@
             </mat-error>
           </mat-form-field>
 
-          <!-- Phone Field -->
+          <!-- Date of Birth Field -->
+          <mat-form-field class="w-full">
+            <mat-label>Date of Birth</mat-label>
+            <input matInput formControlName="dateOfBirth" type="date" />
+          </mat-form-field>
+
+          <!-- password Field -->
           <mat-form-field class="w-full">
             <mat-label>Password</mat-label>
             <input matInput formControlName="password" type="password" />
@@ -77,8 +83,9 @@
             </mat-error>
           </mat-form-field>
 
-          <!-- Submit Button -->
-          <div class="flex justify-end">
+          <!-- Action Buttons -->
+          <div class="flex justify-between items-center mt-8">
+            <!-- Save Changes Button -->
             <button
               mat-raised-button
               color="primary"
@@ -86,6 +93,16 @@
               [disabled]="!parentForm.valid || (loading$ | async)"
             >
               Save Changes
+            </button>
+
+            <!-- Delete Account Button -->
+            <button
+              mat-raised-button
+              color="warn"
+              type="button"
+              (click)="openDeleteConfirmDialog()"
+            >
+              Delete Account
             </button>
           </div>
         </form>
@@ -107,3 +124,20 @@
     </div>
   </ng-template>
 </div>
+
+<!-- Delete Confirmation Dialog -->
+<ng-template #deleteConfirmDialog>
+  <h2 mat-dialog-title class="text-red-600">Delete Account</h2>
+  <mat-dialog-content>
+    <p>
+      Are you sure you want to delete your account? This action cannot be
+      undone.
+    </p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-raised-button color="warn" (click)="confirmDelete()">
+      Delete Account
+    </button>
+  </mat-dialog-actions>
+</ng-template>

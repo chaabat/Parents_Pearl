@@ -33,6 +33,11 @@ export const loadChildrenSuccess = createAction(
   props<{ children: Child[] }>()
 );
 
+export const loadChildrenFailure = createAction(
+  '[Parent] Load Children Failure',
+  props<{ error: any }>()
+);
+
 export const addChild = createAction(
   '[Parent] Add Child',
   props<{ parentId: number; child: any }>()
@@ -56,6 +61,13 @@ export const updateChild = createAction(
 export const deleteChild = createAction(
   '[Parent] Delete Child',
   props<{ parentId: number; childId: number }>()
+);
+
+export const deleteChildSuccess = createAction('[Parent] Delete Child Success');
+
+export const deleteChildFailure = createAction(
+  '[Parent] Delete Child Failure',
+  props<{ error: any }>()
 );
 
 // Task Actions

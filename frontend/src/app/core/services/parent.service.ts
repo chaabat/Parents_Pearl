@@ -30,6 +30,12 @@ export class ParentService {
     );
   }
 
+  deleteParentAccount(parentId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/parents/${parentId}`, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
   // parent.service.ts
   getMyChildren(parentId: number): Observable<Child[]> {
     const token = localStorage.getItem('token');

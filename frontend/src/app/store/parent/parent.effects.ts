@@ -4,13 +4,16 @@ import { ParentService } from '../../core/services/parent.service';
 import * as ParentActions from './parent.actions';
 import { catchError, map, mergeMap, of } from 'rxjs';
 import { Store } from '@ngrx/store';
+import * as AuthActions from '../auth/auth.actions';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class ParentEffects {
   constructor(
     private actions$: Actions,
     private parentService: ParentService,
-    private store: Store
+    private store: Store,
+    private router: Router
   ) {}
 
   // Profile Effects
@@ -50,7 +53,7 @@ export class ParentEffects {
         this.parentService.getMyChildren(parentId).pipe(
           map((children) => ParentActions.loadChildrenSuccess({ children })),
           catchError((error) =>
-            of(ParentActions.parentActionFailure({ error }))
+            of(ParentActions.loadChildrenFailure({ error }))
           )
         )
       )
@@ -234,6 +237,23 @@ export class ParentEffects {
             ParentActions.deleteTaskSuccess({ taskId }),
             ParentActions.loadTasks({ parentId }),
           ]),
+          catchError((error) =>
+            of(ParentActions.parentActionFailure({ error }))
+          )
+        )
+      )
+    )
+  );
+
+  deleteChild$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ParentActions.deleteChild),
+      mergeMap(({ parentId, childId }) =>
+        this.parentService.deleteChild(parentId, childId).pipe(
+          map(() => {
+            // After successful deletion, load children again
+            return ParentActions.loadChildren({ parentId });
+          }),
           catchError((error) =>
             of(ParentActions.parentActionFailure({ error }))
           )
