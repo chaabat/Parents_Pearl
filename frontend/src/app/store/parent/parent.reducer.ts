@@ -97,5 +97,14 @@ export const parentReducer = createReducer(
     tasks: state.tasks.filter((task) => task.id !== taskId),
     loading: false,
     error: null,
+  })),
+
+  on(ParentActions.updateChildSuccess, (state, { child }) => ({
+    ...state,
+    children: state.children.map(c => 
+      c.id === child.id ? { ...c, ...child } : c
+    ),
+    error: null,
+    loading: false
   }))
 );

@@ -29,6 +29,7 @@ import { Child, Role } from '../../../core/models';
 import * as ParentActions from '../../../store/parent/parent.actions';
 import * as ParentSelectors from '../../../store/parent/parent.selectors';
 import * as AuthSelectors from '../../../store/auth/auth.selectors';
+import { ParentService } from '../../../core/services/parent.service';
 
 function ageValidator(minAge: number, maxAge: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -84,13 +85,15 @@ export class ChildrenComponent implements OnInit {
   imagePreview: string | null = null;
   selectedFile: File | null = null;
   pointHistory$: Observable<any[]>;
+  selectedChild: Child | null = null;
 
   constructor(
     private store: Store,
     private router: Router,
     private dialog: MatDialog,
     private fb: FormBuilder,
-    private http: HttpClient
+    private http: HttpClient,
+    private parentService: ParentService
   ) {
     this.children$ = this.store.select(ParentSelectors.selectChildren);
     this.loading$ = this.store.select(ParentSelectors.selectParentLoading);
@@ -101,7 +104,7 @@ export class ChildrenComponent implements OnInit {
     this.childForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: [''],
       dateOfBirth: ['', [Validators.required, ageValidator(6, 18)]],
       picture: [''],
       role: [Role.CHILD],
@@ -187,28 +190,24 @@ export class ChildrenComponent implements OnInit {
   }
 
   editChild(child: Child, editDialog: TemplateRef<any>): void {
+    this.selectedChild = child;
+
+    // Reset form with current child data
     this.childForm.patchValue({
-      name: child.name,
-      email: child.email,
-      dateOfBirth: child.dateOfBirth,
-      picture: child.picture,
+      name: child.name || '',
+      email: child.email || '',
+      dateOfBirth: child.dateOfBirth || '',
+      picture: child.picture || '',
+      // Don't set password as it should be empty for updates
+      password: '',
     });
 
-    const dialogRef = this.dialog.open(editDialog, {
+    // Reset form dirty state after setting initial values
+    this.childForm.markAsPristine();
+
+    this.dialog.open(editDialog, {
       width: '500px',
       data: { child: child },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result && this.parentId) {
-        this.store.dispatch(
-          ParentActions.updateChild({
-            parentId: this.parentId,
-            childId: child.id,
-            child: result,
-          })
-        );
-      }
     });
   }
 
@@ -227,7 +226,7 @@ export class ChildrenComponent implements OnInit {
           this.store.dispatch(
             ParentActions.addPoints({
               parentId: this.parentId,
-              childId: child.id,
+              childId: child.id!,
               points: points,
               reason: result.reason || '',
             })
@@ -244,7 +243,7 @@ export class ChildrenComponent implements OnInit {
           this.store.dispatch(
             ParentActions.loadPointHistory({
               parentId: this.parentId,
-              childId: child.id,
+              childId: child.id!,
             })
           );
         }
@@ -268,7 +267,7 @@ export class ChildrenComponent implements OnInit {
       this.store.dispatch(
         ParentActions.loadPointHistory({
           parentId: this.parentId,
-          childId: child.id,
+          childId: child.id!,
         })
       );
 
@@ -305,7 +304,7 @@ export class ChildrenComponent implements OnInit {
         this.store.dispatch(
           ParentActions.deleteChild({
             parentId: this.parentId,
-            childId: child.id,
+            childId: child.id!,
           })
         );
       }
@@ -313,31 +312,45 @@ export class ChildrenComponent implements OnInit {
   }
 
   onSubmitChild(dialogRef: any): void {
-    if (this.childForm.valid) {
+    if (this.childForm.valid && this.parentId && this.selectedChild) {
+      const formData = this.childForm.value;
+
+      // Create update data with type assertion
+      const updateData = {
+        name: formData.name,
+        email: formData.email,
+        dateOfBirth: formData.dateOfBirth,
+        password: formData.password || undefined, // Only include if it exists
+      } as Partial<Child>;
+
       if (this.selectedFile) {
         this.uploadImage().subscribe(
-          (imageUrl: string) => {
-            // Update the form with the actual image URL
-            const formData = this.childForm.value;
-            // Only set picture if we got a valid URL
-            if (imageUrl) {
-              formData.picture = imageUrl;
-            }
-            dialogRef.close(formData);
-
-            // Reset file selection
-            this.selectedFile = null;
-            this.imagePreview = null;
+          (imageUrl) => {
+            updateData.picture = imageUrl;
+            this.updateChild(updateData, dialogRef);
           },
-          (error: any) => {
-            console.error('Image upload failed', error);
-            // Still close the dialog even if image upload fails
-            dialogRef.close(this.childForm.value);
+          (error) => {
+            console.error('Image upload failed:', error);
+            this.updateChild(updateData, dialogRef);
           }
         );
       } else {
-        dialogRef.close(this.childForm.value);
+        this.updateChild(updateData, dialogRef);
       }
+    }
+  }
+
+  private updateChild(updateData: Partial<Child>, dialogRef: any): void {
+    if (this.parentId && this.selectedChild) {
+      console.log('Updating child with data:', updateData); // Debug log
+      this.store.dispatch(
+        ParentActions.updateChild({
+          parentId: this.parentId,
+          childId: this.selectedChild.id!,
+          child: updateData,
+        })
+      );
+      dialogRef.close();
     }
   }
 

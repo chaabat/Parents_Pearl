@@ -1,0 +1,82 @@
+.child-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: white;
+    height: 420px;
+    display: flex;
+    flex-direction: column;
+  
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+  
+    mat-card-header {
+      background: linear-gradient(135deg, #673ab7 0%, #9c27b0 100%);
+      padding: 16px;
+    }
+  
+    mat-card-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+  
+    .mat-icon {
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
+      vertical-align: middle;
+    }
+  
+    mat-chip {
+      font-size: 0.875rem;
+      height: 24px;
+    }
+  }
+  
+  /* Scrollbar styling */
+  .child-card mat-card-content::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .child-card mat-card-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .child-card mat-card-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  
+  .child-card mat-card-content::-webkit-scrollbar-thumb:hover {
+    background: #666;
+  }
+  
+  .empty-state {
+    mat-icon {
+      font-size: 6rem;
+      height: 6rem;
+      width: 6rem;
+      opacity: 0.6;
+      margin-bottom: 1rem;
+    }
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  .add-child-button {
+    animation: pulse 2s infinite;
+  }
+  
+  

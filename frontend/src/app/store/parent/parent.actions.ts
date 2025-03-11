@@ -58,6 +58,16 @@ export const updateChild = createAction(
   props<{ parentId: number; childId: number; child: Partial<Child> }>()
 );
 
+export const updateChildSuccess = createAction(
+  '[Parent] Update Child Success',
+  props<{ child: Child }>()
+);
+
+export const updateChildFailure = createAction(
+  '[Parent] Update Child Failure',
+  props<{ error: any }>()
+);
+
 export const deleteChild = createAction(
   '[Parent] Delete Child',
   props<{ parentId: number; childId: number }>()

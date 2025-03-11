@@ -1,26 +1,138 @@
 <!-- dashboard.component.html -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  <!-- Quick Stats -->
-  <mat-card
-    class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
-  >
-    <mat-card-header>
-      <mat-card-title>Quick Stats</mat-card-title>
-    </mat-card-header>
-    <mat-card-content class="p-4">
-      <!-- Dashboard content here -->
-    </mat-card-content>
-  </mat-card>
+<div class="p-4 bg-gray-100 min-h-screen">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Quick Stats -->
+    <mat-card
+      class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow h-[400px]"
+    >
+      <mat-card-header>
+        <mat-card-title class="text-lg font-bold">Quick Stats</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="p-3">
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Stat cards with reduced padding -->
+          <div class="p-3 bg-blue-50 rounded-lg">
+            <p class="text-gray-600 text-sm">Total Users</p>
+            <p class="text-xl font-bold">1,234</p>
+          </div>
+          <div class="p-3 bg-green-50 rounded-lg">
+            <p class="text-gray-600 text-sm">Revenue</p>
+            <p class="text-xl font-bold">$12,345</p>
+          </div>
+          <div class="p-3 bg-purple-50 rounded-lg">
+            <p class="text-gray-600 text-sm">Tasks</p>
+            <p class="text-xl font-bold">56</p>
+          </div>
+          <div class="p-3 bg-yellow-50 rounded-lg">
+            <p class="text-gray-600 text-sm">Pending</p>
+            <p class="text-xl font-bold">12</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
-  <!-- Recent Activity -->
-  <mat-card
-    class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
-  >
-    <mat-card-header>
-      <mat-card-title>Recent Activity</mat-card-title>
-    </mat-card-header>
-    <mat-card-content class="p-4">
-      <!-- Activity content here -->
-    </mat-card-content>
-  </mat-card>
+    <!-- Recent Activity -->
+    <mat-card
+      class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow h-[400px] overflow-auto"
+    >
+      <mat-card-header>
+        <mat-card-title class="text-lg font-bold"
+          >Recent Activity</mat-card-title
+        >
+      </mat-card-header>
+      <mat-card-content class="p-3">
+        <div class="space-y-3">
+          <div class="flex items-center space-x-3">
+            <mat-icon class="text-blue-500 text-base">notifications</mat-icon>
+            <div>
+              <p class="font-medium text-sm">New user registered</p>
+              <p class="text-xs text-gray-500">2 hours ago</p>
+            </div>
+          </div>
+          <!-- Other activity items... -->
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Calendar -->
+    <mat-card
+      class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow h-[400px] overflow-auto"
+    >
+      <mat-card-header>
+        <mat-card-title class="text-lg font-bold">Calendar</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="p-3">
+        <div class="flex flex-col">
+          <mat-calendar
+            [selected]="selectedDate"
+            [dateClass]="dateClass"
+            (selectedChange)="onDateSelected($event)"
+            class="calendar-small"
+          >
+          </mat-calendar>
+          <div *ngIf="selectedDate" class="mt-2">
+            <h3 class="text-sm font-semibold mb-2">
+              Events for {{ selectedDate | date }}
+            </h3>
+            <div class="space-y-2">
+              <div
+                *ngFor="let event of getEventsForDate(selectedDate)"
+                class="p-2 bg-gray-50 rounded-lg text-sm"
+              >
+                <p class="font-medium">{{ event.title }}</p>
+                <p class="text-xs text-gray-500">
+                  {{ event.date | date : "shortTime" }}
+                </p>
+              </div>
+              <p
+                *ngIf="getEventsForDate(selectedDate).length === 0"
+                class="text-sm text-gray-500"
+              >
+                No events
+              </p>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Analytics Chart -->
+  <div class="mt-4">
+    <mat-card
+      class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+    >
+      <mat-card-header>
+        <mat-card-title class="text-lg font-bold">Analytics</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="p-3">
+        <div class="w-full h-48">
+          <canvas
+            baseChart
+            [data]="chartData"
+            [options]="chartOptions"
+            [type]="'line'"
+          >
+          </canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- User-Specific Content -->
+  <div *ngIf="userRole === 'ADMIN'" class="mt-6">
+    <mat-card
+      class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+    >
+      <mat-card-header>
+        <mat-card-title class="text-xl font-bold">Admin Panel</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="p-4">
+        <p>Welcome, Admin! You have access to advanced settings.</p>
+        <button mat-raised-button color="primary" class="mt-4">
+          Manage Users
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </div>

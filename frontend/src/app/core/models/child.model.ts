@@ -3,12 +3,15 @@ import { Task } from './task.model';
 import { Point } from './point.model';
 import { RewardRedemption } from './reward-redemption.model';
 
-export interface Child extends User {
-  role: Role.CHILD;
-  parentId: number;
+export interface Child {
+  id?: number;
+  name: string;
+  email: string;
+  dateOfBirth: string;
+  picture?: string;
   totalPoints?: number;
-  tasks?: Task[];
-  points?: Point[];
-  rewardRedemptions?: RewardRedemption[];
-  dateOfBirth?: Date;
+  tasks?: any[];
+  rewardRedemptions?: any[];
+  role: string;
+  password?: string;
 }

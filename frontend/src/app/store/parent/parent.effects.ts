@@ -261,4 +261,22 @@ export class ParentEffects {
       )
     )
   );
+
+  updateChild$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ParentActions.updateChild),
+      mergeMap(({ parentId, childId, child }) =>
+        this.parentService.updateChild(parentId, childId, child).pipe(
+          map((updatedChild) => {
+            console.log('Child updated successfully:', updatedChild);
+            return ParentActions.updateChildSuccess({ child: updatedChild });
+          }),
+          catchError((error) => {
+            console.error('Error updating child:', error);
+            return of(ParentActions.updateChildFailure({ error: error.message }));
+          })
+        )
+      )
+    )
+  );
 }

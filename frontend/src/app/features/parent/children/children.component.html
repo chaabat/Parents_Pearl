@@ -318,6 +318,11 @@
           <mat-datepicker #editPicker></mat-datepicker>
         </mat-form-field>
       </form>
+
+      <!-- Add error display -->
+      <div *ngIf="error$ | async as error" class="text-red-600 mt-4">
+        {{ error?.message || "An error occurred while updating the child." }}
+      </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Cancel</button>
@@ -434,8 +439,10 @@
   <ng-template #deleteChildDialog let-data>
     <h2 mat-dialog-title class="text-red-600">Delete Child Account</h2>
     <mat-dialog-content>
-      <p>Are you sure you want to delete {{ data?.child?.name }}? This action
-        cannot be undone.</p>
+      <p>
+        Are you sure you want to delete {{ data?.child?.name }}? This action
+        cannot be undone.
+      </p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button [mat-dialog-close]="false">Cancel</button>
