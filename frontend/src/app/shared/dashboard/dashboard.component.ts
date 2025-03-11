@@ -70,10 +70,11 @@ export class DashboardComponent implements OnInit {
 
   // Calendar methods
   dateClass = (date: Date) => {
-    const hasEvent = this.events.some(event => 
-      event.date.getDate() === date.getDate() &&
-      event.date.getMonth() === date.getMonth() &&
-      event.date.getFullYear() === date.getFullYear()
+    const hasEvent = this.events.some(
+      (event) =>
+        event.date.getDate() === date.getDate() &&
+        event.date.getMonth() === date.getMonth() &&
+        event.date.getFullYear() === date.getFullYear()
     );
     return hasEvent ? 'event-date' : '';
   };
@@ -86,10 +87,11 @@ export class DashboardComponent implements OnInit {
 
   getEventsForDate(date: Date | null): any[] {
     if (!date) return [];
-    return this.events.filter(event => 
-      event.date.getDate() === date.getDate() &&
-      event.date.getMonth() === date.getMonth() &&
-      event.date.getFullYear() === date.getFullYear()
+    return this.events.filter(
+      (event) =>
+        event.date.getDate() === date.getDate() &&
+        event.date.getMonth() === date.getMonth() &&
+        event.date.getFullYear() === date.getFullYear()
     );
   }
 }

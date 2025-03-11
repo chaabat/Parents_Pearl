@@ -24,6 +24,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { of } from 'rxjs';
 import { map, take } from 'rxjs/operators';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { Child, Role } from '../../../core/models';
 import * as ParentActions from '../../../store/parent/parent.actions';
@@ -71,6 +72,7 @@ function ageValidator(minAge: number, maxAge: number): ValidatorFn {
     MatDialogModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatChipsModule,
   ],
   templateUrl: './children.component.html',
   styleUrls: ['./children.component.css'],
@@ -453,5 +455,34 @@ export class ChildrenComponent implements OnInit {
         },
         error: (error) => console.error('Error getting user:', error),
       });
+  }
+
+  calculateAge(dateOfBirth: string | undefined): number {
+    if (!dateOfBirth) return 0;
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  getChildStatus(child: Child): string {
+    const points = child.totalPoints ?? 0; // Use 0 if totalPoints is undefined
+    if (points >= 100) return 'Superstar';
+    if (points >= 50) return 'Rising Star';
+    if (points >= 25) return 'Good Start';
+    return 'Beginner';
+  }
+
+  getImageUrl(picture: string | undefined | null): string {
+    if (!picture) {
+      return 'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png';
+    }
+    return picture.startsWith('http')
+      ? picture
+      : `https://res.cloudinary.com/dlwyetxjd/image/upload/${picture}`;
   }
 }

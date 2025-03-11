@@ -1,13 +1,13 @@
-<div class="p-6">
+<div class="p-6 bg-gray-50">
   <!-- Header Section -->
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Children Management</h1>
+    <h1 class="text-3xl font-bold text-primary">My Children</h1>
     <button
       mat-raised-button
       color="primary"
       (click)="openAddChildDialog(addChildDialog)"
     >
-      <mat-icon>add</mat-icon>
+      <mat-icon class="white">add</mat-icon>
       Add Child
     </button>
   </div>
@@ -26,89 +26,98 @@
     *ngIf="children$ | async as children"
     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
   >
-    <mat-card
-      *ngFor="let child of children"
-      class="hover:shadow-lg transition-shadow"
-    >
-      <mat-card-header class="pb-4">
-        <div mat-card-avatar class="relative">
-          <img
-            [src]="
-              child.picture ||
-              'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
-            "
-            [alt]="child.name"
-            class="w-12 h-12 rounded-full object-cover"
-            (error)="onImageError($event)"
-          />
+    <div *ngFor="let child of children" class="relative flex justify-center">
+      <!-- Card Body -->
+      <div
+        class="w-full mt-10 bg-gradient-to-r from-[#3f0d71] to-[#5a189a] rounded-3xl shadow-md overflow-hidden relative"
+      >
+        <!-- Profile Image Container - Centered -->
+        <div class="flex flex-col items-center">
           <div
-            class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-4 h-4 border-2 border-white"
-          ></div>
-        </div>
-        <mat-card-title>{{ child.name }}</mat-card-title>
-        <mat-card-subtitle
-          >Total Points: {{ child.totalPoints }}</mat-card-subtitle
-        >
-      </mat-card-header>
-
-      <mat-card-content class="px-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div class="text-sm">
-            <p class="text-gray-600">Email: {{ child.email }}</p>
-            <p class="text-gray-600">
-              Age: {{ child.dateOfBirth | date : "shortDate" }}
-            </p>
-          </div>
-          <div class="text-sm text-right">
-            <p class="text-gray-600">
-              Tasks: {{ child.tasks ? child.tasks.length : 0 }}
-            </p>
-            <p class="text-gray-600">
-              Rewards:
-              {{ child.rewardRedemptions ? child.rewardRedemptions.length : 0 }}
-            </p>
+            class="absolute left-1/2 top-4 transform -translate-x-1/2 flex flex-col items-center z-10"
+          >
+            <div
+              class="h-24 w-24 rounded-full border-4 border-white shadow-lg overflow-hidden mb-2"
+            >
+              <img
+                [src]="getImageUrl(child.picture)"
+                [alt]="child.name"
+                class="h-full w-full object-cover"
+                (error)="onImageError($event)"
+              />
+            </div>
+            
           </div>
         </div>
-      </mat-card-content>
 
-      <mat-card-actions class="flex justify-end p-4">
-        <button mat-icon-button [matMenuTriggerFor]="menu">
-          <mat-icon>more_vert</mat-icon>
+        <!-- Upper Section -->
+        <div class="h-1/2 w-full flex justify-between items-baseline px-6 py-5">
+          <h1 class="text-white text-xs font-bold mt-2">{{ getChildStatus(child) }}</h1>
+          <button mat-icon-button [matMenuTriggerFor]="menu" class="text-white">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+        </div>
+
+        <!-- Lower Section -->
+        <div class="bg-white h-1/2 w-full rounded-3xl p-4">
+          <div class="w-full flex justify-between items-center mb-4">
+            <div class="flex flex-col items-center">
+              <span class="text-gray-500 text-sm">Points</span>
+              <span class="text-gray-700 font-bold">{{
+                child.totalPoints || 0
+              }}</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-gray-500 text-sm">Age</span>
+              <span class="text-gray-700 font-bold">{{
+                calculateAge(child.dateOfBirth)
+              }}</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-gray-500 text-sm">Rewards</span>
+              <span class="text-gray-700 font-bold">{{
+                child.rewardRedemptions?.length || 0
+              }}</span>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <h2 class="text-gray-700 font-bold">{{ child.name }}</h2>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu -->
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="editChild(child, editChildDialog)">
+          <mat-icon color="primary">edit</mat-icon>
+          <span>Edit Profile</span>
         </button>
-        <mat-menu #menu="matMenu">
-          <button mat-menu-item (click)="editChild(child, editChildDialog)">
-            <mat-icon>edit</mat-icon>
-            <span>Edit Profile</span>
-          </button>
-          <button
-            mat-menu-item
-            (click)="managePoints(child, managePointsDialog)"
-          >
-            <mat-icon>stars</mat-icon>
-            <span>Manage Points</span>
-          </button>
-          <button mat-menu-item (click)="viewTasks(child)">
-            <mat-icon>assignment</mat-icon>
-            <span>View Tasks</span>
-          </button>
-          <button
-            mat-menu-item
-            (click)="viewPointHistory(child, pointHistoryDialog)"
-          >
-            <mat-icon>history</mat-icon>
-            <span>Point History</span>
-          </button>
-          <button
-            mat-menu-item
-            class="text-red-600"
-            (click)="deleteChild(child, deleteChildDialog)"
-          >
-            <mat-icon class="text-red-600">delete</mat-icon>
-            <span>Delete</span>
-          </button>
-        </mat-menu>
-      </mat-card-actions>
-    </mat-card>
+        <button mat-menu-item (click)="managePoints(child, managePointsDialog)">
+          <mat-icon color="accent">stars</mat-icon>
+          <span>Manage Points</span>
+        </button>
+        <button mat-menu-item (click)="viewTasks(child)">
+          <mat-icon color="primary">assignment</mat-icon>
+          <span>View Tasks</span>
+        </button>
+        <button
+          mat-menu-item
+          (click)="viewPointHistory(child, pointHistoryDialog)"
+        >
+          <mat-icon color="accent">history</mat-icon>
+          <span>Point History</span>
+        </button>
+        <button
+          mat-menu-item
+          class="text-red-600"
+          (click)="deleteChild(child, deleteChildDialog)"
+        >
+          <mat-icon color="warn">delete</mat-icon>
+          <span>Delete</span>
+        </button>
+      </mat-menu>
+    </div>
   </div>
 
   <!-- Empty State -->

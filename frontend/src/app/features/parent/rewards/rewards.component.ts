@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../shared/material.module';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -18,6 +18,8 @@ import * as AuthSelectors from '../../../store/auth/auth.selectors';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-rewards',
@@ -30,18 +32,25 @@ import { MatIconModule } from '@angular/material/icon';
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
+    MatPaginatorModule,
   ],
   templateUrl: './rewards.component.html',
   styleUrls: ['./rewards.component.css'],
 })
 export class RewardsComponent implements OnInit {
-  rewards$: Observable<Reward[]>;
-  loading$: Observable<boolean>;
-  error$: Observable<any>;
+  rewards$ = this.store.select(ParentSelectors.selectRewards);
+  loading$ = this.store.select(ParentSelectors.selectParentLoading);
+  error$ = this.store.select(ParentSelectors.selectParentError);
   rewardForm: FormGroup;
   parentId: number | undefined;
   dialogRef: any;
   displayedColumns: string[] = ['name', 'description', 'pointCost', 'actions'];
+
+  totalRewards: number = 0;
+  pageSize: number = 9;
+  currentPage: number = 0;
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private store: Store,
@@ -49,18 +58,17 @@ export class RewardsComponent implements OnInit {
     private fb: FormBuilder,
     private snackBar: MatSnackBar
   ) {
-    this.rewards$ = this.store.select(ParentSelectors.selectRewards);
-    this.loading$ = this.store.select(ParentSelectors.selectParentLoading);
-    this.error$ = this.store.select(ParentSelectors.selectParentError);
-
     this.rewardForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
-      pointCost: [0, [Validators.required, Validators.min(1), Validators.max(1000)]],
+      pointCost: [
+        0,
+        [Validators.required, Validators.min(1), Validators.max(1000)],
+      ],
     });
 
     // Subscribe to errors
-    this.error$.subscribe(error => {
+    this.error$.subscribe((error) => {
       if (error) {
         this.showErrorMessage(error.message || 'An error occurred');
       }
@@ -74,6 +82,27 @@ export class RewardsComponent implements OnInit {
         this.store.dispatch(ParentActions.loadRewards({ parentId: user.id }));
       }
     });
+
+    this.loadRewards();
+
+    // Initialize the rewards count
+    this.rewards$.subscribe((rewards) => {
+      if (rewards) {
+        this.totalRewards = rewards.length;
+      }
+    });
+  }
+
+  loadRewards() {
+    const startIndex = this.currentPage * this.pageSize;
+    // Update your store/service call to include pagination parameters
+    // Example: this.store.dispatch(loadRewards({ startIndex, pageSize: this.pageSize }));
+  }
+
+  onPageChange(event: PageEvent) {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadRewards();
   }
 
   openAddRewardDialog(addDialog: TemplateRef<any>): void {
@@ -85,7 +114,7 @@ export class RewardsComponent implements OnInit {
 
     this.dialogRef = this.dialog.open(addDialog, {
       width: '500px',
-      disableClose: true
+      disableClose: true,
     });
 
     this.dialogRef.afterClosed().subscribe((result: Reward) => {
@@ -167,16 +196,26 @@ export class RewardsComponent implements OnInit {
   getErrorMessage(controlName: string): string {
     const control = this.rewardForm.get(controlName);
     if (control?.hasError('required')) {
-      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} is required`;
+      return `${
+        controlName.charAt(0).toUpperCase() + controlName.slice(1)
+      } is required`;
     }
     if (control?.hasError('minlength')) {
-      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} must be at least ${control.errors?.['minlength'].requiredLength} characters`;
+      return `${
+        controlName.charAt(0).toUpperCase() + controlName.slice(1)
+      } must be at least ${
+        control.errors?.['minlength'].requiredLength
+      } characters`;
     }
     if (control?.hasError('min')) {
-      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} must be at least ${control.errors?.['min'].min}`;
+      return `${
+        controlName.charAt(0).toUpperCase() + controlName.slice(1)
+      } must be at least ${control.errors?.['min'].min}`;
     }
     if (control?.hasError('max')) {
-      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} must be less than ${control.errors?.['max'].max}`;
+      return `${
+        controlName.charAt(0).toUpperCase() + controlName.slice(1)
+      } must be less than ${control.errors?.['max'].max}`;
     }
     return '';
   }
@@ -186,7 +225,7 @@ export class RewardsComponent implements OnInit {
       duration: 3000,
       horizontalPosition: 'end',
       verticalPosition: 'top',
-      panelClass: ['success-snackbar']
+      panelClass: ['success-snackbar'],
     });
   }
 
@@ -195,7 +234,7 @@ export class RewardsComponent implements OnInit {
       duration: 5000,
       horizontalPosition: 'end',
       verticalPosition: 'top',
-      panelClass: ['error-snackbar']
+      panelClass: ['error-snackbar'],
     });
   }
-} 
+}

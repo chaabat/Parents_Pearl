@@ -8,92 +8,127 @@
       class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
     >
       <div class="text-white">
-        <h1 class="text-3xl font-bold">Rewards Gallery</h1>
-        <p class="text-purple-200 mt-1">
-          Create and manage rewards that children can redeem with their points
+        <h1 class="text-3xl font-bold">Rewards Store</h1>
+        <p class="text-blue-200 mt-1">
+          Create and manage rewards for children to redeem with their points
         </p>
       </div>
 
-      <div class="flex flex-wrap gap-3">
-        <button
-          mat-raised-button
-          class="bg-white text-[#3f0d71] hover:bg-purple-100"
-          (click)="openAddRewardDialog(addRewardDialog)"
-        >
-          <mat-icon>card_giftcard</mat-icon>
-          Add New Reward
-        </button>
-      </div>
+      <button
+        mat-raised-button
+        class="bg-white text-[#2563eb] hover:bg-blue-100"
+        (click)="openAddRewardDialog(addRewardDialog)"
+      >
+        <mat-icon class="white">card_giftcard</mat-icon>
+        Add New Reward
+      </button>
     </div>
   </div>
 
-  <!-- Rewards Table -->
-  <div class="bg-white rounded-lg shadow overflow-hidden">
-    <!-- Loading Spinner -->
-    <div *ngIf="loading$ | async" class="flex justify-center items-center p-4">
-      <mat-spinner diameter="40"></mat-spinner>
-    </div>
+  <!-- Loading Spinner -->
+  <div *ngIf="loading$ | async" class="flex justify-center items-center p-8">
+    <mat-spinner diameter="40" color="primary"></mat-spinner>
+  </div>
 
-    <!-- No Rewards Message -->
-    <div
-      *ngIf="(rewards$ | async)?.length === 0 && !(loading$ | async)"
-      class="text-center py-8 text-gray-500"
+  <!-- No Rewards Message -->
+  <div
+    *ngIf="(rewards$ | async)?.length === 0 && !(loading$ | async)"
+    class="bg-white rounded-xl shadow p-8 text-center"
+  >
+    <mat-icon class="text-6xl text-gray-400">card_giftcard</mat-icon>
+    <h3 class="text-xl font-semibold text-gray-700 mt-4">
+      No Rewards Available
+    </h3>
+    <p class="text-gray-500 mt-2">
+      Start by adding rewards for children to earn
+    </p>
+    <button
+      mat-raised-button
+      color="primary"
+      class="mt-4"
+      (click)="openAddRewardDialog(addRewardDialog)"
     >
-      No rewards found. Create a new reward to get started.
-    </div>
-
-    <!-- Rewards Table -->
-    <mat-table [dataSource]="rewards$" class="w-full">
-      <!-- Name Column -->
-      <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
-        <mat-cell *matCellDef="let reward">{{ reward.name }}</mat-cell>
-      </ng-container>
-
-      <!-- Description Column -->
-      <ng-container matColumnDef="description">
-        <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
-        <mat-cell *matCellDef="let reward">{{ reward.description }}</mat-cell>
-      </ng-container>
-
-      <!-- Points Column -->
-      <ng-container matColumnDef="pointCost">
-        <mat-header-cell *matHeaderCellDef>Points</mat-header-cell>
-        <mat-cell *matCellDef="let reward">{{ reward.pointCost }}</mat-cell>
-      </ng-container>
-
-      <!-- Actions Column -->
-      <ng-container matColumnDef="actions">
-        <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
-        <mat-cell *matCellDef="let reward">
-          <button
-            mat-icon-button
-            color="primary"
-            (click)="editReward(reward, editRewardDialog)"
-          >
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            color="warn"
-            (click)="deleteReward(reward, deleteRewardDialog)"
-          >
-            <mat-icon>delete</mat-icon>
-          </button>
-        </mat-cell>
-      </ng-container>
-
-      <mat-header-row
-        *matHeaderRowDef="['name', 'description', 'pointCost', 'actions']"
-      ></mat-header-row>
-      <mat-row
-        *matRowDef="
-          let row;
-          columns: ['name', 'description', 'pointCost', 'actions']
-        "
-      ></mat-row>
-    </mat-table>
+      Add First Reward
+    </button>
   </div>
+
+  <!-- Rewards Grid -->
+  <div
+    *ngIf="(rewards$ | async)?.length as rewardsCount"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+  >
+    <ng-container *ngIf="rewardsCount > 0 && !(loading$ | async)">
+      <mat-card
+        *ngFor="let reward of rewards$ | async"
+        class="transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+      >
+        <!-- Gift Card Header -->
+        <div
+          class="bg-gradient-to-r from-purple-600 to-blue-500 p-4 relative overflow-hidden"
+        >
+          <div class="absolute top-0 right-0 p-2">
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="menu"
+              class="text-white"
+            >
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button
+                mat-menu-item
+                (click)="editReward(reward, editRewardDialog)"
+              >
+                <mat-icon color="primary">edit</mat-icon>
+                <span>Edit</span>
+              </button>
+              <button
+                mat-menu-item
+                (click)="deleteReward(reward, deleteRewardDialog)"
+              >
+                <mat-icon color="warn">delete</mat-icon>
+                <span class="text-red-600">Delete</span>
+              </button>
+            </mat-menu>
+          </div>
+
+          <div class="flex items-center">
+            <mat-icon class="text-white text-4xl mr-4">card_giftcard</mat-icon>
+            <div>
+              <h2 class="text-white text-xl font-bold">{{ reward.name }}</h2>
+              <p class="text-blue-100 text-sm">{{ reward.description }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gift Card Content -->
+        <mat-card-content class="p-4">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center">
+              <mat-icon class="text-amber-500 mr-2">stars</mat-icon>
+              <span class="text-2xl font-bold text-gray-700">{{
+                reward.pointCost
+              }}</span>
+              <span class="text-gray-500 ml-1">points</span>
+            </div>
+          
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </ng-container>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator
+    *ngIf="totalRewards > 0"
+    [length]="totalRewards"
+    [pageSize]="2"
+    [pageSizeOptions]="[2, 6, 20]"
+    class="mt-6 bg-white rounded-lg shadow"
+    aria-label="Select page"
+    (page)="onPageChange($event)"
+  >
+  </mat-paginator>
 
   <!-- Add Reward Dialog Template -->
   <ng-template #addRewardDialog>
