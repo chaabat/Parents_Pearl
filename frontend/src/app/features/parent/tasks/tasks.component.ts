@@ -170,6 +170,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(tasks => {
         this.dataSource.data = tasks || [];
+        this.applyFilter(this.currentFilter); // Apply current filter when data changes
       });
   }
 
@@ -441,16 +442,17 @@ export class TasksComponent implements OnInit, OnDestroy {
     }
   }
 
-  filterTasks(status: (typeof this.taskStatus)[number]) {
+  filterTasks(status: typeof this.taskStatus[number]) {
     this.currentFilter = status;
-    if (this.parentId) {
-      this.store.dispatch(
-        ParentActions.loadTasks({
-          parentId: this.parentId,
-          status: status === 'ALL' ? undefined : status,
-        })
-      );
-    }
+    this.applyFilter(status);
+  }
+
+  private applyFilter(status: string) {
+    this.dataSource.filterPredicate = (task: Task, filter: string) => {
+      if (filter === 'ALL') return true;
+      return task.status === filter;
+    };
+    this.dataSource.filter = status;
   }
 
   getStatusIcon(status: string): string {
