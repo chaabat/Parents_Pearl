@@ -30,8 +30,12 @@ public interface ChildMapper {
     
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "role", ignore = true)
-    @Mapping(target = "parent.id", source = "parentId")
+    @Mapping(target = "parent", ignore = true)
+    @Mapping(target = "tasks", ignore = true)
+    @Mapping(target = "points", ignore = true)
+    @Mapping(target = "rewardRedemptions", ignore = true)
+    @Mapping(target = "totalPoints", ignore = true)
     @Mapping(target = "picture", ignore = true)
-    @Mapping(target = "dateOfBirth", ignore = true)
+    @Mapping(target = "password", ignore = true)
     void updateEntity(@MappingTarget Child child, ChildRequest request);
 } 

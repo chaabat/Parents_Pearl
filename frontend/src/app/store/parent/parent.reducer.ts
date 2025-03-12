@@ -101,10 +101,15 @@ export const parentReducer = createReducer(
 
   on(ParentActions.updateChildSuccess, (state, { child }) => ({
     ...state,
-    children: state.children.map(c => 
+    children: state.children.map((c) =>
       c.id === child.id ? { ...c, ...child } : c
     ),
     error: null,
-    loading: false
+    loading: false,
+  })),
+
+  on(ParentActions.completeTaskSuccess, (state, { task }) => ({
+    ...state,
+    tasks: state.tasks.map((t) => (t.id === task.id ? task : t)),
   }))
 );

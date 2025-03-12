@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../shared/material.module';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -6,27 +6,40 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
+
 import {
   FormBuilder,
   FormGroup,
   Validators,
   ReactiveFormsModule,
+  FormControl,
 } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
 import { Task, TaskStatus, TaskType } from '../../../core/models/task.model';
 import * as ParentActions from '../../../store/parent/parent.actions';
 import * as ParentSelectors from '../../../store/parent/parent.selectors';
 import * as AuthSelectors from '../../../store/auth/auth.selectors';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatMenuModule } from '@angular/material/menu';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+  take,
+  map,
+  takeUntil,
+} from 'rxjs/operators';
+import * as TaskActions from '../../../store/parent/parent.actions';
+import * as TaskSelectors from '../../../store/parent/parent.selectors';
+import { ParentService } from '../../../core/services/parent.service';
+import { ParentState } from '../../../store/parent/parent.state';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-tasks',
@@ -51,12 +64,19 @@ import { MatMenuModule } from '@angular/material/menu';
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.css'],
 })
-export class TasksComponent implements OnInit {
+export class TasksComponent implements OnInit, OnDestroy {
   @ViewChild('taskDetailsDialog') taskDetailsDialog!: TemplateRef<any>;
 
-  tasks$: Observable<Task[]>;
-  loading$: Observable<boolean>;
-  error$: Observable<any>;
+  tasks$ = this.store.select(ParentSelectors.selectTasks);
+  filteredTasks$ = this.store.select(ParentSelectors.selectFilteredTasks).pipe(
+    map((tasks) => {
+      // Convert to MatTableDataSource to fix the type error
+      return tasks ? new MatTableDataSource(tasks) : new MatTableDataSource([]);
+    })
+  );
+  loading$ = this.store.select(ParentSelectors.selectParentLoading);
+  error$ = this.store.select(ParentSelectors.selectParentError);
+  dataSource = new MatTableDataSource<Task>();
   taskForm: FormGroup;
   parentId: number | undefined;
   displayedColumns: string[] = [
@@ -73,17 +93,22 @@ export class TasksComponent implements OnInit {
   children$ = this.store.select(ParentSelectors.selectChildren);
   dialogRef: any;
   selectedTask: Task | null = null;
+  searchControl = new FormControl('');
+  selectedChildId: number | undefined;
+  protected ParentSelectors = ParentSelectors;
+  searching = false;
+  searchResults$ = this.store.select(ParentSelectors.selectSearchResults);
 
+  taskStatus = ['ALL', 'PENDING', 'COMPLETED', 'FAILED'] as const;
+  currentFilter: (typeof this.taskStatus)[number] = 'ALL';
+  private destroy$ = new Subject<void>();
   constructor(
-    private store: Store,
+    public store: Store<{ parent: ParentState }>,
     public dialog: MatDialog,
     private fb: FormBuilder,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private parentService: ParentService
   ) {
-    this.tasks$ = this.store.select(ParentSelectors.selectTasks);
-    this.loading$ = this.store.select(ParentSelectors.selectParentLoading);
-    this.error$ = this.store.select(ParentSelectors.selectParentError);
-
     this.taskForm = this.fb.group({
       title: ['', Validators.required],
       description: ['', Validators.required],
@@ -104,12 +129,62 @@ export class TasksComponent implements OnInit {
         this.store.dispatch(ParentActions.loadChildren({ parentId: user.id }));
       }
     });
+
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((keyword) => {
+        if (!keyword || keyword.length < 2) {
+          this.store.select(ParentSelectors.selectTasks).subscribe();
+        } else {
+          this.store
+            .select(ParentSelectors.selectParentId)
+            .pipe(take(1))
+            .subscribe((parentId) => {
+              if (parentId) {
+                this.parentService
+                  .searchTasks(parentId, keyword)
+                  .subscribe((tasks) => {
+                    this.store.dispatch({
+                      type: '[Parent] Set Filtered Tasks',
+                      tasks,
+                    });
+                  });
+              }
+            });
+        }
+      });
+  
+
+    // Load initial tasks
+    if (this.parentId) {
+      this.store.dispatch(
+        ParentActions.loadTasks({
+          parentId: this.parentId,
+          status: this.currentFilter === 'ALL' ? undefined : this.currentFilter,
+        })
+      );
+    }
+
+    // Subscribe to tasks and update data source
+    this.store.select(ParentSelectors.selectTasks)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(tasks => {
+        this.dataSource.data = tasks || [];
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private formatTaskData(formValue: any): Partial<Task> {
     return {
       ...formValue,
-      dueDate: formValue.dueDate.toISOString().split('T')[0], // Format date as YYYY-MM-DD
+      dueDate:
+        formValue.dueDate instanceof Date
+          ? formValue.dueDate.toISOString().split('T')[0]
+          : formValue.dueDate, // Keep original value if not a Date object
       choices:
         typeof formValue.choices === 'string'
           ? formValue.choices.split(',').map((c: string) => c.trim())
@@ -214,16 +289,16 @@ export class TasksComponent implements OnInit {
     });
   }
 
-  getStatusColor(status: TaskStatus): string {
+  getStatusColor(status: string): string {
     switch (status) {
-      case TaskStatus.COMPLETED:
+      case 'COMPLETED':
         return 'text-green-600';
-      case TaskStatus.FAILED:
-        return 'text-red-600';
-      case TaskStatus.PENDING:
-        return 'text-blue-600';
-      default:
+      case 'PENDING':
         return 'text-yellow-600';
+      case 'FAILED':
+        return 'text-red-600';
+      default:
+        return 'text-gray-600';
     }
   }
 
@@ -339,6 +414,55 @@ export class TasksComponent implements OnInit {
         verticalPosition: 'top',
         panelClass: ['success-snackbar'],
       });
+    }
+  }
+
+  // Add method to change selected child
+  onChildChange(childId: number) {
+    this.selectedChildId = childId;
+    this.store
+      .select(ParentSelectors.selectChildById(childId))
+      .subscribe((child) => {
+        if (child) {
+          this.store.dispatch(ParentActions.setSelectedChild({ child }));
+        }
+      });
+  }
+
+  completeTask(taskId: number, childId: number) {
+    if (this.parentId) {
+      this.store.dispatch(
+        ParentActions.completeTask({
+          parentId: this.parentId,
+          childId: childId,
+          taskId: taskId,
+        })
+      );
+    }
+  }
+
+  filterTasks(status: (typeof this.taskStatus)[number]) {
+    this.currentFilter = status;
+    if (this.parentId) {
+      this.store.dispatch(
+        ParentActions.loadTasks({
+          parentId: this.parentId,
+          status: status === 'ALL' ? undefined : status,
+        })
+      );
+    }
+  }
+
+  getStatusIcon(status: string): string {
+    switch (status) {
+      case 'COMPLETED':
+        return 'check_circle';
+      case 'PENDING':
+        return 'pending';
+      case 'FAILED':
+        return 'error';
+      default:
+        return 'help';
     }
   }
 }

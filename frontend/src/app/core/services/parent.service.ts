@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Child, Task, Reward, Point, Parent } from '../models';
+import { catchError as rxjsCatchError, tap as rxjsTap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -14,9 +15,18 @@ export class ParentService {
 
   // Profile Management
   getParentProfile(parentId: number): Observable<Parent> {
-    return this.http.get<Parent>(`${this.apiUrl}/parents/${parentId}`, {
-      headers: this.getAuthHeaders(),
-    });
+    console.log('Getting profile for parent:', parentId);
+    return this.http
+      .get<Parent>(`${this.apiUrl}/parents/${parentId}`, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        tap((response) => console.log('Profile response:', response)),
+        catchError((error) => {
+          console.error('Profile error:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   updateParentProfile(
@@ -78,10 +88,7 @@ export class ParentService {
     task: Partial<Task>
   ): Observable<Task> {
     const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
+    const headers = this.getAuthHeaders();
 
     return this.http.post<Task>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks`,
@@ -90,12 +97,25 @@ export class ParentService {
     );
   }
 
-  private getAuthHeaders() {
+  searchTasks(parentId: number, keyword: string): Observable<Task[]> {
+    return this.http.get<Task[]>(
+      `${this.apiUrl}/parents/${parentId}/tasks/search?keyword=${keyword}`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
-    return new HttpHeaders({
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+    console.log('Token being used:', token);
+    const headers = new HttpHeaders({
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     });
+    console.log('Headers being sent:', headers);
+    return headers;
   }
 
   updateTask(
@@ -210,15 +230,28 @@ export class ParentService {
     );
   }
 
-  getTasks(parentId: number): Observable<Task[]> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
+  getTasks(parentId: number, status?: string): Observable<Task[]> {
+    let params = new HttpParams();
+    if (status && status !== 'ALL') {
+      params = params.set('status', status);
+    }
 
     return this.http.get<Task[]>(`${this.apiUrl}/parents/${parentId}/tasks`, {
-      headers,
+      headers: this.getAuthHeaders(),
+      params, // Add the query parameters
     });
+  }
+
+  // Task Management
+  completeTask(
+    parentId: number,
+    childId: number,
+    taskId: number
+  ): Observable<Task> {
+    return this.http.post<Task>(
+      `${this.apiUrl}/children/${childId}/tasks/${taskId}/complete`,
+      {},
+      { headers: this.getAuthHeaders() }
+    );
   }
 }

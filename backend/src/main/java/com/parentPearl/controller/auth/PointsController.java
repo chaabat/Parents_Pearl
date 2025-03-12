@@ -28,7 +28,7 @@ public class PointsController {
     }
 
     @PreAuthorize("hasRole('PARENT')")
-    @GetMapping("/parents/{parentId}/children/{childId}/points/child-history")
+    @GetMapping("/parents/{parentId}/children/{childId}/points")
     public ResponseEntity<List<PointResponse>> getChildPointHistory(
             @PathVariable Long parentId,
             @PathVariable Long childId) {
@@ -37,7 +37,7 @@ public class PointsController {
 
     // Endpoints pour les enfants
     @PreAuthorize("hasRole('CHILD')")
-    @GetMapping("/children/{childId}/points/history")
+    @GetMapping("/children/{childId}/points")
     public ResponseEntity<List<PointResponse>> getMyPointHistory(
             @PathVariable Long childId) {
         return ResponseEntity.ok(pointService.getMyPointHistory(childId));

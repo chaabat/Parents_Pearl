@@ -113,7 +113,7 @@ public class TaskController {
         return ResponseEntity.ok(taskService.viewMyTask(childId, taskId));
     }
 
-    @PreAuthorize("hasRole('CHILD')")
+    @PreAuthorize("hasRole('CHILD') or hasRole('PARENT')")
     @GetMapping("/api/children/{childId}/tasks/search")
     public ResponseEntity<List<TaskResponse>> searchMyTasks(
             @PathVariable Long childId,

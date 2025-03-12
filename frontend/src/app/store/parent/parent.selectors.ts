@@ -28,7 +28,7 @@ export const selectChildren = createSelector(
 export const selectChildById = (childId: number) =>
   createSelector(selectChildren, (children) =>
     children.find((child) => child.id === childId)
-  );
+);
 
 // Points selectors
 export const selectPointHistory = createSelector(
@@ -61,4 +61,20 @@ export const selectParentLoading = createSelector(
 export const selectParentError = createSelector(
   selectParentState,
   (state) => state.error
+);
+
+export const selectSelectedChild = createSelector(
+  selectParentState,
+  (state) => state.selectedChild
+);
+
+export const selectFilteredTasks = createSelector(
+  selectParentState,
+  (state) => state.filteredTasks
+);
+
+// Add this selector
+export const selectSearchResults = createSelector(
+  selectParentState,
+  (state) => state.searchResults
 );

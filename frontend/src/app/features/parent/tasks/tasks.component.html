@@ -33,33 +33,50 @@
     <div
       class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"
     >
-      <div class="flex items-center">
-        <h2 class="text-lg font-semibold text-gray-700 mr-4">Tasks</h2>
+      <div class="flex items-center gap-4">
+        <!-- Search Field -->
         <mat-form-field class="w-full md:w-64">
           <mat-label>Search tasks</mat-label>
-          <input matInput placeholder="Search by title or description" />
+          <input
+            matInput
+            [formControl]="searchControl"
+            placeholder="Search by title or description"
+          />
           <mat-icon matSuffix>search</mat-icon>
+          <mat-spinner
+            matSuffix
+            diameter="20"
+            *ngIf="loading$ | async"
+            class="mr-2"
+          ></mat-spinner>
         </mat-form-field>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button
-          mat-button
-          [matMenuTriggerFor]="filterMenu"
-          class="text-gray-700"
-        >
-          <mat-icon>filter_list</mat-icon> Filter
-        </button>
-        <mat-menu #filterMenu="matMenu">
-          <button mat-menu-item>
-            <mat-icon>all_inclusive</mat-icon> All Tasks
+      <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center gap-2">
+          <button
+            mat-button
+            [matMenuTriggerFor]="filterMenu"
+            class="text-gray-700"
+          >
+            <mat-icon>filter_list</mat-icon>
+            Filter: {{ currentFilter }}
           </button>
-          <button mat-menu-item><mat-icon>pending</mat-icon> Pending</button>
-          <button mat-menu-item>
-            <mat-icon>check_circle</mat-icon> Completed
-          </button>
-          <button mat-menu-item><mat-icon>error</mat-icon> Failed</button>
-        </mat-menu>
+          <mat-menu #filterMenu="matMenu">
+            <button mat-menu-item (click)="filterTasks('ALL')">
+              <mat-icon>all_inclusive</mat-icon> All Tasks
+            </button>
+            <button mat-menu-item (click)="filterTasks('PENDING')">
+              <mat-icon>pending</mat-icon> Pending
+            </button>
+            <button mat-menu-item (click)="filterTasks('COMPLETED')">
+              <mat-icon>check_circle</mat-icon> Completed
+            </button>
+            <button mat-menu-item (click)="filterTasks('FAILED')">
+              <mat-icon>error</mat-icon> Failed
+            </button>
+          </mat-menu>
+        </div>
       </div>
     </div>
   </div>
@@ -98,7 +115,7 @@
     *ngIf="((tasks$ | async)?.length ?? 0 > 0) && !(loading$ | async)"
     class="bg-white rounded-xl shadow-md overflow-hidden"
   >
-    <mat-table [dataSource]="tasks$" class="w-full">
+    <mat-table [dataSource]="dataSource" class="w-full">
       <!-- Title Column -->
       <ng-container matColumnDef="title">
         <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
@@ -161,13 +178,15 @@
           >Status</mat-header-cell
         >
         <mat-cell *matCellDef="let task">
-          <div
-            *ngIf="selectedTask"
-            class="text-xs font-medium"
-            [ngClass]="getStatusClass(selectedTask?.status)"
+          <span
+            [ngClass]="getStatusColor(task.status)"
+            class="flex items-center gap-1"
           >
-            {{ selectedTask?.status }}
-          </div>
+            <mat-icon class="text-sm">{{
+              getStatusIcon(task.status)
+            }}</mat-icon>
+            {{ task.status }}
+          </span>
         </mat-cell>
       </ng-container>
 
@@ -219,6 +238,23 @@
           >
             <mat-icon>delete</mat-icon>
           </button>
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="taskActionMenu"
+            matTooltip="Task Actions"
+          >
+            <mat-icon>more_vert</mat-icon>
+          </button>
+
+          <!-- Task Action Menu -->
+          <mat-menu #taskActionMenu="matMenu">
+            <button mat-menu-item (click)="markTaskComplete(task)">
+              <mat-icon>check_circle</mat-icon> Mark Complete
+            </button>
+            <button mat-menu-item (click)="viewTaskDetails(task)">
+              <mat-icon>visibility</mat-icon> View Details
+            </button>
+          </mat-menu>
         </mat-cell>
       </ng-container>
 
@@ -331,311 +367,871 @@
 
   <!-- Add Task Dialog Template -->
   <ng-template #addTaskDialog>
-    <div class="p-2">
+    <div class="p-6">
       <h2
-        mat-dialog-title
-        class="text-xl font-bold text-[#2563eb] flex items-center"
+        class="text-2xl font-bold text-[#2563eb] flex items-center gap-3 mb-6"
       >
         <mat-icon>add_task</mat-icon> Create New Learning Task
       </h2>
-      <mat-dialog-content>
-        <form [formGroup]="taskForm" class="flex flex-col gap-6 mt-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <mat-form-field class="w-full">
-              <mat-label>Title</mat-label>
-              <input
-                matInput
-                formControlName="title"
-                required
-                placeholder="Enter task title"
-              />
-              <mat-error *ngIf="taskForm.get('title')?.hasError('required')"
-                >Title is required</mat-error
-              >
-            </mat-form-field>
 
-            <mat-form-field class="w-full">
-              <mat-label>Points Value</mat-label>
-              <input
-                matInput
-                type="number"
-                formControlName="pointValue"
-                required
-                min="0"
-              />
-              <mat-icon matSuffix class="text-amber-500">stars</mat-icon>
-              <mat-error
-                *ngIf="taskForm.get('pointValue')?.hasError('required')"
-                >Points value is required</mat-error
+      <div class="max-h-[70vh] overflow-y-auto pr-2">
+        <form [formGroup]="taskForm" class="flex flex-col gap-8">
+          <!-- Basic Information Section -->
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <h3 class="text-gray-700 font-medium mb-5">Basic Information</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Title Input -->
+              <div class="mb-6">
+                <label
+                  for="title"
+                  class="block mb-2 text-sm font-medium"
+                  [ngClass]="{
+                    'text-red-700 dark:text-red-500':
+                      taskForm.get('title')?.invalid &&
+                      taskForm.get('title')?.touched,
+                    'text-blue-700 dark:text-blue-500': !(
+                      taskForm.get('title')?.invalid &&
+                      taskForm.get('title')?.touched
+                    )
+                  }"
+                >
+                  Title
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  formControlName="title"
+                  placeholder="Enter task title"
+                  class="border text-sm rounded-lg block w-full p-2.5"
+                  [ngClass]="{
+                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                      taskForm.get('title')?.invalid &&
+                      taskForm.get('title')?.touched,
+                    'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                      !(
+                        taskForm.get('title')?.invalid &&
+                        taskForm.get('title')?.touched
+                      )
+                  }"
+                />
+                <p
+                  *ngIf="
+                    taskForm.get('title')?.invalid &&
+                    taskForm.get('title')?.touched
+                  "
+                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                >
+                  <span class="font-medium">Error!</span> Title is required.
+                </p>
+              </div>
+
+              <!-- Points Value Input -->
+              <div class="mb-6">
+                <label
+                  for="pointValue"
+                  class="block mb-2 text-sm font-medium"
+                  [ngClass]="{
+                    'text-red-700 dark:text-red-500':
+                      taskForm.get('pointValue')?.invalid &&
+                      taskForm.get('pointValue')?.touched,
+                    'text-blue-700 dark:text-blue-500': !(
+                      taskForm.get('pointValue')?.invalid &&
+                      taskForm.get('pointValue')?.touched
+                    )
+                  }"
+                >
+                  Points Value
+                </label>
+                <div class="relative">
+                  <input
+                    type="number"
+                    id="pointValue"
+                    formControlName="pointValue"
+                    min="0"
+                    placeholder="Enter points"
+                    class="border text-sm rounded-lg block w-full p-2.5 pr-10"
+                    [ngClass]="{
+                      'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                        taskForm.get('pointValue')?.invalid &&
+                        taskForm.get('pointValue')?.touched,
+                      'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                        !(
+                          taskForm.get('pointValue')?.invalid &&
+                          taskForm.get('pointValue')?.touched
+                        )
+                    }"
+                  />
+                  <mat-icon class="absolute right-2 top-2 text-amber-500"
+                    >stars</mat-icon
+                  >
+                </div>
+                <p
+                  *ngIf="
+                    taskForm.get('pointValue')?.hasError('required') &&
+                    taskForm.get('pointValue')?.touched
+                  "
+                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                >
+                  <span class="font-medium">Error!</span> Points value is
+                  required.
+                </p>
+                <p
+                  *ngIf="
+                    taskForm.get('pointValue')?.hasError('min') &&
+                    taskForm.get('pointValue')?.touched
+                  "
+                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                >
+                  <span class="font-medium">Error!</span> Must be at least 0
+                  points.
+                </p>
+              </div>
+            </div>
+
+            <!-- Description Input -->
+            <div class="mb-6">
+              <label
+                for="description"
+                class="block mb-2 text-sm font-medium"
+                [ngClass]="{
+                  'text-red-700 dark:text-red-500':
+                    taskForm.get('description')?.invalid &&
+                    taskForm.get('description')?.touched,
+                  'text-blue-700 dark:text-blue-500': !(
+                    taskForm.get('description')?.invalid &&
+                    taskForm.get('description')?.touched
+                  )
+                }"
               >
-              <mat-error *ngIf="taskForm.get('pointValue')?.hasError('min')"
-                >Must be at least 0 points</mat-error
+                Description
+              </label>
+              <textarea
+                id="description"
+                formControlName="description"
+                rows="4"
+                placeholder="Describe the task"
+                class="border text-sm rounded-lg block w-full p-2.5"
+                [ngClass]="{
+                  'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                    taskForm.get('description')?.invalid &&
+                    taskForm.get('description')?.touched,
+                  'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                    !(
+                      taskForm.get('description')?.invalid &&
+                      taskForm.get('description')?.touched
+                    )
+                }"
+              ></textarea>
+              <p
+                *ngIf="
+                  taskForm.get('description')?.invalid &&
+                  taskForm.get('description')?.touched
+                "
+                class="mt-2 text-sm text-red-600 dark:text-red-500"
               >
-            </mat-form-field>
+                <span class="font-medium">Error!</span> Description is required.
+              </p>
+            </div>
           </div>
 
-          <mat-form-field class="w-full">
-            <mat-label>Description</mat-label>
-            <textarea
-              matInput
-              formControlName="description"
-              required
-              rows="3"
-              placeholder="Describe the task"
-            ></textarea>
-            <mat-error *ngIf="taskForm.get('description')?.hasError('required')"
-              >Description is required</mat-error
-            >
-          </mat-form-field>
+          <!-- Task Details Section -->
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <h3 class="text-gray-700 font-medium mb-5">Task Details</h3>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <mat-form-field class="w-full">
-              <mat-label>Task Type</mat-label>
-              <mat-select formControlName="taskType" required>
-                <mat-option *ngFor="let type of taskTypes" [value]="type">
-                  <div class="flex items-center">
-                    <mat-icon class="mr-2">{{
-                      getTaskTypeIcon(type)
-                    }}</mat-icon>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Task Type Select -->
+              <div class="mb-6">
+                <label
+                  for="taskType"
+                  class="block mb-2 text-sm font-medium"
+                  [ngClass]="{
+                    'text-red-700 dark:text-red-500':
+                      taskForm.get('taskType')?.invalid &&
+                      taskForm.get('taskType')?.touched,
+                    'text-blue-700 dark:text-blue-500': !(
+                      taskForm.get('taskType')?.invalid &&
+                      taskForm.get('taskType')?.touched
+                    )
+                  }"
+                >
+                  Task Type
+                </label>
+                <select
+                  id="taskType"
+                  formControlName="taskType"
+                  class="border text-sm rounded-lg block w-full p-2.5"
+                  [ngClass]="{
+                    'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                      taskForm.get('taskType')?.invalid &&
+                      taskForm.get('taskType')?.touched,
+                    'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                      !(
+                        taskForm.get('taskType')?.invalid &&
+                        taskForm.get('taskType')?.touched
+                      )
+                  }"
+                >
+                  <option [ngValue]="null" disabled>Select task type</option>
+                  <option *ngFor="let type of taskTypes" [value]="type">
                     {{ type }}
-                  </div>
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="taskForm.get('taskType')?.hasError('required')"
-                >Task type is required</mat-error
-              >
-            </mat-form-field>
+                  </option>
+                </select>
+                <p
+                  *ngIf="
+                    taskForm.get('taskType')?.invalid &&
+                    taskForm.get('taskType')?.touched
+                  "
+                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                >
+                  <span class="font-medium">Error!</span> Task type is required.
+                </p>
+              </div>
 
-            <mat-form-field class="w-full">
-              <mat-label>Due Date</mat-label>
-              <input
-                matInput
-                [matDatepicker]="picker"
-                formControlName="dueDate"
-                required
-              />
-              <mat-datepicker-toggle
-                matSuffix
-                [for]="picker"
-              ></mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
-              <mat-error *ngIf="taskForm.get('dueDate')?.hasError('required')"
-                >Due date is required</mat-error
+              <!-- Due Date Input -->
+              <div class="mb-6">
+                <label
+                  for="dueDate"
+                  class="block mb-2 text-sm font-medium"
+                  [ngClass]="{
+                    'text-red-700 dark:text-red-500':
+                      taskForm.get('dueDate')?.invalid &&
+                      taskForm.get('dueDate')?.touched,
+                    'text-blue-700 dark:text-blue-500': !(
+                      taskForm.get('dueDate')?.invalid &&
+                      taskForm.get('dueDate')?.touched
+                    )
+                  }"
+                >
+                  Due Date
+                </label>
+                <div class="relative">
+                  <input
+                    type="date"
+                    id="dueDate"
+                    formControlName="dueDate"
+                    class="border text-sm rounded-lg block w-full p-2.5"
+                    [ngClass]="{
+                      'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                        taskForm.get('dueDate')?.invalid &&
+                        taskForm.get('dueDate')?.touched,
+                      'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                        !(
+                          taskForm.get('dueDate')?.invalid &&
+                          taskForm.get('dueDate')?.touched
+                        )
+                    }"
+                  />
+                </div>
+                <p
+                  *ngIf="
+                    taskForm.get('dueDate')?.invalid &&
+                    taskForm.get('dueDate')?.touched
+                  "
+                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                >
+                  <span class="font-medium">Error!</span> Due date is required.
+                </p>
+              </div>
+            </div>
+
+            <!-- Child Assignment Select -->
+            <div class="mb-6">
+              <label
+                for="childId"
+                class="block mb-2 text-sm font-medium"
+                [ngClass]="{
+                  'text-red-700 dark:text-red-500':
+                    taskForm.get('childId')?.invalid &&
+                    taskForm.get('childId')?.touched,
+                  'text-blue-700 dark:text-blue-500': !(
+                    taskForm.get('childId')?.invalid &&
+                    taskForm.get('childId')?.touched
+                  )
+                }"
               >
-            </mat-form-field>
+                Assign to Child
+              </label>
+              <select
+                id="childId"
+                formControlName="childId"
+                class="border text-sm rounded-lg block w-full p-2.5"
+                [ngClass]="{
+                  'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                    taskForm.get('childId')?.invalid &&
+                    taskForm.get('childId')?.touched,
+                  'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                    !(
+                      taskForm.get('childId')?.invalid &&
+                      taskForm.get('childId')?.touched
+                    )
+                }"
+              >
+                <option [ngValue]="null" disabled>Select a child</option>
+                <option
+                  *ngFor="let child of children$ | async"
+                  [value]="child.id"
+                >
+                  {{ child.name }}
+                </option>
+              </select>
+              <p
+                *ngIf="
+                  taskForm.get('childId')?.invalid &&
+                  taskForm.get('childId')?.touched
+                "
+                class="mt-2 text-sm text-red-600 dark:text-red-500"
+              >
+                <span class="font-medium">Error!</span> Child assignment is
+                required.
+              </p>
+            </div>
           </div>
 
-          <!-- Multiple Choice Section with Visual Enhancement -->
+          <!-- Multiple Choice Section -->
           <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
-            <h3 class="text-blue-800 font-medium mb-4 flex items-center">
-              <mat-icon class="mr-2">quiz</mat-icon> Multiple Choice Options
+            <h3 class="text-blue-800 font-medium mb-5 flex items-center">
+              <mat-icon class="mr-3">quiz</mat-icon> Multiple Choice Options
             </h3>
 
-            <mat-form-field class="w-full">
-              <mat-label>Answer Choices (comma-separated)</mat-label>
+            <!-- Choices Input -->
+            <div class="mb-6">
+              <label
+                for="choices"
+                class="block mb-2 text-sm font-medium text-blue-700 dark:text-blue-500"
+              >
+                Answer Choices (comma-separated)
+              </label>
               <input
-                matInput
+                type="text"
+                id="choices"
                 formControlName="choices"
                 placeholder="30,35,40,45"
+                class="bg-blue-50 border border-blue-500 text-blue-900 dark:text-blue-400 placeholder-blue-700 dark:placeholder-blue-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-blue-500"
               />
-              <mat-hint>Enter choices separated by commas</mat-hint>
-            </mat-form-field>
+              <p class="mt-2 text-sm text-blue-600 dark:text-blue-500">
+                Enter choices separated by commas
+              </p>
+            </div>
 
             <!-- Preview of choices -->
             <div
               *ngIf="taskForm.get('choices')?.value"
-              class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4"
+              class="grid grid-cols-2 sm:grid-cols-4 gap-4 my-6"
             >
               <div
                 *ngFor="let choice of getFormChoicesArray()"
-                class="bg-white p-3 rounded border border-blue-200 text-center text-blue-800"
+                class="bg-white p-4 rounded-lg border border-blue-200 text-center text-blue-800 shadow-sm"
               >
                 {{ choice }}
               </div>
             </div>
 
-            <mat-form-field class="w-full mt-4">
-              <mat-label>Correct Answer</mat-label>
-              <input matInput formControlName="correctAnswer" required />
-              <mat-icon matSuffix class="text-green-500">check_circle</mat-icon>
-              <mat-error
-                *ngIf="taskForm.get('correctAnswer')?.hasError('required')"
-                >Correct answer is required</mat-error
+            <!-- Correct Answer Input -->
+            <div class="mb-6">
+              <label
+                for="correctAnswer"
+                class="block mb-2 text-sm font-medium"
+                [ngClass]="{
+                  'text-red-700 dark:text-red-500':
+                    taskForm.get('correctAnswer')?.invalid &&
+                    taskForm.get('correctAnswer')?.touched,
+                  'text-green-700 dark:text-green-500': !(
+                    taskForm.get('correctAnswer')?.invalid &&
+                    taskForm.get('correctAnswer')?.touched
+                  )
+                }"
               >
-            </mat-form-field>
+                Correct Answer
+              </label>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="correctAnswer"
+                  formControlName="correctAnswer"
+                  placeholder="Enter correct answer"
+                  class="border text-sm rounded-lg block w-full p-2.5 pr-10"
+                  [ngClass]="{
+                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                      taskForm.get('correctAnswer')?.invalid &&
+                      taskForm.get('correctAnswer')?.touched,
+                    'bg-green-50 border-green-500 text-green-900 dark:text-green-400 placeholder-green-700 dark:placeholder-green-500 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-green-500':
+                      !(
+                        taskForm.get('correctAnswer')?.invalid &&
+                        taskForm.get('correctAnswer')?.touched
+                      )
+                  }"
+                />
+                <mat-icon class="absolute right-2 top-2 text-green-500"
+                  >check_circle</mat-icon
+                >
+              </div>
+              <p
+                *ngIf="
+                  taskForm.get('correctAnswer')?.invalid &&
+                  taskForm.get('correctAnswer')?.touched
+                "
+                class="mt-2 text-sm text-red-600 dark:text-red-500"
+              >
+                <span class="font-medium">Error!</span> Correct answer is
+                required.
+              </p>
+            </div>
           </div>
-
-          <mat-form-field class="w-full">
-            <mat-label>Assign to Child</mat-label>
-            <mat-select formControlName="childId" required>
-              <mat-option
-                *ngFor="let child of children$ | async"
-                [value]="child.id"
-              >
-                {{ child.name }}
-              </mat-option>
-            </mat-select>
-            <mat-error *ngIf="taskForm.get('childId')?.hasError('required')"
-              >Child assignment is required</mat-error
-            >
-          </mat-form-field>
         </form>
-      </mat-dialog-content>
-      <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close class="text-gray-600">
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-gray-200 flex justify-end">
+        <button
+          mat-button
+          mat-dialog-close
+          class="text-gray-600 px-6 py-2 rounded-lg mr-4"
+        >
           Cancel
         </button>
         <button
-          mat-raised-button
-          color="primary"
-          class="bg-[#2563eb]"
+          class="bg-[#2563eb] text-white px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           [disabled]="!taskForm.valid"
           (click)="dialogRef.close(taskForm.value)"
         >
           Create Task
         </button>
-      </mat-dialog-actions>
+      </div>
     </div>
   </ng-template>
 
   <!-- Edit Task Dialog Template -->
   <ng-template #editTaskDialog>
-    <div class="p-2">
+    <div class="p-6">
       <h2
-        mat-dialog-title
-        class="text-xl font-bold text-[#2563eb] flex items-center"
+        class="text-2xl font-bold text-[#2563eb] flex items-center gap-3 mb-6"
       >
-        <mat-icon class="mr-2">edit</mat-icon> Edit Learning Task
+        <mat-icon>edit</mat-icon> Edit Learning Task
       </h2>
-      <mat-dialog-content>
-        <form [formGroup]="taskForm" class="flex flex-col gap-4 mt-4">
-          <!-- Same form fields as Add Task Dialog with identical styling -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <mat-form-field class="w-full">
-              <mat-label>Title</mat-label>
-              <input matInput formControlName="title" required />
-              <mat-error *ngIf="taskForm.get('title')?.hasError('required')"
-                >Title is required</mat-error
+
+      <div class="max-h-[70vh] overflow-y-auto pr-2">
+        <form [formGroup]="taskForm" class="flex flex-col gap-8">
+          <!-- Basic Information Section -->
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <h3 class="text-gray-700 font-medium mb-5">Basic Information</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Title Input -->
+              <div class="mb-6">
+                <label
+                  for="edit-title"
+                  class="block mb-2 text-sm font-medium"
+                  [ngClass]="{
+                    'text-red-700 dark:text-red-500':
+                      taskForm.get('title')?.invalid &&
+                      taskForm.get('title')?.touched,
+                    'text-blue-700 dark:text-blue-500': !(
+                      taskForm.get('title')?.invalid &&
+                      taskForm.get('title')?.touched
+                    )
+                  }"
+                >
+                  Title
+                </label>
+                <input
+                  type="text"
+                  id="edit-title"
+                  formControlName="title"
+                  placeholder="Enter task title"
+                  class="border text-sm rounded-lg block w-full p-2.5"
+                  [ngClass]="{
+                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                      taskForm.get('title')?.invalid &&
+                      taskForm.get('title')?.touched,
+                    'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                      !(
+                        taskForm.get('title')?.invalid &&
+                        taskForm.get('title')?.touched
+                      )
+                  }"
+                />
+                <p
+                  *ngIf="
+                    taskForm.get('title')?.invalid &&
+                    taskForm.get('title')?.touched
+                  "
+                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                >
+                  <span class="font-medium">Error!</span> Title is required.
+                </p>
+              </div>
+
+              <!-- Points Value Input -->
+              <div class="mb-6">
+                <label
+                  for="edit-pointValue"
+                  class="block mb-2 text-sm font-medium"
+                  [ngClass]="{
+                    'text-red-700 dark:text-red-500':
+                      taskForm.get('pointValue')?.invalid &&
+                      taskForm.get('pointValue')?.touched,
+                    'text-blue-700 dark:text-blue-500': !(
+                      taskForm.get('pointValue')?.invalid &&
+                      taskForm.get('pointValue')?.touched
+                    )
+                  }"
+                >
+                  Points Value
+                </label>
+                <div class="relative">
+                  <input
+                    type="number"
+                    id="edit-pointValue"
+                    formControlName="pointValue"
+                    min="0"
+                    placeholder="Enter points"
+                    class="border text-sm rounded-lg block w-full p-2.5 pr-10"
+                    [ngClass]="{
+                      'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                        taskForm.get('pointValue')?.invalid &&
+                        taskForm.get('pointValue')?.touched,
+                      'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                        !(
+                          taskForm.get('pointValue')?.invalid &&
+                          taskForm.get('pointValue')?.touched
+                        )
+                    }"
+                  />
+                  <mat-icon class="absolute right-2 top-2 text-amber-500"
+                    >stars</mat-icon
+                  >
+                </div>
+                <p
+                  *ngIf="
+                    taskForm.get('pointValue')?.hasError('required') &&
+                    taskForm.get('pointValue')?.touched
+                  "
+                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                >
+                  <span class="font-medium">Error!</span> Points value is
+                  required.
+                </p>
+                <p
+                  *ngIf="
+                    taskForm.get('pointValue')?.hasError('min') &&
+                    taskForm.get('pointValue')?.touched
+                  "
+                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                >
+                  <span class="font-medium">Error!</span> Must be at least 0
+                  points.
+                </p>
+              </div>
+            </div>
+
+            <!-- Description Input -->
+            <div class="mb-6">
+              <label
+                for="edit-description"
+                class="block mb-2 text-sm font-medium"
+                [ngClass]="{
+                  'text-red-700 dark:text-red-500':
+                    taskForm.get('description')?.invalid &&
+                    taskForm.get('description')?.touched,
+                  'text-blue-700 dark:text-blue-500': !(
+                    taskForm.get('description')?.invalid &&
+                    taskForm.get('description')?.touched
+                  )
+                }"
               >
-            </mat-form-field>
-
-            <mat-form-field class="w-full">
-              <mat-label>Points Value</mat-label>
-              <input
-                matInput
-                type="number"
-                formControlName="pointValue"
-                required
-                min="0"
-              />
-              <mat-icon matSuffix class="text-amber-500">stars</mat-icon>
-            </mat-form-field>
+                Description
+              </label>
+              <textarea
+                id="edit-description"
+                formControlName="description"
+                rows="4"
+                placeholder="Describe the task"
+                class="border text-sm rounded-lg block w-full p-2.5"
+                [ngClass]="{
+                  'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                    taskForm.get('description')?.invalid &&
+                    taskForm.get('description')?.touched,
+                  'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                    !(
+                      taskForm.get('description')?.invalid &&
+                      taskForm.get('description')?.touched
+                    )
+                }"
+              ></textarea>
+              <p
+                *ngIf="
+                  taskForm.get('description')?.invalid &&
+                  taskForm.get('description')?.touched
+                "
+                class="mt-2 text-sm text-red-600 dark:text-red-500"
+              >
+                <span class="font-medium">Error!</span> Description is required.
+              </p>
+            </div>
           </div>
 
-          <mat-form-field class="w-full">
-            <mat-label>Description</mat-label>
-            <textarea
-              matInput
-              formControlName="description"
-              required
-              rows="3"
-            ></textarea>
-          </mat-form-field>
+          <!-- Task Details Section -->
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <h3 class="text-gray-700 font-medium mb-5">Task Details</h3>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <mat-form-field class="w-full">
-              <mat-label>Task Type</mat-label>
-              <mat-select formControlName="taskType" required>
-                <mat-option *ngFor="let type of taskTypes" [value]="type">
-                  <div class="flex items-center">
-                    <mat-icon class="mr-2">{{
-                      getTaskTypeIcon(type)
-                    }}</mat-icon>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Task Type Select -->
+              <div class="mb-6">
+                <label
+                  for="edit-taskType"
+                  class="block mb-2 text-sm font-medium"
+                  [ngClass]="{
+                    'text-red-700 dark:text-red-500':
+                      taskForm.get('taskType')?.invalid &&
+                      taskForm.get('taskType')?.touched,
+                    'text-blue-700 dark:text-blue-500': !(
+                      taskForm.get('taskType')?.invalid &&
+                      taskForm.get('taskType')?.touched
+                    )
+                  }"
+                >
+                  Task Type
+                </label>
+                <select
+                  id="edit-taskType"
+                  formControlName="taskType"
+                  class="border text-sm rounded-lg block w-full p-2.5"
+                  [ngClass]="{
+                    'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                      taskForm.get('taskType')?.invalid &&
+                      taskForm.get('taskType')?.touched,
+                    'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                      !(
+                        taskForm.get('taskType')?.invalid &&
+                        taskForm.get('taskType')?.touched
+                      )
+                  }"
+                >
+                  <option [ngValue]="null" disabled>Select task type</option>
+                  <option *ngFor="let type of taskTypes" [value]="type">
                     {{ type }}
-                  </div>
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+                  </option>
+                </select>
+                <p
+                  *ngIf="
+                    taskForm.get('taskType')?.invalid &&
+                    taskForm.get('taskType')?.touched
+                  "
+                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                >
+                  <span class="font-medium">Error!</span> Task type is required.
+                </p>
+              </div>
 
-            <mat-form-field class="w-full">
-              <mat-label>Due Date</mat-label>
-              <input
-                matInput
-                [matDatepicker]="editPicker"
-                formControlName="dueDate"
-                required
-              />
-              <mat-datepicker-toggle
-                matSuffix
-                [for]="editPicker"
-              ></mat-datepicker-toggle>
-              <mat-datepicker #editPicker></mat-datepicker>
-            </mat-form-field>
+              <!-- Due Date Input -->
+              <div class="mb-6">
+                <label
+                  for="edit-dueDate"
+                  class="block mb-2 text-sm font-medium"
+                  [ngClass]="{
+                    'text-red-700 dark:text-red-500':
+                      taskForm.get('dueDate')?.invalid &&
+                      taskForm.get('dueDate')?.touched,
+                    'text-blue-700 dark:text-blue-500': !(
+                      taskForm.get('dueDate')?.invalid &&
+                      taskForm.get('dueDate')?.touched
+                    )
+                  }"
+                >
+                  Due Date
+                </label>
+                <div class="relative">
+                  <input
+                    type="date"
+                    id="edit-dueDate"
+                    formControlName="dueDate"
+                    class="border text-sm rounded-lg block w-full p-2.5"
+                    [ngClass]="{
+                      'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                        taskForm.get('dueDate')?.invalid &&
+                        taskForm.get('dueDate')?.touched,
+                      'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                        !(
+                          taskForm.get('dueDate')?.invalid &&
+                          taskForm.get('dueDate')?.touched
+                        )
+                    }"
+                  />
+                </div>
+                <p
+                  *ngIf="
+                    taskForm.get('dueDate')?.invalid &&
+                    taskForm.get('dueDate')?.touched
+                  "
+                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                >
+                  <span class="font-medium">Error!</span> Due date is required.
+                </p>
+              </div>
+            </div>
+
+            <!-- Child Assignment Select -->
+            <div class="mb-6">
+              <label
+                for="edit-childId"
+                class="block mb-2 text-sm font-medium"
+                [ngClass]="{
+                  'text-red-700 dark:text-red-500':
+                    taskForm.get('childId')?.invalid &&
+                    taskForm.get('childId')?.touched,
+                  'text-blue-700 dark:text-blue-500': !(
+                    taskForm.get('childId')?.invalid &&
+                    taskForm.get('childId')?.touched
+                  )
+                }"
+              >
+                Assign to Child
+              </label>
+              <select
+                id="edit-childId"
+                formControlName="childId"
+                class="border text-sm rounded-lg block w-full p-2.5"
+                [ngClass]="{
+                  'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                    taskForm.get('childId')?.invalid &&
+                    taskForm.get('childId')?.touched,
+                  'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                    !(
+                      taskForm.get('childId')?.invalid &&
+                      taskForm.get('childId')?.touched
+                    )
+                }"
+              >
+                <option [ngValue]="null" disabled>Select a child</option>
+                <option
+                  *ngFor="let child of children$ | async"
+                  [value]="child.id"
+                >
+                  {{ child.name }}
+                </option>
+              </select>
+              <p
+                *ngIf="
+                  taskForm.get('childId')?.invalid &&
+                  taskForm.get('childId')?.touched
+                "
+                class="mt-2 text-sm text-red-600 dark:text-red-500"
+              >
+                <span class="font-medium">Error!</span> Child assignment is
+                required.
+              </p>
+            </div>
           </div>
 
-          <!-- Multiple Choice Section with Visual Enhancement -->
-          <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-            <h3 class="text-blue-800 font-medium mb-3 flex items-center">
-              <mat-icon class="mr-2">quiz</mat-icon> Multiple Choice Options
+          <!-- Multiple Choice Section -->
+          <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
+            <h3 class="text-blue-800 font-medium mb-5 flex items-center">
+              <mat-icon class="mr-3">quiz</mat-icon> Multiple Choice Options
             </h3>
 
-            <mat-form-field class="w-full">
-              <mat-label>Answer Choices (comma-separated)</mat-label>
+            <!-- Choices Input -->
+            <div class="mb-6">
+              <label
+                for="edit-choices"
+                class="block mb-2 text-sm font-medium text-blue-700 dark:text-blue-500"
+              >
+                Answer Choices (comma-separated)
+              </label>
               <input
-                matInput
+                type="text"
+                id="edit-choices"
                 formControlName="choices"
                 placeholder="30,35,40,45"
+                class="bg-blue-50 border border-blue-500 text-blue-900 dark:text-blue-400 placeholder-blue-700 dark:placeholder-blue-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-blue-500"
               />
-              <mat-hint>Enter choices separated by commas</mat-hint>
-            </mat-form-field>
+              <p class="mt-2 text-sm text-blue-600 dark:text-blue-500">
+                Enter choices separated by commas
+              </p>
+            </div>
 
             <!-- Preview of choices -->
             <div
               *ngIf="taskForm.get('choices')?.value"
-              class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-3"
+              class="grid grid-cols-2 sm:grid-cols-4 gap-4 my-6"
             >
               <div
                 *ngFor="let choice of getFormChoicesArray()"
-                class="bg-white p-2 rounded border border-blue-200 text-center text-blue-800"
+                class="bg-white p-4 rounded-lg border border-blue-200 text-center text-blue-800 shadow-sm"
               >
                 {{ choice }}
               </div>
             </div>
 
-            <mat-form-field class="w-full mt-3">
-              <mat-label>Correct Answer</mat-label>
-              <input matInput formControlName="correctAnswer" required />
-              <mat-icon matSuffix class="text-green-500">check_circle</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <mat-form-field class="w-full">
-            <mat-label>Assign to Child</mat-label>
-            <mat-select formControlName="childId" required>
-              <mat-option
-                *ngFor="let child of children$ | async"
-                [value]="child.id"
+            <!-- Correct Answer Input -->
+            <div class="mb-6">
+              <label
+                for="edit-correctAnswer"
+                class="block mb-2 text-sm font-medium"
+                [ngClass]="{
+                  'text-red-700 dark:text-red-500':
+                    taskForm.get('correctAnswer')?.invalid &&
+                    taskForm.get('correctAnswer')?.touched,
+                  'text-green-700 dark:text-green-500': !(
+                    taskForm.get('correctAnswer')?.invalid &&
+                    taskForm.get('correctAnswer')?.touched
+                  )
+                }"
               >
-                {{ child.name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+                Correct Answer
+              </label>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="edit-correctAnswer"
+                  formControlName="correctAnswer"
+                  placeholder="Enter correct answer"
+                  class="border text-sm rounded-lg block w-full p-2.5 pr-10"
+                  [ngClass]="{
+                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                      taskForm.get('correctAnswer')?.invalid &&
+                      taskForm.get('correctAnswer')?.touched,
+                    'bg-green-50 border-green-500 text-green-900 dark:text-green-400 placeholder-green-700 dark:placeholder-green-500 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-green-500':
+                      !(
+                        taskForm.get('correctAnswer')?.invalid &&
+                        taskForm.get('correctAnswer')?.touched
+                      )
+                  }"
+                />
+                <mat-icon class="absolute right-2 top-2 text-green-500"
+                  >check_circle</mat-icon
+                >
+              </div>
+              <p
+                *ngIf="
+                  taskForm.get('correctAnswer')?.invalid &&
+                  taskForm.get('correctAnswer')?.touched
+                "
+                class="mt-2 text-sm text-red-600 dark:text-red-500"
+              >
+                <span class="font-medium">Error!</span> Correct answer is
+                required.
+              </p>
+            </div>
+          </div>
         </form>
-      </mat-dialog-content>
-      <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close class="text-gray-600">
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-gray-200 flex justify-end">
+        <button
+          mat-button
+          mat-dialog-close
+          class="text-gray-600 px-6 py-2 rounded-lg mr-4"
+        >
           Cancel
         </button>
         <button
-          mat-raised-button
-          color="primary"
-          class="bg-[#2563eb]"
+          class="bg-[#2563eb] text-white px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           [disabled]="!taskForm.valid"
           (click)="dialogRef.close(taskForm.value)"
         >
           Update Task
         </button>
-      </mat-dialog-actions>
+      </div>
     </div>
   </ng-template>
 

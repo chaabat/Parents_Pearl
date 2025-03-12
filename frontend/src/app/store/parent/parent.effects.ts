@@ -6,6 +6,8 @@ import { catchError, map, mergeMap, of } from 'rxjs';
 import { Store } from '@ngrx/store';
 import * as AuthActions from '../auth/auth.actions';
 import { Router } from '@angular/router';
+import { withLatestFrom, switchMap } from 'rxjs/operators';
+import * as ParentSelectors from './parent.selectors';
 
 @Injectable()
 export class ParentEffects {
@@ -183,8 +185,8 @@ export class ParentEffects {
   loadTasks$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ParentActions.loadTasks),
-      mergeMap(({ parentId }) =>
-        this.parentService.getTasks(parentId).pipe(
+      switchMap(({ parentId, status }) =>
+        this.parentService.getTasks(parentId, status).pipe(
           map((tasks) => ParentActions.loadTasksSuccess({ tasks })),
           catchError((error) =>
             of(ParentActions.parentActionFailure({ error }))
@@ -273,8 +275,41 @@ export class ParentEffects {
           }),
           catchError((error) => {
             console.error('Error updating child:', error);
-            return of(ParentActions.updateChildFailure({ error: error.message }));
+            return of(
+              ParentActions.updateChildFailure({ error: error.message })
+            );
           })
+        )
+      )
+    )
+  );
+
+  searchTasks$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ParentActions.searchTasks),
+      withLatestFrom(this.store.select(ParentSelectors.selectParentId)),
+      switchMap(([action, parentId]) => {
+        if (!parentId)
+          return of(
+            ParentActions.searchTasksFailure({ error: 'No parent ID' })
+          );
+        return this.parentService.searchTasks(parentId, action.keyword).pipe(
+          map((tasks) => ParentActions.searchTasksSuccess({ tasks })),
+          catchError((error) => of(ParentActions.searchTasksFailure({ error })))
+        );
+      })
+    )
+  );
+
+  completeTask$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ParentActions.completeTask),
+      switchMap(({ parentId, childId, taskId }) =>
+        this.parentService.completeTask(parentId, childId, taskId).pipe(
+          map((task) => ParentActions.completeTaskSuccess({ task })),
+          catchError((error) =>
+            of(ParentActions.completeTaskFailure({ error }))
+          )
         )
       )
     )

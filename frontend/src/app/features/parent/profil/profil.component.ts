@@ -39,12 +39,13 @@ export class ProfilComponent implements OnInit {
   @ViewChild('deleteConfirmDialog') deleteConfirmDialog!: TemplateRef<any>;
 
   parentForm: FormGroup;
-  parent$: Observable<Parent | null>;
-  loading$: Observable<boolean>;
-  error$: Observable<any>;
-  parentId: number | undefined;
+  parentId: number | null = null;
   selectedFile: File | null = null;
   imagePreview: string | null = null;
+  parent$ = this.store.select(ParentSelectors.selectParentProfile);
+  loading$ = this.store.select(ParentSelectors.selectParentLoading);
+  error$ = this.store.select(ParentSelectors.selectParentError);
+  originalProfile: Parent | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -54,95 +55,79 @@ export class ProfilComponent implements OnInit {
     private dialog: MatDialog,
     private router: Router
   ) {
-    this.parent$ = this.store.select(ParentSelectors.selectParentProfile);
-    this.loading$ = this.store.select(ParentSelectors.selectParentLoading);
-    this.error$ = this.store.select(ParentSelectors.selectParentError);
-
     this.parentForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: [''],
       dateOfBirth: [''],
       picture: [''],
+      password: [''],
     });
   }
 
   ngOnInit(): void {
-    // Get the current user's ID and load their profile
+    // Load current user's profile
     this.store.select(AuthSelectors.selectUser).subscribe((user) => {
       if (user?.id) {
         this.parentId = user.id;
-        // Load the parent profile
-        this.parentService.getParentProfile(user.id).subscribe(
-          (parent) => {
-            if (parent) {
-              // Update form with existing data
-              this.parentForm.patchValue({
-                name: parent.name,
-                email: parent.email,
-                dateOfBirth: parent.dateOfBirth,
-                picture: parent.picture || '',
-              });
-              if (parent.picture) {
-                this.imagePreview = parent.picture;
-              }
-            }
-          },
-          (error) => {
-            console.error('Error loading parent profile:', error);
-          }
+        this.store.dispatch(
+          ParentActions.loadParentProfile({ parentId: user.id })
         );
+      }
+    });
+
+    // Subscribe to profile data changes
+    this.parent$.subscribe((parent) => {
+      if (parent) {
+        // Store original profile for comparison
+        this.originalProfile = { ...parent };
+
+        // Update form with current values
+        this.parentForm.patchValue(
+          {
+            name: parent.name,
+            email: parent.email,
+            dateOfBirth: parent.dateOfBirth ? parent.dateOfBirth : null,
+            picture: parent.picture,
+          },
+          { emitEvent: false }
+        );
+
+        if (parent.picture) {
+          this.imagePreview = parent.picture;
+        }
       }
     });
   }
 
   onSubmit(): void {
     if (this.parentForm.valid && this.parentId) {
-      // Create a copy of the form value
-      const updateData = { ...this.parentForm.value };
+      const formValue = this.parentForm.value;
+      const updateData: Partial<Parent> = {
+        // Always include required fields with their current values
+        name: formValue.name || this.originalProfile?.name,
+        email: formValue.email || this.originalProfile?.email,
+      };
 
-      // Remove empty fields to avoid overwriting existing data
-      Object.keys(updateData).forEach((key) => {
-        if (updateData[key] === '' || updateData[key] === null) {
-          delete updateData[key];
-        }
-      });
+      // Only include optional fields if they've changed
+      if (formValue.dateOfBirth !== this.originalProfile?.dateOfBirth) {
+        updateData.dateOfBirth = formValue.dateOfBirth;
+      }
+      if (formValue.password) {
+        updateData.password = formValue.password;
+      }
 
+      // Handle image upload if there's a new file
       if (this.selectedFile) {
-        // If there's a new image, upload it first
-        this.uploadImage().subscribe(
-          (imageUrl) => {
+        this.uploadImage().subscribe({
+          next: (imageUrl) => {
             updateData.picture = imageUrl;
             this.updateProfile(updateData);
           },
-          (error) => {
-            console.error('Image upload failed:', error);
-            // Still update other fields even if image upload fails
-            this.updateProfile(updateData);
-          }
-        );
+          error: () => this.updateProfile(updateData),
+        });
       } else {
-        // No new image, just update the profile
         this.updateProfile(updateData);
       }
-    }
-  }
-
-  private updateProfile(profileData: any): void {
-    if (this.parentId) {
-      this.parentService
-        .updateParentProfile(this.parentId, profileData)
-        .subscribe(
-          (updatedParent) => {
-            // Dispatch success action to update store
-            this.store.dispatch(
-              ParentActions.loadParentProfileSuccess({ parent: updatedParent })
-            );
-          },
-          (error) => {
-            console.error('Error updating profile:', error);
-          }
-        );
     }
   }
 
@@ -212,6 +197,17 @@ export class ProfilComponent implements OnInit {
         (error) => {
           console.error('Error deleting account:', error);
         }
+      );
+    }
+  }
+
+  private updateProfile(updateData: Partial<Parent>): void {
+    if (this.parentId && Object.keys(updateData).length > 0) {
+      this.store.dispatch(
+        ParentActions.updateParentProfile({
+          parentId: this.parentId,
+          profileData: updateData,
+        })
       );
     }
   }

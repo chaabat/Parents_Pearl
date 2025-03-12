@@ -6,8 +6,11 @@ export interface ParentState {
   rewards: Reward[];
   pointHistory: Point[];
   tasks: Task[];
+  searchResults: Task[];
   loading: boolean;
-  error: any | null;
+  error: any;
+  selectedChild: any;
+  filteredTasks: any[];
 }
 
 export const initialParentState: ParentState = {
@@ -16,6 +19,9 @@ export const initialParentState: ParentState = {
   rewards: [],
   pointHistory: [],
   tasks: [],
+  searchResults: [],
   loading: false,
   error: null,
+  selectedChild: null,
+  filteredTasks: [],
 };

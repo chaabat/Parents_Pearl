@@ -83,7 +83,7 @@ export const deleteChildFailure = createAction(
 // Task Actions
 export const loadTasks = createAction(
   '[Parent] Load Tasks',
-  props<{ parentId: number }>()
+  props<{ parentId: number; status?: string }>()
 );
 
 export const loadTasksSuccess = createAction(
@@ -206,5 +206,46 @@ export const deleteRewardSuccess = createAction(
 // Error Actions
 export const parentActionFailure = createAction(
   '[Parent] Action Failure',
+  props<{ error: any }>()
+);
+
+export const setFilteredTasks = createAction(
+  '[Parent] Set Filtered Tasks',
+  props<{ tasks: any[] }>()
+);
+
+export const setSelectedChild = createAction(
+  '[Parent] Set Selected Child',
+  props<{ child: any }>()
+);
+
+// Add these actions
+export const searchTasks = createAction(
+  '[Parent] Search Tasks',
+  props<{ keyword: string }>()
+);
+
+export const searchTasksSuccess = createAction(
+  '[Parent] Search Tasks Success',
+  props<{ tasks: Task[] }>()
+);
+
+export const searchTasksFailure = createAction(
+  '[Parent] Search Tasks Failure',
+  props<{ error: any }>()
+);
+
+export const completeTask = createAction(
+  '[Parent] Complete Task',
+  props<{ parentId: number; childId: number; taskId: number }>()
+);
+
+export const completeTaskSuccess = createAction(
+  '[Parent] Complete Task Success',
+  props<{ task: Task }>()
+);
+
+export const completeTaskFailure = createAction(
+  '[Parent] Complete Task Failure',
   props<{ error: any }>()
 );

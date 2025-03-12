@@ -51,48 +51,62 @@
           <mat-form-field class="w-full">
             <mat-label>Name</mat-label>
             <input matInput formControlName="name" required />
-            <mat-error *ngIf="parentForm.get('name')?.hasError('required')">
-              Name is required
-            </mat-error>
+            <mat-hint *ngIf="parentForm.get('name')?.dirty"
+              >Field modified</mat-hint
+            >
           </mat-form-field>
 
           <!-- Email Field -->
           <mat-form-field class="w-full">
             <mat-label>Email</mat-label>
             <input matInput formControlName="email" type="email" required />
-            <mat-error *ngIf="parentForm.get('email')?.hasError('required')">
-              Email is required
-            </mat-error>
-            <mat-error *ngIf="parentForm.get('email')?.hasError('email')">
-              Please enter a valid email address
-            </mat-error>
+            <mat-hint *ngIf="parentForm.get('email')?.dirty"
+              >Field modified</mat-hint
+            >
           </mat-form-field>
 
           <!-- Date of Birth Field -->
           <mat-form-field class="w-full">
             <mat-label>Date of Birth</mat-label>
-            <input matInput formControlName="dateOfBirth" type="date" />
+            <input
+              matInput
+              [matDatepicker]="picker"
+              formControlName="dateOfBirth"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="picker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-hint *ngIf="parentForm.get('dateOfBirth')?.dirty"
+              >Field modified</mat-hint
+            >
           </mat-form-field>
 
-          <!-- password Field -->
+          <!-- Password Field -->
           <mat-form-field class="w-full">
-            <mat-label>Password</mat-label>
+            <mat-label>New Password (leave blank to keep current)</mat-label>
             <input matInput formControlName="password" type="password" />
-            <mat-error *ngIf="parentForm.get('password')?.hasError('pattern')">
-              Please enter a valid password
-            </mat-error>
+            <mat-hint *ngIf="parentForm.get('password')?.dirty"
+              >Field modified</mat-hint
+            >
           </mat-form-field>
 
           <!-- Action Buttons -->
           <div class="flex justify-between items-center mt-8">
-            <!-- Save Changes Button -->
+            <!-- Save Changes Button with loading state -->
             <button
               mat-raised-button
               color="primary"
               type="submit"
-              [disabled]="!parentForm.valid || (loading$ | async)"
+              [disabled]="!parentForm.valid || !parentForm.dirty"
             >
-              Save Changes
+              <span *ngIf="!(loading$ | async)">Save Changes</span>
+              <mat-spinner
+                *ngIf="loading$ | async"
+                diameter="20"
+                class="inline-block ml-2"
+              ></mat-spinner>
             </button>
 
             <!-- Delete Account Button -->
@@ -101,6 +115,7 @@
               color="warn"
               type="button"
               (click)="openDeleteConfirmDialog()"
+              [disabled]="loading$ | async"
             >
               Delete Account
             </button>

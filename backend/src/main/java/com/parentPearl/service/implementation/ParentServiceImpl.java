@@ -44,16 +44,21 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Override
+    @Transactional
     public ParentResponse updateParent(Long id, ParentRequest request) {
         Parent parent = parentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Parent not found with id: " + id));
-        
-        if (request.getPassword() != null) {
-            request.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
-        
+            .orElseThrow(() -> new NotFoundException("Parent not found with id: " + id));
+
+        // Update basic fields using mapper
         parentMapper.updateEntity(parent, request);
-        return parentMapper.toResponse(parent);
+
+        // Handle password update separately
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            parent.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        Parent updatedParent = parentRepository.save(parent);
+        return parentMapper.toResponse(updatedParent);
     }
 
     @Override
@@ -85,7 +90,17 @@ public class ParentServiceImpl implements ParentService {
         Child child = childRepository.findByIdAndParentId(childId, parentId)
                 .orElseThrow(() -> new NotFoundException("Child not found with id: " + childId + " for parent: " + parentId));
         
+        Parent parent = child.getParent();
+        
         childMapper.updateEntity(child, request);
+        
+        child.setParent(parent);
+        
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            child.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        
+        child = childRepository.save(child);
         return childMapper.toResponse(child);
     }
 
@@ -120,4 +135,14 @@ public class ParentServiceImpl implements ParentService {
         child.setTotalPoints(totalPoints);
         childRepository.save(child);
     }
+
+    // @Override
+    // public void reactivateParentAndChildren(Long id) {
+    //     Parent parent = parentRepository.findById(id)
+    //             .orElseThrow(() -> new NotFoundException("Parent not found with id: " + id));
+    //     parent.setDeleted(false);
+    //     // Reactivate all children
+    //     childRepository.findByParentIdIncludingDeleted(id)  // Need to create this method
+    //             .forEach(child -> child.setDeleted(false));
+    // }
 } 

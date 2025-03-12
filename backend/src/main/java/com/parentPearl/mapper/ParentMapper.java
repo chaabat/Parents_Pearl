@@ -25,5 +25,6 @@ public interface ParentMapper {
     @Mapping(target = "children", ignore = true)
     @Mapping(target = "picture", ignore = true)
     @Mapping(target = "dateOfBirth", ignore = true)
+    @Mapping(target = "password", ignore = true)
     void updateEntity(@MappingTarget Parent parent, ParentRequest request);
 } 
