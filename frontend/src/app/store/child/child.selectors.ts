@@ -1,5 +1,6 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { ChildState } from './child.state';
+import { createAction, props } from '@ngrx/store';
 
 export const selectChildState = createFeatureSelector<ChildState>('child');
 
@@ -31,4 +32,14 @@ export const selectChildLoading = createSelector(
 export const selectChildError = createSelector(
   selectChildState,
   (state) => state?.error ?? null
+);
+
+export const selectTotalPoints = createSelector(
+  selectChildPoints,
+  (points) => points.reduce((total, point) => total + point.points, 0) || 0
+);
+
+export const loadPoints = createAction(
+  '[Child] Load Points',
+  props<{ childId: number }>()
 );

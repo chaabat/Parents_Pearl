@@ -59,7 +59,7 @@
       <!-- Show points for CHILD only -->
       <button mat-menu-item *ngIf="user?.role === 'CHILD'" disabled>
         <mat-icon class="accent">stars</mat-icon>
-        <span>{{ user?.totalPoints || 0 | number }} Points</span>
+        <span> {{ totalPoints$ | async }} points</span>
       </button>
 
       <mat-divider></mat-divider>

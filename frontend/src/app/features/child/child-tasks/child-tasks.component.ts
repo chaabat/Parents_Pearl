@@ -5,8 +5,11 @@ import { Store } from '@ngrx/store';
 import { Task } from '../../../core/models/task.model';
 import * as ChildActions from '../../../store/child/child.actions';
 import * as ChildSelectors from '../../../store/child/child.selectors';
+import * as AuthSelectors from '../../../store/auth/auth.selectors';
 import { FormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-child-tasks',
@@ -23,18 +26,29 @@ import { MatChipsModule } from '@angular/material/chips';
 export class ChildTasksComponent implements OnInit {
   tasks$ = this.store.select(ChildSelectors.selectChildTasks);
   loading$ = this.store.select(ChildSelectors.selectChildLoading);
-  childId = 1; // TODO: Get from auth state
   selectedTask: Task | null = null;
   answer: string = '';
 
-  constructor(private store: Store) {}
+  constructor(
+    private store: Store,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit() {
-    this.loadTasks();
+    // Get childId from auth state and load tasks
+    this.store.select(AuthSelectors.selectUser)
+      .pipe(take(1))
+      .subscribe(user => {
+        if (user && user.id) {
+          this.loadTasks(user.id);
+        } else {
+          this.snackBar.open('User not found', 'Close', { duration: 3000 });
+        }
+      });
   }
 
-  loadTasks() {
-    this.store.dispatch(ChildActions.loadMyTasks({ childId: this.childId }));
+  loadTasks(childId: number) {
+    this.store.dispatch(ChildActions.loadMyTasks({ childId }));
   }
 
   viewTask(task: Task) {
@@ -43,15 +57,21 @@ export class ChildTasksComponent implements OnInit {
 
   submitAnswer() {
     if (this.selectedTask && this.answer.trim()) {
-      this.store.dispatch(
-        ChildActions.submitTaskAnswer({
-          childId: this.childId,
-          taskId: this.selectedTask.id,
-          answer: this.answer,
-        })
-      );
-      this.answer = '';
-      this.selectedTask = null;
+      this.store.select(AuthSelectors.selectUser)
+        .pipe(take(1))
+        .subscribe(user => {
+          if (user && user.id) {
+            this.store.dispatch(
+              ChildActions.submitTaskAnswer({
+                childId: user.id,
+                taskId: this.selectedTask!.id,
+                answer: this.answer,
+              })
+            );
+            this.answer = '';
+            this.selectedTask = null;
+          }
+        });
     }
   }
 }

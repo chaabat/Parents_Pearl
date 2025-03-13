@@ -27,7 +27,7 @@
           <div class="flex items-center" *ngIf="userRole === 'CHILD'">
             <mat-icon class="text-accent mr-2">stars</mat-icon>
             <span class="text-sm font-medium text-purple-600">
-              {{ user?.points || 0 }} Points
+              {{ totalPoints$ | async }} points
             </span>
           </div>
 

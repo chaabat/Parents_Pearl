@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Reward } from '../models/reward.model';
- 
+import { tap } from 'rxjs/operators';
+
 import { environment } from '../../../environments/environment';
 import { Child, ChildResponse } from '../models/child.model';
-import {  Task, TaskAnswer } from '../models/task.model';
+import { Task, TaskAnswer } from '../models/task.model';
 import { Point } from '../models/point.model';
 import { RewardRedemption } from '../models';
 
@@ -69,7 +70,11 @@ export class ChildService {
     );
   }
 
-  submitTaskAnswer(childId: number, taskId: number, answer: string): Observable<TaskAnswer> {
+  submitTaskAnswer(
+    childId: number,
+    taskId: number,
+    answer: string
+  ): Observable<TaskAnswer> {
     return this.http.post<TaskAnswer>(
       `${this.apiUrl}/children/${childId}/tasks/${taskId}/submit`,
       answer,
@@ -78,23 +83,24 @@ export class ChildService {
   }
 
   getChildTasks(childId: number): Observable<Task[]> {
-    return this.http.get<Task[]>(
-      `${this.apiUrl}/children/${childId}/tasks`,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.get<Task[]>(`${this.apiUrl}/children/${childId}/tasks`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   // Points endpoints
   getMyPointHistory(childId: number): Observable<Point[]> {
-    return this.http.get<Point[]>(
-      `${this.apiUrl}/points/children/${childId}/points`,
-      { headers: this.getAuthHeaders() }
+    console.log('Fetching points for child:', childId); // Debug log
+    return this.http.get<Point[]>(`${this.apiUrl}/children/${childId}/points/history`, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      tap(points => console.log('Points received:', points)) // Debug log
     );
   }
 
   getMyTotalPoints(childId: number): Observable<number> {
     return this.http.get<number>(
-      `${this.apiUrl}/points/children/${childId}/points/total`,
+      `${this.apiUrl}/children/${childId}/points/total`,
       { headers: this.getAuthHeaders() }
     );
   }
@@ -102,8 +108,7 @@ export class ChildService {
   getPointHistory(childId: number): Observable<Point[]> {
     return this.http.get<Point[]>(
       `${this.apiUrl}/children/${childId}/points/history`,
-      { headers: this.getAuthHeaders() },
-       
+      { headers: this.getAuthHeaders() }
     );
   }
 
@@ -133,9 +138,7 @@ export class ChildService {
     );
   }
 
-  getRedemptionHistory(
-    childId: number
-  ): Observable<RewardRedemption[]> {
+  getRedemptionHistory(childId: number): Observable<RewardRedemption[]> {
     return this.http.get<RewardRedemption[]>(
       `${this.apiUrl}/children/${childId}/rewards/history`,
       { headers: this.getAuthHeaders() }
@@ -144,8 +147,8 @@ export class ChildService {
 
   // Additional endpoints
   getChildDetails(childId: number): Observable<Child> {
-    return this.http.get<Child>(`${this.apiUrl}/children/${childId}`,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.get<Child>(`${this.apiUrl}/children/${childId}`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 }

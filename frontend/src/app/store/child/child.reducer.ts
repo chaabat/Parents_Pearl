@@ -4,38 +4,56 @@ import * as ChildActions from './child.actions';
 
 export const childReducer = createReducer(
   initialChildState,
-  
+
   // Profile
-  on(ChildActions.loadChildProfile, state => ({
+  on(ChildActions.loadChildProfile, (state) => ({
     ...state,
-    loading: true
+    loading: true,
   })),
   on(ChildActions.loadChildProfileSuccess, (state, { profile }) => ({
     ...state,
     profile,
-    loading: false
+    loading: false,
   })),
   on(ChildActions.loadChildProfileFailure, (state, { error }) => ({
     ...state,
     error,
-    loading: false
+    loading: false,
   })),
 
   // Tasks
-  on(ChildActions.loadMyTasks, state => ({
+  on(ChildActions.loadMyTasks, (state) => ({
     ...state,
-    loading: true
+    loading: true,
   })),
   on(ChildActions.loadMyTasksSuccess, (state, { tasks }) => ({
     ...state,
     tasks,
-    loading: false
+    loading: false,
   })),
   on(ChildActions.loadMyTasksFailure, (state, { error }) => ({
     ...state,
     error,
-    loading: false
+    loading: false,
   })),
 
+  // Points
+  on(ChildActions.loadPoints, (state) => ({
+    ...state,
+    loading: true,
+  })),
+
+  on(ChildActions.loadPointsSuccess, (state, { points }) => ({
+    ...state,
+    points,
+    loading: false,
+  })),
+
+  on(ChildActions.loadPointsFailure, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false,
+  }))
+
   // Points and Rewards follow similar patterns...
-); 
+);
