@@ -52,6 +52,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'child/tasks',
+        loadComponent: () =>
+          import('./features/child/child-tasks/child-tasks.component').then(
+            (m) => m.ChildTasksComponent
+          ),
+      },
+      {
+        path: 'child/rewards',
+        loadComponent: () =>
+          import('./features/child/child-rewards/child-rewards.component').then(
+            (m) => m.ChildRewardsComponent
+          ),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

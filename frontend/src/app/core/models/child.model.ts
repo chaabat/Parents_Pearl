@@ -9,9 +9,18 @@ export interface Child {
   email: string;
   dateOfBirth: string;
   picture?: string;
-  totalPoints?: number;
+
   tasks?: any[];
   rewardRedemptions?: any[];
   role: string;
   password?: string;
+  totalPoints: number;
+  parentId: number;
+}
+
+export interface ChildResponse {
+  id: number;
+  name: string;
+  email: string;
+  totalPoints: number;
 }

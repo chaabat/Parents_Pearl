@@ -2,7 +2,7 @@ export interface RewardRedemption {
   id: number;
   childId: number;
   rewardId: number;
-  pointsSpent: number;
+  pointCost: number;
   message: string;
   redemptionDate: Date;
 } 

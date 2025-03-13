@@ -1,0 +1,89 @@
+<div class="container mx-auto p-4">
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h1 class="text-2xl font-bold mb-6 text-purple-800">My Tasks</h1>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="loading$ | async" class="flex justify-center">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <!-- Tasks List -->
+    <div *ngIf="tasks$ | async as tasks" class="grid gap-4">
+      <mat-card
+        *ngFor="let task of tasks"
+        class="p-4 hover:shadow-lg transition-shadow"
+      >
+        <mat-card-header>
+          <mat-card-title class="text-lg font-semibold">{{
+            task.title
+          }}</mat-card-title>
+          <mat-card-subtitle>Points: {{ task.pointValue }}</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content class="mt-2">
+          <p>{{ task.description }}</p>
+          <div class="mt-2">
+            <mat-chip-listbox>
+              <mat-chip
+                [color]="task.status === 'COMPLETED' ? 'accent' : 'primary'"
+              >
+                {{ task.status }}
+              </mat-chip>
+            </mat-chip-listbox>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions align="end">
+          <button
+            mat-button
+            color="primary"
+            (click)="viewTask(task)"
+            [disabled]="task.status === 'COMPLETED'"
+          >
+            Answer Task
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- No Tasks Message -->
+    <div *ngIf="(tasks$ | async)?.length === 0" class="text-center py-8">
+      <mat-icon class="text-gray-400 text-6xl">assignment</mat-icon>
+      <p class="text-gray-500 mt-2">No tasks available</p>
+    </div>
+  </div>
+
+  <!-- Task Answer Dialog -->
+  <mat-dialog-content
+    *ngIf="selectedTask"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+  >
+    <div class="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+      <h2 class="text-xl font-bold mb-4">{{ selectedTask.title }}</h2>
+      <p class="mb-4">{{ selectedTask.description }}</p>
+
+      <mat-form-field class="w-full">
+        <mat-label>Your Answer</mat-label>
+        <textarea
+          matInput
+          [(ngModel)]="answer"
+          rows="4"
+          placeholder="Type your answer here..."
+        >
+        </textarea>
+      </mat-form-field>
+
+      <div class="flex justify-end gap-2 mt-4">
+        <button mat-button (click)="selectedTask = null">Cancel</button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="submitAnswer()"
+          [disabled]="!answer.trim()"
+        >
+          Submit Answer
+        </button>
+      </div>
+    </div>
+  </mat-dialog-content>
+</div>

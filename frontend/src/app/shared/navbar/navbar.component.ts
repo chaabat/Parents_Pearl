@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../material.module';
 import { AuthService } from '../../core/services/auth.service';
+import { Child } from '../../core/models/child.model';
 
 @Component({
   selector: 'app-navbar',
@@ -13,7 +14,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class NavbarComponent implements OnInit {
   isAuthenticated = false;
-  user: any = null;
+  user: Child | null = null;
   defaultImage =
     'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741258917/uulqrw1ytrup4txl8abb.png';
 
@@ -24,9 +25,12 @@ export class NavbarComponent implements OnInit {
       (isAuth) => (this.isAuthenticated = isAuth)
     );
 
-    this.authService.currentUser$.subscribe((user) => {
-      this.user = user;
-      console.log('User picture:', user?.picture);
+    this.authService.currentUser$.subscribe(user => {
+      if (user?.role === 'CHILD') {
+        this.user = user as Child;
+      } else {
+        this.user = null;
+      }
     });
   }
 

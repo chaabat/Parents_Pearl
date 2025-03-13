@@ -25,3 +25,11 @@ export interface Task {
   choices?: string[];
   correctAnswer?: string;
 }
+
+ 
+
+export interface TaskAnswer {
+  taskId: number;
+  correct: boolean;
+  feedback: string;
+}
