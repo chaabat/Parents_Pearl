@@ -53,29 +53,23 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Subscribe to user changes
-    this.subscriptions.add(
-      this.store.select(AuthSelectors.selectUser).subscribe((user) => {
-        if (user) {
-          this.user = user;
-          this.userRole = user.role;
-
-          // Load points when user changes and is a child
-          if (user.role === 'CHILD') {
-            console.log('Dispatching loadPoints after user change:', user.id); // Debug log
-            this.store.dispatch(ChildActions.loadPoints({ childId: user.id }));
-          }
+    this.store.select(AuthSelectors.selectUser).subscribe((user) => {
+      if (user) {
+        this.user = user;
+        this.userRole = user.role;
+        
+        if (user.role === 'CHILD') {
+          console.log('Loading child profile for:', user.id);
+          this.store.dispatch(ChildActions.loadChildProfile({ childId: user.id }));
         }
-      })
-    );
+      }
+    });
 
-    // Debug: Monitor points state
+    // Debug: Monitor profile state
     this.subscriptions.add(
-      this.store
-        .select(ChildSelectors.selectChildPoints)
-        .subscribe((points) => {
-          console.log('Points in store:', points);
-        })
+      this.store.select(ChildSelectors.selectChildProfile).subscribe(profile => {
+        console.log('Current profile:', profile);
+      })
     );
   }
 

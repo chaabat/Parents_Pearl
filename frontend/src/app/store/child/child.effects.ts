@@ -17,14 +17,14 @@ export class ChildEffects {
       ofType(ChildActions.loadChildProfile),
       mergeMap(({ childId }) =>
         this.childService.getChildProfile(childId).pipe(
-          map((profile) =>
-            ChildActions.loadChildProfileSuccess({
-              profile: profile as ChildResponse,
-            })
-          ),
-          catchError((error) =>
-            of(ChildActions.loadChildProfileFailure({ error }))
-          )
+          map((profile) => {
+            console.log('Profile loaded successfully:', profile);
+            return ChildActions.loadChildProfileSuccess({ profile });
+          }),
+          catchError((error) => {
+            console.error('Error loading profile:', error);
+            return of(ChildActions.loadChildProfileFailure({ error }));
+          })
         )
       )
     )
@@ -87,17 +87,10 @@ export class ChildEffects {
   loadPoints$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ChildActions.loadPoints),
-      tap(action => console.log('Loading points for child:', action.childId)),
       mergeMap(({ childId }) =>
         this.childService.getMyPointHistory(childId).pipe(
-          map(points => {
-            console.log('Points loaded successfully:', points);
-            return ChildActions.loadPointsSuccess({ points });
-          }),
-          catchError(error => {
-            console.error('Error loading points:', error);
-            return of(ChildActions.loadPointsFailure({ error }));
-          })
+          map((points) => ChildActions.loadPointsSuccess({ points })),
+          catchError((error) => of(ChildActions.loadPointsFailure({ error })))
         )
       )
     )

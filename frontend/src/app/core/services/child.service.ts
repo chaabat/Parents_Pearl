@@ -34,9 +34,12 @@ export class ChildService {
 
   // Child Profile endpoints
   getChildProfile(childId: number): Observable<ChildResponse> {
+    console.log('Fetching child profile for:', childId);
     return this.http.get<ChildResponse>(
       `${this.apiUrl}/children/${childId}/profile`,
       { headers: this.getAuthHeaders() }
+    ).pipe(
+      tap(profile => console.log('Received profile:', profile))
     );
   }
 
@@ -90,12 +93,9 @@ export class ChildService {
 
   // Points endpoints
   getMyPointHistory(childId: number): Observable<Point[]> {
-    console.log('Fetching points for child:', childId); // Debug log
-    return this.http.get<Point[]>(`${this.apiUrl}/children/${childId}/points/history`, {
-      headers: this.getAuthHeaders()
-    }).pipe(
-      tap(points => console.log('Points received:', points)) // Debug log
-    );
+    return this.http.get<Point[]>(`${this.apiUrl}/children/${childId}/points`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   getMyTotalPoints(childId: number): Observable<number> {

@@ -35,8 +35,11 @@ export const selectChildError = createSelector(
 );
 
 export const selectTotalPoints = createSelector(
-  selectChildPoints,
-  (points) => points.reduce((total, point) => total + point.points, 0) || 0
+  selectChildProfile,
+  (profile) => {
+    console.log('Profile in selector:', profile);
+    return profile?.totalPoints ?? 0;
+  }
 );
 
 export const loadPoints = createAction(

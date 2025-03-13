@@ -8,82 +8,56 @@
     </div>
 
     <!-- Tasks List -->
-    <div *ngIf="tasks$ | async as tasks" class="grid gap-4">
-      <mat-card
-        *ngFor="let task of tasks"
-        class="p-4 hover:shadow-lg transition-shadow"
-      >
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <mat-card *ngFor="let task of tasks$ | async" class="task-card">
         <mat-card-header>
-          <mat-card-title class="text-lg font-semibold">{{
-            task.title
-          }}</mat-card-title>
-          <mat-card-subtitle>Points: {{ task.pointValue }}</mat-card-subtitle>
-        </mat-card-header>
-
-        <mat-card-content class="mt-2">
-          <p>{{ task.description }}</p>
+          <mat-card-title>{{ task.title }}</mat-card-title>
           <div class="mt-2">
-            <mat-chip-listbox>
-              <mat-chip
-                [color]="task.status === 'COMPLETED' ? 'accent' : 'primary'"
-              >
+            <mat-chip-set>
+              <mat-chip [ngClass]="getTaskStatusClass(task.status)">
                 {{ task.status }}
               </mat-chip>
-            </mat-chip-listbox>
+            </mat-chip-set>
           </div>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ task.description }}</p>
+          <p class="points">Points: {{ task.pointValue }}</p>
         </mat-card-content>
-
-        <mat-card-actions align="end">
+        <mat-card-actions>
           <button
-            mat-button
+            mat-raised-button
             color="primary"
             (click)="viewTask(task)"
-            [disabled]="task.status === 'COMPLETED'"
+            [disabled]="task.status === TaskStatus.COMPLETED"
           >
-            Answer Task
+            {{ task.status === TaskStatus.COMPLETED ? "Completed" : "Answer" }}
           </button>
         </mat-card-actions>
       </mat-card>
     </div>
-
-    <!-- No Tasks Message -->
-    <div *ngIf="(tasks$ | async)?.length === 0" class="text-center py-8">
-      <mat-icon class="text-gray-400 text-6xl">assignment</mat-icon>
-      <p class="text-gray-500 mt-2">No tasks available</p>
-    </div>
   </div>
+</div>
 
-  <!-- Task Answer Dialog -->
-  <mat-dialog-content
-    *ngIf="selectedTask"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-  >
-    <div class="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
-      <h2 class="text-xl font-bold mb-4">{{ selectedTask.title }}</h2>
-      <p class="mb-4">{{ selectedTask.description }}</p>
-
-      <mat-form-field class="w-full">
-        <mat-label>Your Answer</mat-label>
-        <textarea
-          matInput
-          [(ngModel)]="answer"
-          rows="4"
-          placeholder="Type your answer here..."
-        >
-        </textarea>
-      </mat-form-field>
-
-      <div class="flex justify-end gap-2 mt-4">
-        <button mat-button (click)="selectedTask = null">Cancel</button>
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="submitAnswer()"
-          [disabled]="!answer.trim()"
-        >
-          Submit Answer
-        </button>
-      </div>
+<!-- Answer Dialog -->
+<div *ngIf="selectedTask" class="dialog-overlay">
+  <mat-dialog-content class="dialog-content">
+    <h2>Answer Task: {{ selectedTask.title }}</h2>
+    <p>{{ selectedTask.description }}</p>
+    <mat-form-field appearance="fill" class="w-full">
+      <mat-label>Your Answer</mat-label>
+      <textarea matInput [(ngModel)]="answer" rows="4"></textarea>
+    </mat-form-field>
+    <div class="dialog-actions">
+      <button mat-button (click)="selectedTask = null">Cancel</button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="submitAnswer()"
+        [disabled]="!answer.trim()"
+      >
+        Submit Answer
+      </button>
     </div>
   </mat-dialog-content>
 </div>

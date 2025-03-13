@@ -26,8 +26,6 @@ export interface Task {
   correctAnswer?: string;
 }
 
- 
-
 export interface TaskAnswer {
   taskId: number;
   correct: boolean;

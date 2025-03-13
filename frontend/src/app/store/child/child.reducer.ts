@@ -35,24 +35,6 @@ export const childReducer = createReducer(
     ...state,
     error,
     loading: false,
-  })),
-
-  // Points
-  on(ChildActions.loadPoints, (state) => ({
-    ...state,
-    loading: true,
-  })),
-
-  on(ChildActions.loadPointsSuccess, (state, { points }) => ({
-    ...state,
-    points,
-    loading: false,
-  })),
-
-  on(ChildActions.loadPointsFailure, (state, { error }) => ({
-    ...state,
-    error,
-    loading: false,
   }))
 
   // Points and Rewards follow similar patterns...
