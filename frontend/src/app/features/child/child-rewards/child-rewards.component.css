@@ -1,0 +1,26 @@
+.reward-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 8px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.reward-card h3 {
+  margin-top: 0;
+}
+
+.reward-card button {
+  margin-top: 8px;
+}
+
+.reward-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.mat-list-item {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 0;
+}

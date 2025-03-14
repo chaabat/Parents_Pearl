@@ -9,7 +9,7 @@
   <span class="spacer"></span>
 
   <!-- Not authenticated -->
-  <ng-container *ngIf="!(isAuthenticated$ | async)">
+  <ng-container *ngIf="!isAuthenticated">
     <button mat-button [routerLink]="['/auth/login']" class="auth-button">
       <mat-icon class="accent">login</mat-icon>
       <span>Login</span>
@@ -26,15 +26,15 @@
   </ng-container>
 
   <!-- Authenticated -->
-  <ng-container *ngIf="isAuthenticated$ | async">
+  <ng-container *ngIf="isAuthenticated">
     <div class="user-profile">
       <button mat-button [matMenuTriggerFor]="menu" class="profile-button">
         <div class="profile-content">
           <div
             class="avatar"
-            [style.background-image]="'url(' + getProfileImage(user$ | async) + ')'"
+            [style.background-image]="'url(' + getProfileImage(user) + ')'"
           ></div>
-          <span class="username">{{ (user$ | async)?.name || 'User' }}</span>
+          <span class="username">{{ user?.name || "User" }}</span>
           <mat-icon>arrow_drop_down</mat-icon>
         </div>
       </button>
@@ -50,14 +50,14 @@
       <button
         mat-menu-item
         [routerLink]="['/parent/profil']"
-        *ngIf="(user$ | async)?.role !== 'CHILD'"
+        *ngIf="user?.role !== 'CHILD'"
       >
         <mat-icon>person</mat-icon>
         <span>Profile</span>
       </button>
 
       <!-- Show points for CHILD only -->
-      <div class="flex items-center" *ngIf="(user$ | async)?.role === 'CHILD'">
+      <div class="flex items-center" *ngIf="user?.role === 'CHILD'">
         <mat-icon class="text-accent mr-2">stars</mat-icon>
         <span class="text-sm font-medium text-purple-600">
           <ng-container *ngIf="totalPoints$ | async as points; else loading">

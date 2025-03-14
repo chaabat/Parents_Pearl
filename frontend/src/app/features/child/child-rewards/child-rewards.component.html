@@ -1,1 +1,63 @@
-<p>child-rewards works!</p>
+<div class="container mx-auto p-4">
+    <!-- Points Display -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-2xl font-bold mb-4">Your Points</h2>
+      <div class="text-3xl font-bold text-purple-600">
+        {{ (totalPoints$ | async) || 0 }} Points
+      </div>
+    </div>
+  
+    <!-- Available Rewards -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-2xl font-bold mb-4">Available Rewards</h2>
+      <div *ngIf="loading$ | async; else content">
+        <mat-spinner></mat-spinner>
+      </div>
+      <ng-template #content>
+        <div *ngIf="rewards$ | async as rewards">
+          <div *ngIf="rewards.length > 0; else noRewards">
+            <div *ngFor="let reward of rewards" class="reward-card">
+              <h3>{{ reward.name }}</h3>
+              <p>{{ reward.description }}</p>
+              <p>Cost: {{ reward.pointCost }} points</p>
+              <button 
+                mat-raised-button 
+                color="primary"
+                (click)="redeemReward(reward)"
+                [disabled]="(totalPoints$ | async) < reward.pointCost">
+                Redeem
+              </button>
+            </div>
+          </div>
+          <ng-template #noRewards>
+            <p>No rewards available at the moment.</p>
+          </ng-template>
+        </div>
+      </ng-template>
+    </div>
+  
+    <!-- Redemption History -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-2xl font-bold mb-4">Redemption History</h2>
+      <div *ngIf="loading$ | async" class="flex justify-center">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+      <mat-list>
+        <mat-list-item *ngFor="let redemption of redemptions$ | async">
+          <div class="w-full flex justify-between items-center">
+            <div>
+              <h3 class="font-medium">{{ redemption.rewardId }}</h3>
+              <p class="text-sm text-gray-600">
+                Redeemed on {{ formatDate(redemption.redemptionDate) }}
+              </p>
+            </div>
+            <div class="text-red-600 font-medium">
+              -{{ redemption.pointCost }} Points
+            </div>
+          </div>
+        </mat-list-item>
+      </mat-list>
+    </div>
+  </div>
+  
+  

@@ -313,7 +313,7 @@ export class ChildrenComponent implements OnInit {
     });
   }
 
-  onSubmitChild(dialogRef: any): void {
+  onSubmitChild(dialogRef?: MatDialogRef<any>): void {
     if (this.childForm.valid && this.parentId && this.selectedChild) {
       const formData = this.childForm.value;
 

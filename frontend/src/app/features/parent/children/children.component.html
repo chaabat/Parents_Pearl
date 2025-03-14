@@ -46,13 +46,14 @@
                 (error)="onImageError($event)"
               />
             </div>
-            
           </div>
         </div>
 
         <!-- Upper Section -->
         <div class="h-1/2 w-full flex justify-between items-baseline px-6 py-5">
-          <h1 class="text-white text-xs font-bold mt-2">{{ getChildStatus(child) }}</h1>
+          <h1 class="text-white text-xs font-bold mt-2">
+            {{ getChildStatus(child) }}
+          </h1>
           <button mat-icon-button [matMenuTriggerFor]="menu" class="text-white">
             <mat-icon>more_vert</mat-icon>
           </button>
@@ -243,9 +244,9 @@
         mat-raised-button
         color="primary"
         (click)="onSubmitChild(dialogRef)"
-        [disabled]="!childForm.valid"
+        [disabled]="childForm.invalid"
       >
-        Add Child
+        {{ selectedChild ? "Update" : "Create" }} Child
       </button>
     </mat-dialog-actions>
   </ng-template>

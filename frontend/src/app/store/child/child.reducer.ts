@@ -35,7 +35,53 @@ export const childReducer = createReducer(
     ...state,
     error,
     loading: false,
-  }))
+  })),
+
+  // Redemptions
+  on(ChildActions.loadRedemptions, (state) => ({
+    ...state,
+    loading: true
+  })),
+  on(ChildActions.loadRedemptionsSuccess, (state, { redemptions }) => ({
+    ...state,
+    redemptions,
+    loading: false
+  })),
+  on(ChildActions.loadRedemptionsFailure, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false
+  })),
+  on(ChildActions.redeemReward, (state) => ({
+    ...state,
+    loading: true
+  })),
+  on(ChildActions.redeemRewardSuccess, (state, { redemption }) => ({
+    ...state,
+    redemptions: [redemption, ...state.redemptions],
+    loading: false
+  })),
+  on(ChildActions.redeemRewardFailure, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false
+  })),
+
+  // Rewards
+  on(ChildActions.loadRewards, (state) => ({
+    ...state,
+    loading: true
+  })),
+  on(ChildActions.loadRewardsSuccess, (state, { rewards }) => ({
+    ...state,
+    rewards,
+    loading: false
+  })),
+  on(ChildActions.loadRewardsFailure, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false
+  })),
 
   // Points and Rewards follow similar patterns...
 );

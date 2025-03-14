@@ -35,12 +35,11 @@ export class ChildService {
   // Child Profile endpoints
   getChildProfile(childId: number): Observable<ChildResponse> {
     console.log('Fetching child profile for:', childId);
-    return this.http.get<ChildResponse>(
-      `${this.apiUrl}/children/${childId}/profile`,
-      { headers: this.getAuthHeaders() }
-    ).pipe(
-      tap(profile => console.log('Received profile:', profile))
-    );
+    return this.http
+      .get<ChildResponse>(`${this.apiUrl}/children/${childId}/profile`, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(tap((profile) => console.log('Received profile:', profile)));
   }
 
   // Task endpoints
@@ -122,11 +121,11 @@ export class ChildService {
   // Reward endpoints
   redeemReward(
     childId: number,
-    request: RewardRedemption
+    rewardId: number
   ): Observable<RewardRedemption> {
     return this.http.post<RewardRedemption>(
       `${this.apiUrl}/children/${childId}/rewards/redeem`,
-      request,
+      { rewardId },
       { headers: this.getAuthHeaders() }
     );
   }
@@ -142,6 +141,16 @@ export class ChildService {
     return this.http.get<RewardRedemption[]>(
       `${this.apiUrl}/children/${childId}/rewards/history`,
       { headers: this.getAuthHeaders() }
+    );
+  }
+
+  getChildRewards(childId: number): Observable<Reward[]> {
+    console.log('Fetching rewards for child:', childId);
+    return this.http.get<Reward[]>(
+      `${this.apiUrl}/children/${childId}/rewards`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      tap(rewards => console.log('Received rewards:', rewards))
     );
   }
 

@@ -3,7 +3,8 @@ import { Child, ChildResponse } from '../../core/models/child.model';
 import { Task, TaskAnswer } from '../../core/models/task.model';
 import { Point } from '../../core/models';
 import { Reward } from '../../core/models/reward.model';
- 
+import { RewardRedemption } from '../../core/models/reward-redemption.model';
+
 // Profile Actions
 export const loadChildProfile = createAction(
   '[Child] Load Profile',
@@ -73,5 +74,36 @@ export const submitTaskAnswerSuccess = createAction(
 
 export const submitTaskAnswerFailure = createAction(
   '[Child] Submit Task Answer Failure',
+  props<{ error: any }>()
+);
+
+// Redemptions Actions
+export const loadRedemptions = createAction(
+  '[Child] Load Redemptions',
+  props<{ childId: number }>()
+);
+
+export const loadRedemptionsSuccess = createAction(
+  '[Child] Load Redemptions Success',
+  props<{ redemptions: RewardRedemption[] }>()
+);
+
+export const loadRedemptionsFailure = createAction(
+  '[Child] Load Redemptions Failure',
+  props<{ error: any }>()
+);
+
+export const redeemReward = createAction(
+  '[Child] Redeem Reward',
+  props<{ rewardId: number }>()
+);
+
+export const redeemRewardSuccess = createAction(
+  '[Child] Redeem Reward Success',
+  props<{ redemption: RewardRedemption }>()
+);
+
+export const redeemRewardFailure = createAction(
+  '[Child] Redeem Reward Failure',
   props<{ error: any }>()
 );

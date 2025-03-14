@@ -42,6 +42,11 @@ export const selectTotalPoints = createSelector(
   }
 );
 
+export const selectChildRedemptions = createSelector(
+  selectChildState,
+  (state) => state.redemptions
+);
+
 export const loadPoints = createAction(
   '[Child] Load Points',
   props<{ childId: number }>()

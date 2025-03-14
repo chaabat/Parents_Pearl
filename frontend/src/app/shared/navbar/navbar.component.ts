@@ -1,66 +1,67 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { MaterialModule } from '../material.module';
 import { AuthService } from '../../core/services/auth.service';
 import { Child } from '../../core/models/child.model';
 import { Store } from '@ngrx/store';
 import * as ChildSelectors from '../../store/child/child.selectors';
-import * as AuthSelectors from '../../store/auth/auth.selectors';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [
-    CommonModule,
-    MaterialModule,
-    RouterModule
-  ],
+  imports: [CommonModule, RouterModule, MaterialModule],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
 })
 export class NavbarComponent implements OnInit {
-  isAuthenticated$ = this.store.select(AuthSelectors.selectIsAuthenticated);
-  user$ = this.store.select(AuthSelectors.selectUser);
-  totalPoints$ = this.store.select(ChildSelectors.selectTotalPoints);
+  isAuthenticated = false;
+  user: Child | null = null;
+  totalPoints$ = this.store
+    .select(ChildSelectors.selectTotalPoints)
+    .pipe(
+      tap((points) => console.log('Navbar - Current total points:', points))
+    );
   defaultImage =
     'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741258917/uulqrw1ytrup4txl8abb.png';
 
   constructor(
     private authService: AuthService,
-    private store: Store,
-    private router: Router
+    private store: Store // Add Store to constructor
   ) {}
 
   ngOnInit() {
-    // Debug: Monitor auth state changes
-    this.isAuthenticated$.subscribe(isAuth => {
-      console.log('Auth state changed:', isAuth);
-    });
-    
-    this.user$.subscribe(user => {
-      console.log('User state changed:', user);
-    });
-  }
+    this.authService.isAuthenticated$.subscribe(
+      (isAuth) => (this.isAuthenticated = isAuth)
+    );
 
-  logout() {
-    this.authService.logout().subscribe({
-      next: () => {
-        console.log('Logout successful');
-        this.router.navigate(['/auth/login']);
-      },
-      error: (err) => {
-        console.error('Logout error:', err);
-        // Still navigate to login page even if logout API fails
-        this.router.navigate(['/auth/login']);
+    this.authService.currentUser$.subscribe((user) => {
+      if (user) {
+        this.user = user;
+        console.log('Current user:', user); // Debug log
       }
     });
   }
 
   getProfileImage(user: any): string {
-    return user?.picture || this.defaultImage;
+    if (!user?.picture) {
+      return this.defaultImage;
+    }
+
+    // Check if the picture is already a full URL
+    if (user.picture.startsWith('http')) {
+      return user.picture;
+    }
+
+    // Construct the full URL
+    return `${environment.apiUrl}/uploads/images/${user.picture}`;
+  }
+
+  logout() {
+    this.authService.logout();
   }
 
   handleImageError(event: any) {
