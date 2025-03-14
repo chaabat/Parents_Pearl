@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../shared/material.module';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -64,7 +64,7 @@ import { Subject } from 'rxjs';
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.css'],
 })
-export class TasksComponent implements OnInit {
+export class TasksComponent implements OnInit, OnDestroy {
   @ViewChild('taskDetailsDialog') taskDetailsDialog!: TemplateRef<any>;
 
   tasks$ = this.store.select(ParentSelectors.selectTasks);
@@ -76,7 +76,7 @@ export class TasksComponent implements OnInit {
   );
   loading$ = this.store.select(ParentSelectors.selectParentLoading);
   error$ = this.store.select(ParentSelectors.selectParentError);
-  dataSource = new MatTableDataSource<any>([]);
+  dataSource = new MatTableDataSource<Task>();
   taskForm: FormGroup;
   parentId: number | undefined;
   displayedColumns: string[] = [
@@ -153,6 +153,7 @@ export class TasksComponent implements OnInit {
             });
         }
       });
+  
 
     // Load initial tasks
     if (this.parentId) {
@@ -163,6 +164,14 @@ export class TasksComponent implements OnInit {
         })
       );
     }
+
+    // Subscribe to tasks and update data source
+    this.store.select(ParentSelectors.selectTasks)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(tasks => {
+        this.dataSource.data = tasks || [];
+        this.applyFilter(this.currentFilter); // Apply current filter when data changes
+      });
   }
 
   ngOnDestroy() {
@@ -433,16 +442,17 @@ export class TasksComponent implements OnInit {
     }
   }
 
-  filterTasks(status: (typeof this.taskStatus)[number]) {
+  filterTasks(status: typeof this.taskStatus[number]) {
     this.currentFilter = status;
-    if (this.parentId) {
-      this.store.dispatch(
-        ParentActions.loadTasks({
-          parentId: this.parentId,
-          status: status === 'ALL' ? undefined : status,
-        })
-      );
-    }
+    this.applyFilter(status);
+  }
+
+  private applyFilter(status: string) {
+    this.dataSource.filterPredicate = (task: Task, filter: string) => {
+      if (filter === 'ALL') return true;
+      return task.status === filter;
+    };
+    this.dataSource.filter = status;
   }
 
   getStatusIcon(status: string): string {

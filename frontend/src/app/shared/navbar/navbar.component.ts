@@ -38,10 +38,9 @@ export class NavbarComponent implements OnInit {
     );
 
     this.authService.currentUser$.subscribe((user) => {
-      if (user?.role === 'CHILD') {
-        this.user = user as Child;
-      } else {
-        this.user = null;
+      if (user) {
+        this.user = user;
+        console.log('Current user:', user); // Debug log
       }
     });
   }
