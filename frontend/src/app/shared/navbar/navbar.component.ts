@@ -1,56 +1,66 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MaterialModule } from '../material.module';
 import { AuthService } from '../../core/services/auth.service';
 import { Child } from '../../core/models/child.model';
 import { Store } from '@ngrx/store';
 import * as ChildSelectors from '../../store/child/child.selectors';
+import * as AuthSelectors from '../../store/auth/auth.selectors';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, MaterialModule],
+  imports: [
+    CommonModule,
+    MaterialModule,
+    RouterModule
+  ],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
 })
 export class NavbarComponent implements OnInit {
-  isAuthenticated = false;
-  user: Child | null = null;
-  totalPoints$ = this.store
-    .select(ChildSelectors.selectTotalPoints)
-    .pipe(
-      tap((points) => console.log('Navbar - Current total points:', points))
-    );
+  isAuthenticated$ = this.store.select(AuthSelectors.selectIsAuthenticated);
+  user$ = this.store.select(AuthSelectors.selectUser);
+  totalPoints$ = this.store.select(ChildSelectors.selectTotalPoints);
   defaultImage =
     'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741258917/uulqrw1ytrup4txl8abb.png';
 
   constructor(
     private authService: AuthService,
-    private store: Store // Add Store to constructor
+    private store: Store,
+    private router: Router
   ) {}
 
   ngOnInit() {
-    this.authService.isAuthenticated$.subscribe(
-      (isAuth) => (this.isAuthenticated = isAuth)
-    );
+    // Debug: Monitor auth state changes
+    this.isAuthenticated$.subscribe(isAuth => {
+      console.log('Auth state changed:', isAuth);
+    });
+    
+    this.user$.subscribe(user => {
+      console.log('User state changed:', user);
+    });
+  }
 
-    this.authService.currentUser$.subscribe((user) => {
-      if (user) {
-        this.user = user;
-        console.log('Current user:', user); // Debug log
+  logout() {
+    this.authService.logout().subscribe({
+      next: () => {
+        console.log('Logout successful');
+        this.router.navigate(['/auth/login']);
+      },
+      error: (err) => {
+        console.error('Logout error:', err);
+        // Still navigate to login page even if logout API fails
+        this.router.navigate(['/auth/login']);
       }
     });
   }
 
-  getProfileImage(): string {
-    return this.user?.picture || this.defaultImage;
-  }
-
-  logout() {
-    this.authService.logout();
+  getProfileImage(user: any): string {
+    return user?.picture || this.defaultImage;
   }
 
   handleImageError(event: any) {

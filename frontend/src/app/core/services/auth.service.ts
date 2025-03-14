@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { tap, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { Store } from '@ngrx/store';
+import * as AuthActions from '../../store/auth/auth.actions';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +18,7 @@ export class AuthService {
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private store: Store) {
     // Initialize auth state from localStorage
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
@@ -26,11 +28,36 @@ export class AuthService {
     }
   }
 
-  logout(): void {
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+    console.log('Token being used:', token);
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+    console.log('Headers being sent:', headers);
+    return headers;
+  }
+
+  logout(): Observable<any> {
+    // Clear local storage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    this.isAuthenticatedSubject.next(false);
-    this.currentUserSubject.next(null);
+
+    // Clear auth state
+    this.store.dispatch(AuthActions.logout());
+
+    // Make API call to logout
+    return this.http.post(
+      `${this.apiUrl}/auth/logout`,
+      {},
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
   }
 
   register(userData: any): Observable<any> {
