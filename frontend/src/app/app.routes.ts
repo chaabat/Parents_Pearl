@@ -66,6 +66,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'admin/users',
+        loadComponent: () =>
+          import('./features/admin/users/users.component').then(
+            (m) => m.UsersComponent
+          ),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',
