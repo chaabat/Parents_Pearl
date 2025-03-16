@@ -1,6 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import * as ParentActions from './parent.actions';
 import { initialParentState } from './parent.state';
+import * as AuthActions from '../auth/auth.actions';
 
 export const parentReducer = createReducer(
   initialParentState,
@@ -111,5 +112,8 @@ export const parentReducer = createReducer(
   on(ParentActions.completeTaskSuccess, (state, { task }) => ({
     ...state,
     tasks: state.tasks.map((t) => (t.id === task.id ? task : t)),
-  }))
+  })),
+
+  on(ParentActions.clearParentState, () => initialParentState),
+  on(AuthActions.clearAuthState, () => initialParentState)
 );

@@ -5,6 +5,8 @@ import { catchError, map, mergeMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { Router } from '@angular/router';
 import { Injectable } from '@angular/core';
+import * as ChildActions from '../child/child.actions';
+import * as ParentActions from '../parent/parent.actions';
 
 @Injectable()
 export class AuthEffects {
@@ -132,17 +134,24 @@ export class AuthEffects {
     { dispatch: false }
   );
 
-  logout$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(AuthActions.logout),
-        tap(() => {
-          // Clear token on logout
-          localStorage.removeItem('token');
-          this.router.navigate(['/auth/login']);
-        })
-      ),
-    { dispatch: false }
+  logout$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.logout),
+      tap(() => {
+        // Clear local storage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // Navigate to home
+        this.router.navigate(['/']);
+      }),
+      // Clear all state
+      mergeMap(() => [
+        AuthActions.clearAuthState(),
+        ChildActions.clearChildState(),
+        ParentActions.clearParentState()
+      ])
+    )
   );
 
   constructor(

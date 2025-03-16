@@ -107,3 +107,5 @@ export const redeemRewardFailure = createAction(
   '[Child] Redeem Reward Failure',
   props<{ error: any }>()
 );
+
+export const clearChildState = createAction('[Child] Clear State');

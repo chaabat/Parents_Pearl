@@ -1,11 +1,11 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../material.module';
-import { AuthService } from '../../core/services/auth.service';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { selectUser } from '../../store/auth/auth.selectors';
+import * as AuthSelectors from '../../store/auth/auth.selectors';
 import * as AuthActions from '../../store/auth/auth.actions';
+import { User } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-sidebar',
@@ -17,27 +17,28 @@ import * as AuthActions from '../../store/auth/auth.actions';
 export class SidebarComponent implements OnInit {
   @Input() isOpen = true;
   userRole: string | undefined;
-  user$ = this.store.select(selectUser);
+  isAuthenticated$ = this.store.select(AuthSelectors.selectIsAuthenticated);
+  user$ = this.store.select(AuthSelectors.selectUser);
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private store: Store
-  ) {}
+  constructor(private store: Store) {}
 
   ngOnInit() {
     // Get user role from localStorage on init
     const userStr = localStorage.getItem('user');
     if (userStr) {
-      const user = JSON.parse(userStr);
-      this.userRole = user.role;
+      try {
+        const user = JSON.parse(userStr);
+        this.userRole = user.role;
+      } catch (e) {
+        console.error('Error parsing user from localStorage:', e);
+      }
     }
 
     // Subscribe to user changes
-    this.user$.subscribe((user) => {
-      if (user) {
+    this.user$.subscribe((user: any) => {
+      if (user && user.role) {
         this.userRole = user.role;
-        console.log('Current user role:', this.userRole); // Debug log
+        console.log('Current user role:', this.userRole);
       }
     });
   }
@@ -48,6 +49,5 @@ export class SidebarComponent implements OnInit {
 
   logout() {
     this.store.dispatch(AuthActions.logout());
-    this.router.navigate(['/auth/login']);
   }
 }

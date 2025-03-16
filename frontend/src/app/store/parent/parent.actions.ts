@@ -249,3 +249,5 @@ export const completeTaskFailure = createAction(
   '[Parent] Complete Task Failure',
   props<{ error: any }>()
 );
+
+export const clearParentState = createAction('[Parent] Clear State');
