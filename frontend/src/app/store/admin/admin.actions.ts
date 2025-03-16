@@ -11,7 +11,7 @@ export const loadParentsSuccess = createAction(
 );
 export const loadParentsFailure = createAction(
   '[Admin] Load Parents Failure',
-  props<{ error: string }>()
+  props<{ error: any }>()
 );
 
 export const loadChildren = createAction('[Admin] Load Children');
@@ -21,7 +21,7 @@ export const loadChildrenSuccess = createAction(
 );
 export const loadChildrenFailure = createAction(
   '[Admin] Load Children Failure',
-  props<{ error: string }>()
+  props<{ error: any }>()
 );
 
 export const loadAdmins = createAction('[Admin] Load Admins');
@@ -31,13 +31,13 @@ export const loadAdminsSuccess = createAction(
 );
 export const loadAdminsFailure = createAction(
   '[Admin] Load Admins Failure',
-  props<{ error: string }>()
+  props<{ error: any }>()
 );
 
 // Ban Management
 export const banUser = createAction(
   '[Admin] Ban User',
-  props<{ userId: number; userType: 'parent' | 'child' }>()
+  props<{ userId: number }>()
 );
 export const banUserSuccess = createAction(
   '[Admin] Ban User Success',
@@ -50,7 +50,7 @@ export const banUserFailure = createAction(
 
 export const unbanUser = createAction(
   '[Admin] Unban User',
-  props<{ userId: number; userType: 'parent' | 'child' }>()
+  props<{ userId: number }>()
 );
 export const unbanUserSuccess = createAction(
   '[Admin] Unban User Success',

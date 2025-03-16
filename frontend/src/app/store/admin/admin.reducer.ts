@@ -1,34 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 import * as AdminActions from './admin.actions';
-import { Parent } from '../../core/models/parent.model';
-import { Child } from '../../core/models/child.model';
-import { Admin } from '../../core/models/admin.model';
-
-export interface AdminState {
-  parents: Parent[] | null;
-  children: Child[] | null;
-  admins: Admin[] | null;
-  bannedUsers: any[] | null;
-  systemStats: any | null;
-  activityLogs: any[] | null;
-  searchResults: any[] | null;
-  systemSettings: any | null;
-  loading: boolean;
-  error: string | null;
-}
-
-export const initialState: AdminState = {
-  parents: [],
-  children: [],
-  admins: [],
-  bannedUsers: [],
-  systemStats: null,
-  activityLogs: [],
-  searchResults: [],
-  systemSettings: null,
-  loading: false,
-  error: null,
-};
+import { AdminState, initialState } from './admin.state';
 
 export const adminReducer = createReducer(
   initialState,
@@ -37,6 +9,7 @@ export const adminReducer = createReducer(
   on(AdminActions.loadParents, (state) => ({
     ...state,
     loading: true,
+    error: null,
   })),
   on(AdminActions.loadParentsSuccess, (state, { parents }) => ({
     ...state,
@@ -53,6 +26,7 @@ export const adminReducer = createReducer(
   on(AdminActions.loadChildren, (state) => ({
     ...state,
     loading: true,
+    error: null,
   })),
   on(AdminActions.loadChildrenSuccess, (state, { children }) => ({
     ...state,
@@ -65,32 +39,67 @@ export const adminReducer = createReducer(
     loading: false,
   })),
 
-  // Load Admins
-  on(AdminActions.loadAdmins, (state) => ({
+  // Ban Management
+  on(AdminActions.banUser, (state) => ({
     ...state,
     loading: true,
+    error: null,
   })),
-  on(AdminActions.loadAdminsSuccess, (state, { admins }) => ({
+  on(AdminActions.banUserSuccess, (state, { userId }) => ({
     ...state,
-    admins,
+    parents: state.parents.map((parent) =>
+      parent.id === userId ? { ...parent, banned: true } : parent
+    ),
+    children: state.children.map((child) =>
+      child.id === userId ? { ...child, banned: true } : child
+    ),
+    bannedUsers: [
+      ...state.bannedUsers,
+      ...(state.parents.find((p) => p.id === userId)
+        ? [
+            {
+              ...state.parents.find((p) => p.id === userId),
+              userType: 'parent',
+              banned: true,
+            },
+          ]
+        : []),
+      ...(state.children.find((c) => c.id === userId)
+        ? [
+            {
+              ...state.children.find((c) => c.id === userId),
+              userType: 'child',
+              banned: true,
+            },
+          ]
+        : []),
+    ].filter(Boolean),
     loading: false,
   })),
-  on(AdminActions.loadAdminsFailure, (state, { error }) => ({
+  on(AdminActions.banUserFailure, (state, { error }) => ({
     ...state,
     error,
     loading: false,
   })),
 
-  // Ban Management
-  on(AdminActions.banUser, (state) => ({
+  // Unban Management
+  on(AdminActions.unbanUser, (state) => ({
     ...state,
     loading: true,
+    error: null,
   })),
-  on(AdminActions.banUserSuccess, (state, { userId }) => ({
+  on(AdminActions.unbanUserSuccess, (state, { userId }) => ({
     ...state,
+    parents: state.parents.map((parent) =>
+      parent.id === userId ? { ...parent, banned: false } : parent
+    ),
+    children: state.children.map((child) =>
+      child.id === userId ? { ...child, banned: false } : child
+    ),
+    bannedUsers: state.bannedUsers.filter((user) => user.id !== userId),
     loading: false,
   })),
-  on(AdminActions.banUserFailure, (state, { error }) => ({
+  on(AdminActions.unbanUserFailure, (state, { error }) => ({
     ...state,
     error,
     loading: false,
@@ -100,6 +109,7 @@ export const adminReducer = createReducer(
   on(AdminActions.loadBannedUsers, (state) => ({
     ...state,
     loading: true,
+    error: null,
   })),
   on(AdminActions.loadBannedUsersSuccess, (state, { bannedUsers }) => ({
     ...state,
@@ -116,6 +126,7 @@ export const adminReducer = createReducer(
   on(AdminActions.loadSystemStats, (state) => ({
     ...state,
     loading: true,
+    error: null,
   })),
   on(AdminActions.loadSystemStatsSuccess, (state, { stats }) => ({
     ...state,
@@ -126,53 +137,7 @@ export const adminReducer = createReducer(
     ...state,
     error,
     loading: false,
-  })),
-
-  // Search Users
-  on(AdminActions.searchUsers, (state) => ({
-    ...state,
-    loading: true,
-  })),
-  on(AdminActions.searchUsersSuccess, (state, { results }) => ({
-    ...state,
-    searchResults: results,
-    loading: false,
-  })),
-  on(AdminActions.searchUsersFailure, (state, { error }) => ({
-    ...state,
-    error,
-    loading: false,
-  })),
-
-  // Activity Logs
-  on(AdminActions.loadActivityLogs, (state) => ({
-    ...state,
-    loading: true,
-  })),
-  on(AdminActions.loadActivityLogsSuccess, (state, { logs }) => ({
-    ...state,
-    activityLogs: logs,
-    loading: false,
-  })),
-  on(AdminActions.loadActivityLogsFailure, (state, { error }) => ({
-    ...state,
-    error,
-    loading: false,
-  })),
-
-  // System Settings
-  on(AdminActions.updateSystemSettings, (state) => ({
-    ...state,
-    loading: true,
-  })),
-  on(AdminActions.updateSystemSettingsSuccess, (state, { settings }) => ({
-    ...state,
-    systemSettings: settings,
-    loading: false,
-  })),
-  on(AdminActions.updateSystemSettingsFailure, (state, { error }) => ({
-    ...state,
-    error,
-    loading: false,
   }))
 );
+export { AdminState };
+

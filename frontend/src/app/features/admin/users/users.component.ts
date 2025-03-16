@@ -75,59 +75,54 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.initializeDataSources();
   }
 
-  ngOnInit() {
-    console.log('Initializing Users Component...');
-    this.loadAllData();
-  }
-
-  private loadAllData() {
-    console.log('Loading all data...');
-    this.store.dispatch(AdminActions.loadParents());
-    this.store.dispatch(AdminActions.loadChildren());
-    this.store.dispatch(AdminActions.loadBannedUsers());
-  }
-
   private initializeDataSources() {
     this.store
       .select(AdminSelectors.selectParents)
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (parents) => {
-          console.log('Received parents:', parents);
-          this.parentsDataSource.data = parents || [];
-          if (this.parentsPaginator) {
-            this.parentsDataSource.paginator = this.parentsPaginator;
-          }
-        },
-        error: (error) => console.error('Error in parents subscription:', error)
+      .subscribe((parents) => {
+        console.log('Parents data:', parents);
+        this.parentsDataSource.data = parents;
+        if (this.parentsPaginator) {
+          this.parentsDataSource.paginator = this.parentsPaginator;
+        }
       });
 
     this.store
       .select(AdminSelectors.selectChildren)
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (children) => {
-          console.log('Received children:', children);
-          this.childrenDataSource.data = children || [];
-          if (this.childrenPaginator) {
-            this.childrenDataSource.paginator = this.childrenPaginator;
-          }
-        },
-        error: (error) => console.error('Error in children subscription:', error)
+      .subscribe((children) => {
+        console.log('Children data:', children);
+        this.childrenDataSource.data = children;
+        if (this.childrenPaginator) {
+          this.childrenDataSource.paginator = this.childrenPaginator;
+        }
       });
 
     this.store
       .select(AdminSelectors.selectBannedUsers)
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (users) => {
-          console.log('Received banned users:', users);
-          this.bannedUsersDataSource.data = users || [];
-          if (this.bannedPaginator) {
-            this.bannedUsersDataSource.paginator = this.bannedPaginator;
-          }
-        },
-        error: (error) => console.error('Error in banned users subscription:', error)
+      .subscribe((users) => {
+        console.log('Banned users data:', users);
+        this.bannedUsersDataSource.data = users || [];
+        if (this.bannedPaginator) {
+          this.bannedUsersDataSource.paginator = this.bannedPaginator;
+        }
+      });
+  }
+
+  ngOnInit() {
+    console.log('Dispatching initial actions...');
+    this.store.dispatch(AdminActions.loadParents());
+    this.store.dispatch(AdminActions.loadChildren());
+    this.store.dispatch(AdminActions.loadAdmins());
+    this.store.dispatch(AdminActions.loadBannedUsers());
+
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((query) => {
+        if (query) {
+          this.store.dispatch(AdminActions.searchUsers({ query }));
+        }
       });
   }
 
@@ -140,14 +135,14 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.searchControl.setValue('');
   }
 
-  banUser(userId: number, userType: 'parent' | 'child') {
-    console.log('Banning user:', userId, 'type:', userType);
-    this.store.dispatch(AdminActions.banUser({ userId, userType }));
+  banUser(userId: number) {
+    console.log('Banning user:', userId);
+    this.store.dispatch(AdminActions.banUser({ userId }));
   }
 
-  unbanUser(userId: number, userType: 'parent' | 'child') {
-    console.log('Unbanning user:', userId, 'type:', userType);
-    this.store.dispatch(AdminActions.unbanUser({ userId, userType }));
+  unbanUser(userId: number) {
+    console.log('Unbanning user:', userId);
+    this.store.dispatch(AdminActions.unbanUser({ userId }));
   }
 
   viewDetails(user: any) {
@@ -155,9 +150,5 @@ export class UsersComponent implements OnInit, OnDestroy {
       width: '500px',
       data: user,
     });
-  }
-
-  getUserTypeLabel(type: string): string {
-    return type === 'parent' ? 'Parent' : 'Child';
   }
 }

@@ -28,21 +28,6 @@ export const selectSystemStats = createSelector(
   (state) => state?.systemStats ?? null
 );
 
-export const selectActivityLogs = createSelector(
-  selectAdminState,
-  (state) => state?.activityLogs ?? []
-);
-
-export const selectSearchResults = createSelector(
-  selectAdminState,
-  (state) => state?.searchResults ?? []
-);
-
-export const selectSystemSettings = createSelector(
-  selectAdminState,
-  (state) => state?.systemSettings ?? null
-);
-
 export const selectAdminLoading = createSelector(
   selectAdminState,
   (state) => state?.loading ?? false

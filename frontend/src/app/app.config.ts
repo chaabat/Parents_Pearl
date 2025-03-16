@@ -14,7 +14,6 @@ import { ParentEffects } from './store/parent/parent.effects';
 import { childReducer } from './store/child/child.reducer';
 import { ChildEffects } from './store/child/child.effects';
 import { adminReducer } from './store/admin/admin.reducer';
-import { AdminEffects } from './store/admin/admin.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -27,7 +26,7 @@ export const appConfig: ApplicationConfig = {
       child: childReducer,
       admin: adminReducer,
     }),
-    provideEffects([AuthEffects, ParentEffects, ChildEffects, AdminEffects]),
+    provideEffects([AuthEffects, ParentEffects, ChildEffects]),
     provideStoreDevtools({ maxAge: 25 }),
   ],
 };

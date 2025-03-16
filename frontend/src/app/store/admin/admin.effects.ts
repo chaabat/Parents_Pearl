@@ -154,7 +154,6 @@ export class AdminEffects {
     )
   );
 
-   
   // Reload data after successful operations
   reloadAfterBan$ = createEffect(() =>
     this.actions$.pipe(
