@@ -133,27 +133,60 @@ export class ChildEffects {
     )
   );
 
+  loadRedemptions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ChildActions.loadRedemptions),
+      switchMap(({ childId }) =>
+        this.childService.getChildRedemptions(childId).pipe(
+          map(redemptions => ChildActions.loadRedemptionsSuccess({ redemptions })),
+          catchError(error => of(ChildActions.loadRedemptionsFailure({ error })))
+        )
+      )
+    )
+  );
+
   redeemReward$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ChildActions.redeemReward),
       switchMap(({ rewardId }) =>
         this.store.select(AuthSelectors.selectUser).pipe(
           take(1),
-          switchMap((user) => {
-            if (user && user.id) {
+          switchMap(user => {
+            if (user?.id) {
               return this.childService.redeemReward(user.id, rewardId).pipe(
-                map((redemption) =>
-                  ChildActions.redeemRewardSuccess({ redemption })
-                ),
-                catchError((error) =>
-                  of(ChildActions.redeemRewardFailure({ error }))
-                )
+                mergeMap(redemption => [
+                  ChildActions.redeemRewardSuccess({ redemption }),
+                  ChildActions.loadChildProfile({ childId: user.id }),
+                  ChildActions.loadRedemptions({ childId: user.id })
+                ]),
+                catchError(error => {
+                  this.snackBar.open('Failed to redeem reward', 'Close', {
+                    duration: 3000
+                  });
+                  return of(ChildActions.redeemRewardFailure({ error }));
+                })
               );
             }
             return of({ type: '[Child] No User Found' });
           })
         )
       )
+    )
+  );
+
+  loadChildDataAfterProfile$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ChildActions.loadChildProfileSuccess),
+      map(({ profile }) => profile),
+      mergeMap((profile) => {
+        if (profile?.id) {
+          return [
+            ChildActions.loadRewards({ childId: profile.id }),
+            ChildActions.loadRedemptions({ childId: profile.id })
+          ];
+        }
+        return [];
+      })
     )
   );
 

@@ -11,7 +11,7 @@ export interface Child {
   picture?: string;
 
   tasks?: any[];
-  rewardRedemptions?: any[];
+  rewardRedemptions: RewardRedemption[];
   role: string;
   password?: string;
   totalPoints: number;

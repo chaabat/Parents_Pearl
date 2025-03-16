@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Reward } from '../models/reward.model';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 import { Child, ChildResponse } from '../models/child.model';
@@ -92,9 +92,10 @@ export class ChildService {
 
   // Points endpoints
   getMyPointHistory(childId: number): Observable<Point[]> {
-    return this.http.get<Point[]>(`${this.apiUrl}/children/${childId}/points`, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.get<Point[]>(
+      `${this.apiUrl}/children/${childId}/points/history`,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   getMyTotalPoints(childId: number): Observable<number> {
@@ -124,9 +125,11 @@ export class ChildService {
     rewardId: number
   ): Observable<RewardRedemption> {
     return this.http.post<RewardRedemption>(
-      `${this.apiUrl}/children/${childId}/rewards/redeem`,
-      { rewardId },
+      `${this.apiUrl}/children/${childId}/rewards/${rewardId}/redeem`,
+      {},
       { headers: this.getAuthHeaders() }
+    ).pipe(
+      tap(response => console.log('Redemption response:', response))
     );
   }
 
@@ -146,12 +149,11 @@ export class ChildService {
 
   getChildRewards(childId: number): Observable<Reward[]> {
     console.log('Fetching rewards for child:', childId);
-    return this.http.get<Reward[]>(
-      `${this.apiUrl}/children/${childId}/rewards`,
-      { headers: this.getAuthHeaders() }
-    ).pipe(
-      tap(rewards => console.log('Received rewards:', rewards))
-    );
+    return this.http
+      .get<Reward[]>(`${this.apiUrl}/children/${childId}/rewards`, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(tap((rewards) => console.log('Received rewards:', rewards)));
   }
 
   // Additional endpoints
@@ -159,5 +161,14 @@ export class ChildService {
     return this.http.get<Child>(`${this.apiUrl}/children/${childId}`, {
       headers: this.getAuthHeaders(),
     });
+  }
+
+  getChildRedemptions(childId: number): Observable<RewardRedemption[]> {
+    return this.http.get<RewardRedemption[]>(
+      `${this.apiUrl}/children/${childId}/rewards/history`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      tap(response => console.log('Redemption history response:', response))
+    );
   }
 }
