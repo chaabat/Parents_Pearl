@@ -93,9 +93,8 @@ export class ChildRewardsComponent implements OnInit {
       })
     );
   }
-
   redeemReward(reward: Reward): void {
-    if (reward.redeemed) {
+    if (this.isRewardRedeemed(reward.id)) {
       this.snackBar.open('Reward already redeemed', 'Close', {
         duration: 3000,
       });

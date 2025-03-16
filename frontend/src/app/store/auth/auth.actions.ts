@@ -37,5 +37,3 @@ export const logout = createAction('[Auth] Logout');
 
 // Clear Error Action
 export const clearError = createAction('[Auth] Clear Error');
-
-export const clearAuthState = createAction('[Auth] Clear State');

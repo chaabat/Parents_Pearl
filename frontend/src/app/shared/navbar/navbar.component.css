@@ -3,6 +3,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 16px;
+  height: 64px;
 }
 
 .navbar-brand {
@@ -12,12 +13,12 @@
 }
 
 .brand-text {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
 .spacer {
-  flex: 1;
+  flex: 1 1 auto;
 }
 
 .auth-button {
@@ -30,7 +31,8 @@
 }
 
 .profile-button {
-  padding: 0 8px;
+  height: 48px;
+  padding: 0 16px;
 }
 
 .profile-content {
@@ -40,25 +42,30 @@
 }
 
 .avatar {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+.avatar mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
 .username {
-  font-size: 1rem;
   font-weight: 500;
-}
-
-.white {
-  color: white;
-}
-
-.accent {
-  color: #ffd740;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profile-menu {

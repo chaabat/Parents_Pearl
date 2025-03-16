@@ -1,7 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 import { initialChildState } from './child.state';
 import * as ChildActions from './child.actions';
-import * as AuthActions from '../auth/auth.actions';
 
 export const childReducer = createReducer(
   initialChildState,
@@ -91,9 +90,7 @@ export const childReducer = createReducer(
     ...state,
     error,
     loading: false,
-  })),
+  }))
 
   // Points and Rewards follow similar patterns...
-  on(ChildActions.clearChildState, () => initialChildState),
-  on(AuthActions.clearAuthState, () => initialChildState)
 );

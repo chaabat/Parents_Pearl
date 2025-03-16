@@ -124,13 +124,24 @@ export class ChildService {
     childId: number,
     rewardId: number
   ): Observable<RewardRedemption> {
-    return this.http.post<RewardRedemption>(
-      `${this.apiUrl}/children/${childId}/rewards/${rewardId}/redeem`,
-      {},
-      { headers: this.getAuthHeaders() }
-    ).pipe(
-      tap(response => console.log('Redemption response:', response))
-    );
+    console.log(`Attempting to redeem reward ${rewardId} for child ${childId}`);
+    const url = `${this.apiUrl}/children/${childId}/rewards/redeem`;
+    console.log('Making request to:', url);
+
+    return this.http
+      .post<RewardRedemption>(
+        url,
+        { rewardId },
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        tap((response) => {
+          console.log('Redemption response:', response);
+          if (!response) {
+            throw new Error('No response received from redemption request');
+          }
+        })
+      );
   }
 
   getAvailableRewards(childId: number): Observable<Reward[]> {
@@ -164,11 +175,13 @@ export class ChildService {
   }
 
   getChildRedemptions(childId: number): Observable<RewardRedemption[]> {
-    return this.http.get<RewardRedemption[]>(
-      `${this.apiUrl}/children/${childId}/rewards/history`,
-      { headers: this.getAuthHeaders() }
-    ).pipe(
-      tap(response => console.log('Redemption history response:', response))
-    );
+    return this.http
+      .get<RewardRedemption[]>(
+        `${this.apiUrl}/children/${childId}/rewards/history`,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        tap((response) => console.log('Redemption history response:', response))
+      );
   }
 }

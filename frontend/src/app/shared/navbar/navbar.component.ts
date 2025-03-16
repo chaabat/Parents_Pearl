@@ -1,40 +1,75 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { MaterialModule } from '../material.module';
+import { AuthService } from '../../core/services/auth.service';
+import { Child } from '../../core/models/child.model';
 import { Store } from '@ngrx/store';
-import * as AuthSelectors from '../../store/auth/auth.selectors';
-import * as AuthActions from '../../store/auth/auth.actions';
 import * as ChildSelectors from '../../store/child/child.selectors';
-import { Child } from '../../core/models';
-import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, MaterialModule, RouterModule],
+  imports: [CommonModule, RouterModule, MaterialModule],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
 })
 export class NavbarComponent implements OnInit {
-  isAuthenticated$ = this.store.select(AuthSelectors.selectIsAuthenticated);
-  user$ = this.store.select(AuthSelectors.selectUser);
+  isAuthenticated = false;
+  user: Child | null = null;
   totalPoints$ = this.store
     .select(ChildSelectors.selectTotalPoints)
-    .pipe(map((points) => points ?? 0));
+    .pipe(
+      tap((points) => console.log('Navbar - Current total points:', points))
+    );
+  defaultImage =
+    'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741258917/uulqrw1ytrup4txl8abb.png';
 
   constructor(
-    private store: Store,
-    private router: Router
+    private authService: AuthService,
+    private store: Store // Add Store to constructor
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.authService.isAuthenticated$.subscribe(
+      (isAuth) => (this.isAuthenticated = isAuth)
+    );
 
-  logout() {
-    this.store.dispatch(AuthActions.logout());
+    this.authService.currentUser$.subscribe((user) => {
+      if (user) {
+        this.user = user;
+        console.log('Current user:', user); // Debug log
+      }
+    });
   }
 
   getProfileImage(user: any): string {
-    return user?.profileImage || 'assets/default-avatar.png';
+    if (!user?.picture) {
+      return this.defaultImage;
+    }
+
+    // Check if the picture is already a full URL
+    if (user.picture.startsWith('http')) {
+      return user.picture;
+    }
+
+    // Construct the full URL
+    return `${environment.apiUrl}/uploads/images/${user.picture}`;
+  }
+
+  logout() {
+    this.authService.logout();
+  }
+
+  handleImageError(event: any) {
+    event.target.style.display = 'none';
+    // Show icon instead
+    const icon = event.target.nextElementSibling;
+    if (icon) {
+      icon.style.display = 'block';
+    }
   }
 }
