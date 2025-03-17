@@ -1,6 +1,11 @@
 <div class="min-h-screen bg-gray-50 p-4 md:p-6">
+  <!-- Loading Indicator -->
+  <div *ngIf="loading$ | async" class="flex justify-center items-center p-8">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
   <!-- Welcome Section with Role-Based Greeting -->
-  <div class="mb-6">
+  <div class="mb-6" *ngIf="!(loading$ | async)">
     <div class="bg-white rounded-xl shadow-md p-6 relative overflow-hidden">
       <!-- Background gradient decoration -->
       <div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-purple-50 to-transparent"></div>
@@ -31,7 +36,7 @@
   </div>
 
   <!-- ADMIN DASHBOARD -->
-  <ng-container *ngIf="userRole === 'ADMIN'">
+  <ng-container *ngIf="userRole === 'ADMIN' && !(loading$ | async)">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       <!-- User Statistics -->
       <div class="dashboard-card bg-white rounded-xl shadow-md p-6">
@@ -49,15 +54,15 @@
         <div class="grid grid-cols-3 gap-4 mt-4">
           <div class="text-center">
             <p class="text-sm text-gray-500">Parents</p>
-            <p class="text-xl font-bold text-blue-500">65</p>
+            <p class="text-xl font-bold text-blue-500">{{ (parents$ | async)?.length || 0 }}</p>
           </div>
           <div class="text-center">
             <p class="text-sm text-gray-500">Children</p>
-            <p class="text-xl font-bold text-pink-500">59</p>
+            <p class="text-xl font-bold text-pink-500">{{ (adminChildren$ | async)?.length || 0 }}</p>
           </div>
           <div class="text-center">
-            <p class="text-sm text-gray-500">Admins</p>
-            <p class="text-xl font-bold text-yellow-500">10</p>
+            <p class="text-sm text-gray-500">Banned</p>
+            <p class="text-xl font-bold text-yellow-500">{{ (bannedUsers$ | async)?.length || 0 }}</p>
           </div>
         </div>
       </div>
@@ -180,6 +185,12 @@
               <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
             </div>
           </div>
+          
+          <!-- Empty state for no activities -->
+          <div *ngIf="recentActivities.length === 0" class="text-center py-8">
+            <mat-icon class="text-gray-400 text-5xl">notifications_off</mat-icon>
+            <p class="text-gray-500 mt-2">No recent activities</p>
+          </div>
         </div>
       </div>
     </div>
@@ -191,9 +202,9 @@
         Quick Actions
       </h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <button mat-raised-button color="primary" class="p-4">
+        <button mat-raised-button color="primary" class="p-4" routerLink="/admin/users">
           <mat-icon>person_add</mat-icon>
-          <span class="block mt-2">Add User</span>
+          <span class="block mt-2">Manage Users</span>
         </button>
         <button mat-raised-button color="accent" class="p-4">
           <mat-icon>settings</mat-icon>
@@ -212,7 +223,7 @@
   </ng-container>
 
   <!-- PARENT DASHBOARD -->
-  <ng-container *ngIf="userRole === 'PARENT'">
+  <ng-container *ngIf="userRole === 'PARENT' && !(loading$ | async)">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
       <!-- Children Overview -->
       <div class="dashboard-card bg-white rounded-xl shadow-md p-6">
@@ -233,7 +244,7 @@
               <p class="font-medium text-gray-800">{{ child.name }}</p>
               <p class="text-sm text-gray-500">{{ child.totalPoints || 0 }} points</p>
             </div>
-            <button mat-icon-button color="primary">
+            <button mat-icon-button color="primary" [routerLink]="['/parent/children']">
               <mat-icon>visibility</mat-icon>
             </button>
           </div>
@@ -241,7 +252,7 @@
         <div *ngIf="(children$ | async)?.length === 0" class="text-center py-8">
           <mat-icon class="text-gray-400 text-5xl">sentiment_dissatisfied</mat-icon>
           <p class="text-gray-500 mt-2">No children added yet</p>
-          <button mat-raised-button color="primary" class="mt-4">
+          <button mat-raised-button color="primary" class="mt-4" [routerLink]="['/parent/children']">
             <mat-icon>add</mat-icon> Add Child
           </button>
         </div>
@@ -283,7 +294,7 @@
           </div>
         </div>
         
-        <button mat-raised-button color="primary" class="w-full">
+        <button mat-raised-button color="primary" class="w-full" [routerLink]="['/parent/tasks']">
           <mat-icon>add</mat-icon> Create New Task
         </button>
       </div>
@@ -359,6 +370,12 @@
               <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
             </div>
           </div>
+          
+          <!-- Empty state for no activities -->
+          <div *ngIf="recentActivities.length === 0" class="text-center py-8">
+            <mat-icon class="text-gray-400 text-5xl">notifications_off</mat-icon>
+            <p class="text-gray-500 mt-2">No recent activities</p>
+          </div>
         </div>
       </div>
 
@@ -369,21 +386,21 @@
           Quick Actions
         </h2>
         <div class="grid grid-cols-2 gap-4">
-          <button mat-raised-button color="primary" class="p-4">
+          <button mat-raised-button color="primary" class="p-4" [routerLink]="['/parent/tasks']">
             <mat-icon>add_circle</mat-icon>
             <span class="block mt-2">New Task</span>
           </button>
-          <button mat-raised-button color="accent" class="p-4">
+          <button mat-raised-button color="accent" class="p-4" [routerLink]="['/parent/rewards']">
             <mat-icon>card_giftcard</mat-icon>
             <span class="block mt-2">Add Reward</span>
           </button>
-          <button mat-raised-button color="warn" class="p-4">
+          <button mat-raised-button color="warn" class="p-4" [routerLink]="['/parent/children']">
             <mat-icon>person_add</mat-icon>
             <span class="block mt-2">Add Child</span>
           </button>
-          <button mat-raised-button class="p-4">
+          <button mat-raised-button class="p-4" [routerLink]="['/parent/profil']">
             <mat-icon>assessment</mat-icon>
-            <span class="block mt-2">Reports</span>
+            <span class="block mt-2">Profile</span>
           </button>
         </div>
       </div>
@@ -391,7 +408,7 @@
   </ng-container>
 
   <!-- CHILD DASHBOARD -->
-  <ng-container *ngIf="userRole === 'CHILD'">
+  <ng-container *ngIf="userRole === 'CHILD' && !(loading$ | async)">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
       <!-- Points Summary -->
       <div class="dashboard-card bg-white rounded-xl shadow-md p-6">
@@ -403,7 +420,7 @@
           <div class="text-5xl font-bold text-purple-600 mb-2">{{ totalPoints$ | async }}</div>
           <p class="text-gray-600">Total Points</p>
           
-          <button mat-raised-button color="primary" class="mt-6 w-full">
+          <button mat-raised-button color="primary" class="mt-6 w-full" [routerLink]="['/child/rewards']">
             <mat-icon>redeem</mat-icon> Redeem Rewards
           </button>
         </div>
@@ -417,48 +434,35 @@
         </h2>
         
         <div class="space-y-4">
-          <div>
-            <div class="flex justify-between mb-1">
-              <span class="text-sm font-medium text-gray-700">Math Homework</span>
-              <span class="text-sm font-medium text-gray-700">75%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div class="bg-blue-500 h-2.5 rounded-full animate-progress" style="width: 75%"></div>
-            </div>
-          </div>
-          
-          <div>
-            <div class="flex justify-between mb-1">
-              <span class="text-sm font-medium text-gray-700">Reading Assignment</span>
-              <span class="text-sm font-medium text-gray-700">100%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div class="bg-green-500 h-2.5 rounded-full animate-progress" style="width: 100%"></div>
-            </div>
-          </div>
-          
-          <div>
-            <div class="flex justify-between mb-1">
-              <span class="text-sm font-medium text-gray-700">Science Project</span>
-              <span class="text-sm font-medium text-gray-700">30%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div class="bg-yellow-500 h-2.5 rounded-full animate-progress" style="width: 30%"></div>
-            </div>
-          </div>
-          
-          <div>
-            <div class="flex justify-between mb-1">
-              <span class="text-sm font-medium text-gray-700">Chores</span>
-              <span class="text-sm font-medium text-gray-700">50%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div class="bg-purple-500 h-2.5 rounded-full animate-progress" style="width: 50%"></div>
-            </div>
-          </div>
+          <ng-container *ngIf="(childTasks$ | async) as tasks">
+            <ng-container *ngIf="tasks.length > 0; else noTasks">
+              <div *ngFor="let task of tasks.slice(0, 4)">
+                <div class="flex justify-between mb-1">
+                  <span class="text-sm font-medium text-gray-700">{{ task.title }}</span>
+                  <span class="text-sm font-medium text-gray-700">
+                    {{ task.status === 'COMPLETED' ? '100%' : '0%' }}
+                  </span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                  <div 
+                    [ngClass]="task.status === 'COMPLETED' ? 'bg-green-500' : 'bg-yellow-500'" 
+                    class="h-2.5 rounded-full animate-progress" 
+                    [style.width]="task.status === 'COMPLETED' ? '100%' : '0%'">
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+            
+            <ng-template #noTasks>
+              <div class="text-center py-8">
+                <mat-icon class="text-gray-400 text-5xl">assignment_late</mat-icon>
+                <p class="text-gray-500 mt-2">No tasks assigned yet</p>
+              </div>
+            </ng-template>
+          </ng-container>
         </div>
         
-        <button mat-raised-button color="primary" class="mt-6 w-full">
+        <button mat-raised-button color="primary" class="mt-6 w-full" [routerLink]="['/child/tasks']">
           <mat-icon>visibility</mat-icon> View All Tasks
         </button>
       </div>
@@ -537,7 +541,7 @@
           Recent Activity
         </h2>
         <div class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar">
-          <div *ngFor="let activity of recentActivities.slice(2, 5)" class="flex items-start p-3 rounded-lg hover:bg-gray-50 transition-colors">
+          <div *ngFor="let activity of recentActivities" class="flex items-start p-3 rounded-lg hover:bg-gray-50 transition-colors">
             <div [ngClass]="{'bg-blue-100': activity.type === 'task_created', 
                             'bg-green-100': activity.type === 'task_completed',
                             'bg-purple-100': activity.type === 'reward_added',
@@ -556,6 +560,12 @@
               <p class="font-medium text-gray-800">{{ activity.description }}</p>
               <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
             </div>
+          </div>
+          
+          <!-- Empty state for no activities -->
+          <div *ngIf="recentActivities.length === 0" class="text-center py-8">
+            <mat-icon class="text-gray-400 text-5xl">notifications_off</mat-icon>
+            <p class="text-gray-500 mt-2">No recent activities</p>
           </div>
         </div>
       </div>
