@@ -10,6 +10,10 @@ import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { Observable } from 'rxjs';
+import * as AdminActions from '../../store/admin/admin.actions';
+import * as AdminSelectors from '../../store/admin/admin.selectors';
+import { Parent } from '../../core/models/parent.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -59,6 +63,10 @@ export class DashboardComponent implements OnInit {
     maintainAspectRatio: false,
   };
 
+  systemStats$ = this.store.select(AdminSelectors.selectSystemStats);
+  parents$ = this.store.select(AdminSelectors.selectParents);
+  loading$ = this.store.select(AdminSelectors.selectAdminLoading);
+
   constructor(private store: Store) {}
 
   ngOnInit() {
@@ -66,6 +74,10 @@ export class DashboardComponent implements OnInit {
       this.user = user;
       this.userRole = user?.role;
     });
+
+    // Load initial data
+    this.store.dispatch(AdminActions.loadSystemStats());
+    this.store.dispatch(AdminActions.loadParents());
   }
 
   // Calendar methods

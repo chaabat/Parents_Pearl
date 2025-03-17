@@ -6,26 +6,39 @@
       class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow h-[400px]"
     >
       <mat-card-header>
-        <mat-card-title class="text-lg font-bold">Quick Stats</mat-card-title>
+        <mat-card-title class="text-lg font-bold"
+          >System Statistics</mat-card-title
+        >
       </mat-card-header>
       <mat-card-content class="p-3">
         <div class="grid grid-cols-2 gap-3">
-          <!-- Stat cards with reduced padding -->
+          <!-- Active Users -->
           <div class="p-3 bg-blue-50 rounded-lg">
-            <p class="text-gray-600 text-sm">Total Users</p>
-            <p class="text-xl font-bold">1,234</p>
+            <p class="text-gray-600 text-sm">Active Users</p>
+            <p class="text-xl font-bold">
+              {{ (systemStats$ | async)?.activeUsers || 0 }}
+            </p>
           </div>
+          <!-- Banned Users -->
+          <div class="p-3 bg-red-50 rounded-lg">
+            <p class="text-gray-600 text-sm">Banned Users</p>
+            <p class="text-xl font-bold">
+              {{ (systemStats$ | async)?.bannedUsers || 0 }}
+            </p>
+          </div>
+          <!-- Completed Tasks -->
           <div class="p-3 bg-green-50 rounded-lg">
-            <p class="text-gray-600 text-sm">Revenue</p>
-            <p class="text-xl font-bold">$12,345</p>
+            <p class="text-gray-600 text-sm">Completed Tasks</p>
+            <p class="text-xl font-bold">
+              {{ (systemStats$ | async)?.completedTasks || 0 }}
+            </p>
           </div>
+          <!-- Total Parents -->
           <div class="p-3 bg-purple-50 rounded-lg">
-            <p class="text-gray-600 text-sm">Tasks</p>
-            <p class="text-xl font-bold">56</p>
-          </div>
-          <div class="p-3 bg-yellow-50 rounded-lg">
-            <p class="text-gray-600 text-sm">Pending</p>
-            <p class="text-xl font-bold">12</p>
+            <p class="text-gray-600 text-sm">Total Parents</p>
+            <p class="text-xl font-bold">
+              {{ (parents$ | async)?.length || 0 }}
+            </p>
           </div>
         </div>
       </mat-card-content>

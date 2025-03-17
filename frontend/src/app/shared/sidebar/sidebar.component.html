@@ -27,7 +27,7 @@
         routerLinkActive="bg-[#7b2cbf] text-white"
         class="flex items-center px-4 py-3 text-white hover:bg-[#7b2cbf] rounded-md transition-colors mb-1"
       >
-        <mat-icon>dashboard</mat-icon>
+        <mat-icon class="white">dashboard</mat-icon>
         <span *ngIf="isOpen" class="ml-3">Dashboard</span>
       </a>
       <a
@@ -35,25 +35,10 @@
         routerLinkActive="bg-[#7b2cbf] text-white"
         class="flex items-center px-4 py-3 text-white hover:bg-[#7b2cbf] rounded-md transition-colors mb-1"
       >
-        <mat-icon>people</mat-icon>
+        <mat-icon class="white">people</mat-icon>
         <span *ngIf="isOpen" class="ml-3">User Management</span>
       </a>
-      <a
-        routerLink="/task-types"
-        routerLinkActive="bg-[#7b2cbf] text-white"
-        class="flex items-center px-4 py-3 text-white hover:bg-[#7b2cbf] rounded-md transition-colors mb-1"
-      >
-        <mat-icon>category</mat-icon>
-        <span *ngIf="isOpen" class="ml-3">Task Types</span>
-      </a>
-      <a
-        routerLink="/statistics"
-        routerLinkActive="bg-[#7b2cbf] text-white"
-        class="flex items-center px-4 py-3 text-white hover:bg-[#7b2cbf] rounded-md transition-colors mb-1"
-      >
-        <mat-icon class="white">bar_chart</mat-icon>
-        <span *ngIf="isOpen" class="ml-3">Statistics</span>
-      </a>
+    
     </div>
 
     <!-- Parent Navigation -->
@@ -65,7 +50,7 @@
         class="flex items-center px-4 py-3 text-white hover:bg-[#7b2cbf] rounded-md transition-colors mb-1"
       >
         <mat-icon class="white">dashboard</mat-icon>
-        <span *ngIf="isOpen" class="ml-3">Dashboard</span>
+        <span *ngIf="isOpen" class="ml-3 ">Dashboard</span>
       </a>
       <a
         routerLink="/parent/children"
