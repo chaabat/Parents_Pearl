@@ -1,1 +1,172 @@
-
+/* Animation for floating elements */
+@keyframes float {
+    0% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-10px) rotate(1deg);
+    }
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animation-delay-1000 {
+    animation-delay: 1s;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+  
+  /* Blob animation */
+  @keyframes blob {
+    0% {
+      transform: scale(1) translate(0px, 0px);
+    }
+    33% {
+      transform: scale(1.1) translate(30px, -50px);
+    }
+    66% {
+      transform: scale(0.9) translate(-20px, 20px);
+    }
+    100% {
+      transform: scale(1) translate(0px, 0px);
+    }
+  }
+  
+  .animate-blob {
+    animation: blob 15s infinite alternate;
+  }
+  
+  /* Calendar styling */
+  .calendar-small {
+    width: 100%;
+    max-height: 300px;
+  }
+  
+  .event-date {
+    position: relative;
+  }
+  
+  .event-date::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #4f46e5;
+  }
+  
+  /* Card hover effects */
+  .dashboard-card {
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  .dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, #4f46e5, #8b5cf6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .dashboard-card:hover::before {
+    opacity: 1;
+  }
+  
+  /* Progress bar animation */
+  @keyframes progress {
+    0% {
+      width: 0%;
+    }
+  }
+  
+  .animate-progress {
+    animation: progress 1.5s ease-out forwards;
+  }
+  
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+  
+  /* Achievement badge */
+  .achievement-badge {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .achievement-badge:hover {
+    transform: scale(1.05);
+  }
+  
+  .achievement-badge.locked {
+    filter: grayscale(1);
+    opacity: 0.7;
+  }
+  
+  .achievement-badge.locked:hover {
+    filter: grayscale(0.7);
+    opacity: 0.9;
+  }
+  
+  /* Pulse animation for notifications */
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .animate-pulse {
+    animation: pulse 2s infinite;
+  }
+  
+  /* Chart container */
+  
+  
