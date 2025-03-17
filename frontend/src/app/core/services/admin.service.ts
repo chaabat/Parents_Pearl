@@ -147,14 +147,4 @@ export class AdminService {
       })
       .pipe(tap((stats) => console.log('Fetched system stats:', stats)));
   }
-
-  // Search functionality
-  searchUsers(query: string): Observable<any[]> {
-    return this.http
-      .get<any[]>(`${this.apiUrl}/admin/users/search`, {
-        params: { query },
-        headers: this.getAuthHeaders(),
-      })
-      .pipe(tap((results) => console.log('Search results:', results)));
-  }
 }

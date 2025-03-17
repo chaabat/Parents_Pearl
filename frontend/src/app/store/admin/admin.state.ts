@@ -16,7 +16,7 @@ export interface AdminState {
   searchResults: any[];
   systemSettings: any;
   loading: boolean;
-  error: any;
+  error: string | null;
 }
 
 export const initialAdminState: AdminState = {

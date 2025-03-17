@@ -37,3 +37,8 @@ export const selectAdminError = createSelector(
   selectAdminState,
   (state) => state?.error ?? null
 );
+
+export const selectSearchResults = createSelector(
+  selectAdminState,
+  (state) => state.searchResults || []
+);

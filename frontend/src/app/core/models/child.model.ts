@@ -9,6 +9,7 @@ export interface Child {
   email: string;
   dateOfBirth: string;
   picture?: string;
+  deleted: boolean;
 
   tasks?: any[];
   rewardRedemptions?: any[];

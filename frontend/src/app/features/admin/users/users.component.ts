@@ -56,7 +56,10 @@ export class UsersComponent implements OnInit, OnDestroy {
   protected AdminSelectors = AdminSelectors;
 
   displayedColumns: string[] = ['name', 'email', 'status', 'actions'];
+  searchResults: any[] = [];
   searchControl = new FormControl('');
+  loading$ = this.store.select(AdminSelectors.selectAdminLoading);
+  error$ = this.store.select(AdminSelectors.selectAdminError);
 
   parentsDataSource = new MatTableDataSource<Parent>([]);
   childrenDataSource = new MatTableDataSource<Child>([]);
@@ -67,9 +70,6 @@ export class UsersComponent implements OnInit, OnDestroy {
   @ViewChild('childrenPaginator') childrenPaginator!: MatPaginator;
 
   @ViewChild('bannedPaginator') bannedPaginator!: MatPaginator;
-
-  loading$ = this.store.select(AdminSelectors.selectAdminLoading);
-  error$ = this.store.select(AdminSelectors.selectAdminError);
 
   constructor(private store: Store, private dialog: MatDialog) {
     this.initializeDataSources();
@@ -111,15 +111,15 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.store.dispatch(AdminActions.loadParents());
-    this.store.dispatch(AdminActions.loadChildren());
-    this.store.dispatch(AdminActions.loadBannedUsers());
+    this.loadUsers();
 
     this.searchControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((query) => {
-        if (query) {
-          this.store.dispatch(AdminActions.searchUsers({ query }));
+        if (query && query.trim()) {
+          this.searchLocally(query.trim().toLowerCase());
+        } else {
+          this.searchResults = [];
         }
       });
   }
@@ -129,8 +129,43 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  searchLocally(query: string) {
+    const results: any[] = [];
+
+    // Search in parents
+    this.parentsDataSource.data.forEach((parent) => {
+      const name = `${parent.name}`.toLowerCase();
+      if (name.includes(query)) {
+        results.push({
+          id: parent.id,
+          name: parent.name,
+          email: parent.email,
+          banned: parent.deleted,
+          userType: 'parent',
+        });
+      }
+    });
+
+    // Search in children
+    this.childrenDataSource.data.forEach((child) => {
+      const name = `${child.name}`.toLowerCase();
+      if (name.includes(query)) {
+        results.push({
+          id: child.id,
+          name: child.name,
+          email: child.email,
+          banned: child.deleted,
+          userType: 'child',
+        });
+      }
+    });
+
+    this.searchResults = results;
+  }
+
   clearSearch() {
     this.searchControl.setValue('');
+    this.searchResults = [];
   }
 
   banUser(userId: number) {
@@ -158,5 +193,11 @@ export class UsersComponent implements OnInit, OnDestroy {
       width: '500px',
       data: user,
     });
+  }
+
+  loadUsers() {
+    this.store.dispatch(AdminActions.loadParents());
+    this.store.dispatch(AdminActions.loadChildren());
+    this.store.dispatch(AdminActions.loadBannedUsers());
   }
 }

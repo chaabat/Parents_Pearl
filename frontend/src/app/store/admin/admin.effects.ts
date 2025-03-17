@@ -1,7 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
-import { map, mergeMap, catchError, tap } from 'rxjs/operators';
+import {
+  map,
+  mergeMap,
+  catchError,
+  tap,
+  debounceTime,
+  switchMap,
+} from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AdminService } from '../../core/services/admin.service';
 import * as AdminActions from './admin.actions';
@@ -136,19 +143,6 @@ export class AdminEffects {
           catchError((error) =>
             of(AdminActions.loadSystemStatsFailure({ error }))
           )
-        )
-      )
-    )
-  );
-
-  // Search Users
-  searchUsers$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(AdminActions.searchUsers),
-      mergeMap(({ query }) =>
-        this.adminService.searchUsers(query).pipe(
-          map((results) => AdminActions.searchUsersSuccess({ results })),
-          catchError((error) => of(AdminActions.searchUsersFailure({ error })))
         )
       )
     )

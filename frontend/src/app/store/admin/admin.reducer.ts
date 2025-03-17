@@ -131,6 +131,23 @@ export const adminReducer = createReducer(
     ...state,
     error,
     loading: false,
+  })),
+
+  // Search Users
+  on(AdminActions.searchUsers, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+  on(AdminActions.searchUsersSuccess, (state, { users }) => ({
+    ...state,
+    searchResults: users,
+    loading: false,
+  })),
+  on(AdminActions.searchUsersFailure, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false,
   }))
 );
 export { AdminState };

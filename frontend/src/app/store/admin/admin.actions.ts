@@ -95,7 +95,7 @@ export const searchUsers = createAction(
 );
 export const searchUsersSuccess = createAction(
   '[Admin] Search Users Success',
-  props<{ results: any[] }>()
+  props<{ users: any[] }>()
 );
 export const searchUsersFailure = createAction(
   '[Admin] Search Users Failure',
