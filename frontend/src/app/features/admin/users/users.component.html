@@ -80,19 +80,19 @@
                   </button>
                   <button
                     mat-menu-item
-                    *ngIf="!parent.banned"
-                    (click)="banUser(parent.id)"
-                  >
-                    <mat-icon>block</mat-icon>
-                    <span>Ban User</span>
-                  </button>
-                  <button
-                    mat-menu-item
                     *ngIf="parent.banned"
                     (click)="unbanUser(parent.id)"
                   >
                     <mat-icon>check_circle</mat-icon>
                     <span>Unban User</span>
+                  </button>
+                  <button
+                    mat-menu-item
+                    *ngIf="!parent.banned"
+                    (click)="banUser(parent.id)"
+                  >
+                    <mat-icon>block</mat-icon>
+                    <span>Ban User</span>
                   </button>
                 </mat-menu>
               </td>
@@ -154,19 +154,19 @@
                   </button>
                   <button
                     mat-menu-item
-                    *ngIf="!child.banned"
-                    (click)="banUser(child.id)"
-                  >
-                    <mat-icon>block</mat-icon>
-                    <span>Ban User</span>
-                  </button>
-                  <button
-                    mat-menu-item
                     *ngIf="child.banned"
                     (click)="unbanUser(child.id)"
                   >
                     <mat-icon>check_circle</mat-icon>
                     <span>Unban User</span>
+                  </button>
+                  <button
+                    mat-menu-item
+                    *ngIf="!child.banned"
+                    (click)="banUser(child.id)"
+                  >
+                    <mat-icon>block</mat-icon>
+                    <span>Ban User</span>
                   </button>
                 </mat-menu>
               </td>
@@ -222,15 +222,6 @@
                   </button>
                   <button
                     mat-menu-item
-                    *ngIf="!user.banned"
-                    (click)="banUser(user.id)"
-                  >
-                    <mat-icon>block</mat-icon>
-                    <span>Ban User</span>
-                  </button>
-                  <button
-                    mat-menu-item
-                    *ngIf="user.banned"
                     (click)="unbanUser(user.id)"
                   >
                     <mat-icon>check_circle</mat-icon>

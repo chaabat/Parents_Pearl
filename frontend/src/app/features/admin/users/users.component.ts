@@ -71,7 +71,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   loading$ = this.store.select(AdminSelectors.selectAdminLoading);
   error$ = this.store.select(AdminSelectors.selectAdminError);
 
-  constructor(public store: Store, private dialog: MatDialog) {
+  constructor(private store: Store, private dialog: MatDialog) {
     this.initializeDataSources();
   }
 
@@ -111,10 +111,8 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.log('Dispatching initial actions...');
     this.store.dispatch(AdminActions.loadParents());
     this.store.dispatch(AdminActions.loadChildren());
-    this.store.dispatch(AdminActions.loadAdmins());
     this.store.dispatch(AdminActions.loadBannedUsers());
 
     this.searchControl.valueChanges
@@ -137,12 +135,22 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   banUser(userId: number) {
     console.log('Banning user:', userId);
-    this.store.dispatch(AdminActions.banUser({ userId }));
+    this.store.dispatch(
+      AdminActions.banUser({
+        userId,
+        userType: 'parent',
+      })
+    );
   }
 
   unbanUser(userId: number) {
     console.log('Unbanning user:', userId);
-    this.store.dispatch(AdminActions.unbanUser({ userId }));
+    this.store.dispatch(
+      AdminActions.unbanUser({
+        userId,
+        userType: 'parent',
+      })
+    );
   }
 
   viewDetails(user: any) {

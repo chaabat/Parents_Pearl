@@ -1,6 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import * as AdminActions from './admin.actions';
-import { AdminState, initialState } from './admin.state';
+import { AdminState, initialAdminState as initialState } from './admin.state';import { Parent } from '../../core/models/parent.model';
+import { Child } from '../../core/models/child.model';
 
 export const adminReducer = createReducer(
   initialState,
@@ -45,37 +46,30 @@ export const adminReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(AdminActions.banUserSuccess, (state, { userId }) => ({
-    ...state,
-    parents: state.parents.map((parent) =>
-      parent.id === userId ? { ...parent, banned: true } : parent
-    ),
-    children: state.children.map((child) =>
-      child.id === userId ? { ...child, banned: true } : child
-    ),
-    bannedUsers: [
-      ...state.bannedUsers,
-      ...(state.parents.find((p) => p.id === userId)
-        ? [
-            {
-              ...state.parents.find((p) => p.id === userId),
-              userType: 'parent',
-              banned: true,
-            },
-          ]
-        : []),
-      ...(state.children.find((c) => c.id === userId)
-        ? [
-            {
-              ...state.children.find((c) => c.id === userId),
-              userType: 'child',
-              banned: true,
-            },
-          ]
-        : []),
-    ].filter(Boolean),
-    loading: false,
-  })),
+  on(AdminActions.banUserSuccess, (state, { userId }) => {
+    const bannedParent = state.parents.find((p: Parent) => p.id === userId);
+    const bannedChild = state.children.find((c: Child) => c.id === userId);
+
+    return {
+      ...state,
+      parents: state.parents.map((parent: Parent) =>
+        parent.id === userId ? { ...parent, banned: true } : parent
+      ),
+      children: state.children.map((child: Child) =>
+        child.id === userId ? { ...child, banned: true } : child
+      ),
+      bannedUsers: [
+        ...state.bannedUsers,
+        ...(bannedParent
+          ? [{ id: userId, userType: 'parent', banned: true }]
+          : []),
+        ...(bannedChild
+          ? [{ id: userId, userType: 'child', banned: true }]
+          : []),
+      ],
+      loading: false,
+    };
+  }),
   on(AdminActions.banUserFailure, (state, { error }) => ({
     ...state,
     error,
@@ -90,13 +84,13 @@ export const adminReducer = createReducer(
   })),
   on(AdminActions.unbanUserSuccess, (state, { userId }) => ({
     ...state,
-    parents: state.parents.map((parent) =>
+    parents: state.parents.map((parent: Parent) =>
       parent.id === userId ? { ...parent, banned: false } : parent
     ),
-    children: state.children.map((child) =>
+    children: state.children.map((child: Child) =>
       child.id === userId ? { ...child, banned: false } : child
     ),
-    bannedUsers: state.bannedUsers.filter((user) => user.id !== userId),
+    bannedUsers: state.bannedUsers.filter((user: { id: number; }) => user.id !== userId),
     loading: false,
   })),
   on(AdminActions.unbanUserFailure, (state, { error }) => ({
@@ -140,4 +134,3 @@ export const adminReducer = createReducer(
   }))
 );
 export { AdminState };
-

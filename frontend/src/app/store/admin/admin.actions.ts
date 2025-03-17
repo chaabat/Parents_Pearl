@@ -37,7 +37,7 @@ export const loadAdminsFailure = createAction(
 // Ban Management
 export const banUser = createAction(
   '[Admin] Ban User',
-  props<{ userId: number }>()
+  props<{ userId: number; userType: 'parent' | 'child' }>()
 );
 export const banUserSuccess = createAction(
   '[Admin] Ban User Success',
@@ -50,7 +50,7 @@ export const banUserFailure = createAction(
 
 export const unbanUser = createAction(
   '[Admin] Unban User',
-  props<{ userId: number }>()
+  props<{ userId: number; userType: 'parent' | 'child' }>()
 );
 export const unbanUserSuccess = createAction(
   '[Admin] Unban User Success',

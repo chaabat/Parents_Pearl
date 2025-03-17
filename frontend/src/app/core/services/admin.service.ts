@@ -70,12 +70,9 @@ export class AdminService {
       parents: this.http.get<any[]>(`${this.apiUrl}/admin/parents/banned`, {
         headers: this.getAuthHeaders(),
       }),
-      children: this.http.get<any[]>(
-        `${this.apiUrl}/admin/children/banned`,
-        {
-          headers: this.getAuthHeaders(),
-        }
-      ),
+      children: this.http.get<any[]>(`${this.apiUrl}/admin/children/banned`, {
+        headers: this.getAuthHeaders(),
+      }),
     }).pipe(
       map(({ parents, children }) => [
         ...parents.map((parent) => ({ ...parent, userType: 'parent' })),
@@ -90,34 +87,32 @@ export class AdminService {
   }
 
   banUser(userId: number, userType: 'parent' | 'child'): Observable<void> {
-    const endpoint = userType === 'parent' ? 'parent' : 'children';
     return this.http
       .post<void>(
-        `${this.apiUrl}/admin/${endpoint}/${userId}/ban`,
+        `${this.apiUrl}/admin/users/${userId}/ban`,
         {},
         { headers: this.getAuthHeaders() }
       )
       .pipe(
-        tap(() => console.log(`Banned ${userType} ${userId}`)),
+        tap(() => console.log(`Banned user ${userId}`)),
         catchError((error) => {
-          console.error(`Error banning ${userType}:`, error);
+          console.error('Error banning user:', error);
           throw error;
         })
       );
   }
 
   unbanUser(userId: number, userType: 'parent' | 'child'): Observable<void> {
-    const endpoint = userType === 'parent' ? 'parent' : 'children';
     return this.http
       .post<void>(
-        `${this.apiUrl}/admin/${endpoint}/${userId}/unban`,
+        `${this.apiUrl}/admin/users/${userId}/unban`,
         {},
         { headers: this.getAuthHeaders() }
       )
       .pipe(
-        tap(() => console.log(`Unbanned ${userType} ${userId}`)),
+        tap(() => console.log(`Unbanned user ${userId}`)),
         catchError((error) => {
-          console.error(`Error unbanning ${userType}:`, error);
+          console.error('Error unbanning user:', error);
           throw error;
         })
       );
@@ -162,6 +157,4 @@ export class AdminService {
       })
       .pipe(tap((results) => console.log('Search results:', results)));
   }
-
-   
 }
