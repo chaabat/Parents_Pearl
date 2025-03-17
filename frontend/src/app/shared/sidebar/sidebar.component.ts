@@ -1,11 +1,10 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../material.module';
-import { AuthService } from '../../core/services/auth.service';
 import { RouterModule, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { selectUser } from '../../store/auth/auth.selectors';
 import * as AuthActions from '../../store/auth/auth.actions';
+import * as AuthSelectors from '../../store/auth/auth.selectors';
 
 @Component({
   selector: 'app-sidebar',
@@ -17,27 +16,14 @@ import * as AuthActions from '../../store/auth/auth.actions';
 export class SidebarComponent implements OnInit {
   @Input() isOpen = true;
   userRole: string | undefined;
-  user$ = this.store.select(selectUser);
+  user$ = this.store.select(AuthSelectors.selectUser);
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private store: Store
-  ) {}
+  constructor(private store: Store, private router: Router) {}
 
-  ngOnInit() {
-    // Get user role from localStorage on init
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      this.userRole = user.role;
-    }
-
-    // Subscribe to user changes
+  ngOnInit(): void {
     this.user$.subscribe((user) => {
       if (user) {
         this.userRole = user.role;
-        console.log('Current user role:', this.userRole); // Debug log
       }
     });
   }
@@ -47,7 +33,14 @@ export class SidebarComponent implements OnInit {
   }
 
   logout() {
+    // Dispatch logout action
     this.store.dispatch(AuthActions.logout());
+
+    // Clear local storage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
+    // Navigate to login page
     this.router.navigate(['/auth/login']);
   }
 }

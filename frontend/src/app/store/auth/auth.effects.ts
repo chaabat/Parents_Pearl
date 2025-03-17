@@ -137,8 +137,11 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(AuthActions.logout),
         tap(() => {
-          // Clear token on logout
+          // Clear local storage
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          
+          // Navigate to login page
           this.router.navigate(['/auth/login']);
         })
       ),

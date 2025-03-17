@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MaterialModule } from '../material.module';
 import { AuthService } from '../../core/services/auth.service';
 import { Child } from '../../core/models/child.model';
@@ -9,6 +9,8 @@ import * as ChildSelectors from '../../store/child/child.selectors';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import * as AuthSelectors from '../../store/auth/auth.selectors';
+import * as AuthActions from '../../store/auth/auth.actions';
 
 @Component({
   selector: 'app-navbar',
@@ -18,6 +20,8 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./navbar.component.css'],
 })
 export class NavbarComponent implements OnInit {
+  user$ = this.store.select(AuthSelectors.selectUser);
+  isAuthenticated$ = this.store.select(AuthSelectors.selectIsAuthenticated);
   isAuthenticated = false;
   user: Child | null = null;
   totalPoints$ = this.store
@@ -30,7 +34,8 @@ export class NavbarComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private store: Store // Add Store to constructor
+    private store: Store,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -61,7 +66,18 @@ export class NavbarComponent implements OnInit {
   }
 
   logout() {
-    this.authService.logout();
+    this.store.dispatch(AuthActions.logout());
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.router.navigate(['/auth/login']);
+  }
+
+  goToLogin() {
+    this.router.navigate(['/auth/login']);
+  }
+
+  goToRegister() {
+    this.router.navigate(['/auth/register']);
   }
 
   handleImageError(event: any) {
