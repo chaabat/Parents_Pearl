@@ -62,7 +62,7 @@
           </div>
           <div class="text-center">
             <p class="text-sm text-gray-500">Banned</p>
-            <p class="text-xl font-bold text-yellow-500">{{ (bannedUsers$ | async)?.length || 0 }}</p>
+            <p class="text-xl font-bold text-red-500">{{ (bannedUsers$ | async)?.length || 0 }}</p>
           </div>
         </div>
       </div>
@@ -203,20 +203,20 @@
       </h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <button mat-raised-button color="primary" class="p-4" routerLink="/admin/users">
-          <mat-icon>person_add</mat-icon>
-          <span class="block mt-2">Manage Users</span>
+          <mat-icon>people</mat-icon>
+          <span class="block mt-2">User Management</span>
         </button>
-        <button mat-raised-button color="accent" class="p-4">
+        <button mat-raised-button color="accent" class="p-4" routerLink="/admin/profile">
+          <mat-icon>person</mat-icon>
+          <span class="block mt-2">Profile</span>
+        </button>
+        <button mat-raised-button color="warn" class="p-4" routerLink="/admin/reports">
+          <mat-icon>assessment</mat-icon>
+          <span class="block mt-2">Reports</span>
+        </button>
+        <button mat-raised-button class="p-4" routerLink="/admin/settings">
           <mat-icon>settings</mat-icon>
           <span class="block mt-2">System Settings</span>
-        </button>
-        <button mat-raised-button color="warn" class="p-4">
-          <mat-icon>backup</mat-icon>
-          <span class="block mt-2">Backup Data</span>
-        </button>
-        <button mat-raised-button class="p-4">
-          <mat-icon>help</mat-icon>
-          <span class="block mt-2">Help Center</span>
         </button>
       </div>
     </div>

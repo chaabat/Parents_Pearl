@@ -25,3 +25,11 @@ export interface ChildResponse {
   email: string;
   totalPoints: number;
 }
+
+export interface DialogData {
+  title: string
+  submitText?: string
+  confirmText?: string
+  child?: Child
+  form?: any;
+}

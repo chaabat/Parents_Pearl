@@ -1,463 +1,510 @@
-<div class="p-6 bg-gray-50">
-  <!-- Header Section -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-primary">My Children</h1>
+<div class="children-container">
+  <!-- Page Header -->
+
+  <!-- Action Bar -->
+  <div class="action-bar">
+    <div class="page-header">
+      <h1><mat-icon>family_restroom</mat-icon> Manage Children</h1>
+      <p>Add, edit, and manage your children's profiles, tasks, and rewards.</p>
+    </div>
     <button
       mat-raised-button
       color="primary"
+      class="add-button"
       (click)="openAddChildDialog(addChildDialog)"
     >
-      <mat-icon class="white">add</mat-icon>
-      Add Child
+      <mat-icon class="white">add</mat-icon> Add Child
     </button>
   </div>
 
-  <!-- Loading & Error States -->
-  <div *ngIf="loading$ | async" class="flex justify-center my-8">
+  <!-- Loading Spinner -->
+  <div *ngIf="loading$ | async" class="loading-container">
     <mat-spinner diameter="40"></mat-spinner>
   </div>
 
-  <mat-card *ngIf="error$ | async as error" class="mb-6 bg-red-50">
-    <mat-card-content class="text-red-600">{{ error }}</mat-card-content>
-  </mat-card>
+  <!-- Empty State -->
+  <ng-container *ngIf="!(loading$ | async)">
+    <div *ngIf="(children$ | async)?.length === 0" class="empty-state">
+      <mat-icon>sentiment_dissatisfied</mat-icon>
+      <h3>No Children Added Yet</h3>
+      <p>
+        Add your first child to start managing tasks and rewards. You can track
+        their progress and help them achieve their goals.
+      </p>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="openAddChildDialog(addChildDialog)"
+      >
+        <mat-icon>add</mat-icon> Add Your First Child
+      </button>
+    </div>
+  </ng-container>
 
   <!-- Children Grid -->
-  <div
-    *ngIf="children$ | async as children"
-    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-  >
-    <div *ngFor="let child of children" class="relative flex justify-center">
-      <!-- Card Body -->
-      <div
-        class="w-full mt-10 bg-gradient-to-r from-[#3f0d71] to-[#5a189a] rounded-3xl shadow-md overflow-hidden relative"
-      >
-        <!-- Profile Image Container - Centered -->
-        <div class="flex flex-col items-center">
-          <div
-            class="absolute left-1/2 top-4 transform -translate-x-1/2 flex flex-col items-center z-10"
-          >
-            <div
-              class="h-24 w-24 rounded-full border-4 border-white shadow-lg overflow-hidden mb-2"
-            >
-              <img
-                [src]="getImageUrl(child.picture)"
-                [alt]="child.name"
-                class="h-full w-full object-cover"
-                (error)="onImageError($event)"
-              />
-            </div>
-          </div>
+  <div *ngIf="(children$ | async)?.length" class="children-grid">
+    <div *ngFor="let child of children$ | async" class="child-card">
+      <div class="card-header">
+        <div
+          class="status-badge"
+          [ngClass]="statusBadges[getChildStatus(child)]"
+        >
+          {{ getChildStatus(child) }}
         </div>
-
-        <!-- Upper Section -->
-        <div class="h-1/2 w-full flex justify-between items-baseline px-6 py-5">
-          <h1 class="text-white text-xs font-bold mt-2">
-            {{ getChildStatus(child) }}
-          </h1>
-          <button mat-icon-button [matMenuTriggerFor]="menu" class="text-white">
-            <mat-icon>more_vert</mat-icon>
-          </button>
+        <div class="avatar-container">
+          <img
+            [src]="getImageUrl(child.picture)"
+            [alt]="child.name"
+            class="avatar"
+            (error)="onImageError($event)"
+          />
         </div>
+      </div>
 
-        <!-- Lower Section -->
-        <div class="bg-white h-1/2 w-full rounded-3xl p-4">
-          <div class="w-full flex justify-between items-center mb-4">
-            <div class="flex flex-col items-center">
-              <span class="text-gray-500 text-sm">Points</span>
-              <span class="text-gray-700 font-bold">{{
-                child.totalPoints || 0
-              }}</span>
-            </div>
-            <div class="flex flex-col items-center">
-              <span class="text-gray-500 text-sm">Age</span>
-              <span class="text-gray-700 font-bold">{{
-                calculateAge(child.dateOfBirth)
-              }}</span>
-            </div>
-            <div class="flex flex-col items-center">
-              <span class="text-gray-500 text-sm">Rewards</span>
-              <span class="text-gray-700 font-bold">{{
-                child.rewardRedemptions?.length || 0
-              }}</span>
-            </div>
+      <div class="card-content">
+        <h3 class="child-name">{{ child.name }}</h3>
+        <p class="child-email">{{ child.email }}</p>
+
+        <div class="child-details">
+          <div class="detail-item">
+            <mat-icon>cake</mat-icon>
+            <span class="label">Age:</span>
+            <span class="value">{{ calculateAge(child.dateOfBirth) }}</span>
           </div>
 
-          <div class="text-center">
-            <h2 class="text-gray-700 font-bold">{{ child.name }}</h2>
+          <div class="detail-item">
+            <mat-icon>stars</mat-icon>
+            <span class="label">Points:</span>
+            <span class="value">{{ child.totalPoints || 0 }}</span>
+          </div>
+
+          <div class="detail-item">
+            <mat-icon>assignment</mat-icon>
+            <span class="label">Tasks:</span>
+            <span class="value">{{ child.tasks?.length || 0 }}</span>
+          </div>
+
+          <div class="detail-item">
+            <mat-icon>redeem</mat-icon>
+            <span class="label">Rewards:</span>
+            <span class="value">{{
+              child.rewardRedemptions?.length || 0
+            }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Menu -->
-      <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="editChild(child, editChildDialog)">
-          <mat-icon color="primary">edit</mat-icon>
-          <span>Edit Profile</span>
+      <div class="card-actions">
+        <button mat-icon-button color="primary" (click)="viewTasks(child)">
+          <mat-icon>assignment</mat-icon>
         </button>
-        <button mat-menu-item (click)="managePoints(child, managePointsDialog)">
-          <mat-icon color="accent">stars</mat-icon>
-          <span>Manage Points</span>
-        </button>
-        <button mat-menu-item (click)="viewTasks(child)">
-          <mat-icon color="primary">assignment</mat-icon>
-          <span>View Tasks</span>
-        </button>
-        <button
-          mat-menu-item
-          (click)="viewPointHistory(child, pointHistoryDialog)"
-        >
-          <mat-icon color="accent">history</mat-icon>
-          <span>Point History</span>
-        </button>
-        <button
-          mat-menu-item
-          class="text-red-600"
-          (click)="deleteChild(child, deleteChildDialog)"
-        >
-          <mat-icon color="warn">delete</mat-icon>
-          <span>Delete</span>
-        </button>
-      </mat-menu>
+
+        <div class="action-buttons">
+          <button
+            mat-icon-button
+            color="primary"
+            matTooltip="Add Points"
+            (click)="managePoints(child, pointsDialog)"
+          >
+            <mat-icon>stars</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
+            color="accent"
+            matTooltip="View Point History"
+            (click)="viewPointHistory(child, historyDialog)"
+          >
+            <mat-icon>history</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
+            color="primary"
+            matTooltip="Edit Child"
+            (click)="editChild(child, editChildDialog)"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
+            color="warn"
+            matTooltip="Delete Child"
+            (click)="deleteChild(child, deleteChildDialog)"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
+  <ng-template #noChildren>
+    <p>No children found.</p>
+  </ng-template>
 
-  <!-- Empty State -->
-  <div *ngIf="(children$ | async)?.length === 0" class="text-center py-12">
-    <mat-icon class="text-6xl text-gray-400">child_care</mat-icon>
-    <h2 class="text-xl font-semibold text-gray-600 mt-4">
-      No Children Added Yet
-    </h2>
-    <p class="text-gray-500 mt-2">
-      Start by adding your first child to manage their tasks and rewards.
-    </p>
-    <button
-      mat-raised-button
-      color="primary"
-      class="mt-4"
-      (click)="openAddChildDialog(addChildDialog)"
-    >
-      Add Your First Child
-    </button>
-  </div>
-
-  <!-- Dialog Templates -->
   <!-- Add Child Dialog -->
   <ng-template #addChildDialog let-dialogRef="dialogRef" let-data="data">
-    <h2 mat-dialog-title>Add New Child</h2>
+    <h2 mat-dialog-title>{{ data?.title || "Add New Child" }}</h2>
+
     <mat-dialog-content>
-      <form [formGroup]="childForm" class="flex flex-col gap-4">
-        <!-- Profile Picture Upload -->
-        <div class="mb-4 relative mx-auto w-24 h-24">
-          <div
-            class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg"
-          >
+      <form [formGroup]="childForm" class="dialog-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Child's Name</mat-label>
+            <input
+              matInput
+              formControlName="name"
+              placeholder="Enter child's name"
+            />
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="hasError(childForm, 'name', 'required')"
+              >Name is required</mat-error
+            >
+            <mat-error *ngIf="hasError(childForm, 'name', 'minlength')"
+              >Name must be at least 2 characters</mat-error
+            >
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Email Address</mat-label>
+            <input
+              matInput
+              formControlName="email"
+              placeholder="Enter email address"
+            />
+            <mat-icon matPrefix>email</mat-icon>
+            <mat-error *ngIf="hasError(childForm, 'email', 'required')"
+              >Email is required</mat-error
+            >
+            <mat-error *ngIf="hasError(childForm, 'email', 'email')"
+              >Please enter a valid email address</mat-error
+            >
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              type="password"
+              formControlName="password"
+              placeholder="Enter password"
+            />
+            <mat-icon matPrefix>lock</mat-icon>
+            <mat-hint
+              >Leave blank to keep current password (when editing)</mat-hint
+            >
+            <mat-error *ngIf="hasError(childForm, 'password', 'minlength')"
+              >Password must be at least 6 characters</mat-error
+            >
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Date of Birth</mat-label>
+            <input
+              matInput
+              [matDatepicker]="picker"
+              formControlName="dateOfBirth"
+              placeholder="MM/DD/YYYY"
+            />
+            <mat-datepicker-toggle
+              matIconSuffix
+              [for]="picker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-icon matPrefix>cake</mat-icon>
+            <mat-hint>Child must be between 6 and 18 years old</mat-hint>
+            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'required')"
+              >Date of birth is required</mat-error
+            >
+            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'ageRange')">
+              {{ getErrorMessage(childForm, "dateOfBirth") }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="image-upload">
+          <label class="text-center">Profile Picture</label>
+          <div class="preview-container">
             <img
               [src]="
                 imagePreview ||
                 'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
               "
-              alt="Profile picture"
-              class="w-full h-full object-cover"
-            />
-
-            <!-- Hidden file input -->
-            <input
-              type="file"
-              accept="image/*"
-              class="hidden"
-              #fileInput
-              (change)="onFileSelected($event)"
+              alt="Profile Preview"
             />
           </div>
-
-          <!-- Add Camera Button -->
           <button
-            mat-mini-fab
-            color="primary"
-            class="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4"
-            (click)="fileInput.click()"
             type="button"
+            mat-stroked-button
+            color="primary"
+            class="upload-button"
+            (click)="fileInput.click()"
           >
-            <mat-icon>add_a_photo</mat-icon>
+            <mat-icon>cloud_upload</mat-icon> Upload Image
           </button>
-        </div>
-
-        <mat-form-field>
-          <mat-label>Name</mat-label>
-          <input matInput formControlName="name" required />
-          <mat-error *ngIf="childForm.get('name')?.hasError('required')">
-            Name is required
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Email</mat-label>
-          <input matInput formControlName="email" type="email" required />
-          <mat-error *ngIf="childForm.get('email')?.hasError('required')">
-            Email is required
-          </mat-error>
-          <mat-error *ngIf="childForm.get('email')?.hasError('email')">
-            Invalid email format
-          </mat-error>
-        </mat-form-field>
-
-        <!-- Add password fields -->
-        <mat-form-field>
-          <mat-label>Password</mat-label>
-          <input matInput formControlName="password" type="password" required />
-          <mat-error *ngIf="childForm.get('password')?.hasError('required')">
-            Password is required
-          </mat-error>
-          <mat-error *ngIf="childForm.get('password')?.hasError('minlength')">
-            Password must be at least 6 characters
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Date of Birth</mat-label>
           <input
-            matInput
-            [matDatepicker]="picker"
-            formControlName="dateOfBirth"
-            required
+            hidden
+            type="file"
+            #fileInput
+            (change)="onFileSelected($event)"
+            accept="image/*"
           />
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="picker"
-          ></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
-          <mat-error *ngIf="childForm.get('dateOfBirth')?.hasError('required')">
-            Date of Birth is required
-          </mat-error>
-          <mat-error *ngIf="childForm.get('dateOfBirth')?.hasError('minAge')">
-            Must be at least
-            {{ childForm.get('dateOfBirth')?.errors?.['minAge'].requiredAge }}
-            years old. Current age:
-            {{ childForm.get('dateOfBirth')?.errors?.['minAge'].actualAge }}.
-          </mat-error>
-        </mat-form-field>
+        </div>
       </form>
     </mat-dialog-content>
+
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Cancel</button>
       <button
         mat-raised-button
         color="primary"
-        (click)="onSubmitChild(dialogRef)"
         [disabled]="childForm.invalid"
+        (click)="dialogRef.close(childForm.value)"
       >
-        {{ selectedChild ? "Update" : "Create" }} Child
+        {{ data?.submitText || "Add Child" }}
       </button>
     </mat-dialog-actions>
   </ng-template>
 
   <!-- Edit Child Dialog -->
   <ng-template #editChildDialog let-dialogRef="dialogRef" let-data="data">
-    <h2 mat-dialog-title>Edit Child</h2>
+    <h2 mat-dialog-title>{{ data?.title || "Edit Child Profile" }}</h2>
+
     <mat-dialog-content>
-      <form [formGroup]="childForm" class="flex flex-col gap-4">
-        <!-- Profile Picture Upload -->
-        <div class="mb-4 relative mx-auto w-24 h-24">
-          <div
-            class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg"
-          >
+      <form [formGroup]="childForm" class="dialog-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Child's Name</mat-label>
+            <input
+              matInput
+              formControlName="name"
+              placeholder="Enter child's name"
+            />
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="hasError(childForm, 'name', 'required')"
+              >Name is required</mat-error
+            >
+            <mat-error *ngIf="hasError(childForm, 'name', 'minlength')"
+              >Name must be at least 2 characters</mat-error
+            >
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Email Address</mat-label>
+            <input
+              matInput
+              formControlName="email"
+              placeholder="Enter email address"
+            />
+            <mat-icon matPrefix>email</mat-icon>
+            <mat-error *ngIf="hasError(childForm, 'email', 'required')"
+              >Email is required</mat-error
+            >
+            <mat-error *ngIf="hasError(childForm, 'email', 'email')"
+              >Please enter a valid email address</mat-error
+            >
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              type="password"
+              formControlName="password"
+              placeholder="Enter new password"
+            />
+            <mat-icon matPrefix>lock</mat-icon>
+            <mat-hint>Leave blank to keep current password</mat-hint>
+            <mat-error *ngIf="hasError(childForm, 'password', 'minlength')"
+              >Password must be at least 6 characters</mat-error
+            >
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Date of Birth</mat-label>
+            <input
+              matInput
+              [matDatepicker]="editPicker"
+              formControlName="dateOfBirth"
+              placeholder="MM/DD/YYYY"
+            />
+            <mat-datepicker-toggle
+              matIconSuffix
+              [for]="editPicker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #editPicker></mat-datepicker>
+            <mat-icon matPrefix>cake</mat-icon>
+            <mat-hint>Child must be between 6 and 18 years old</mat-hint>
+            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'required')"
+              >Date of birth is required</mat-error
+            >
+            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'ageRange')">
+              {{ getErrorMessage(childForm, "dateOfBirth") }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="image-upload">
+          <label class="text-center">Profile Picture</label>
+          <div class="preview-container">
             <img
               [src]="
                 imagePreview ||
-                childForm.get('picture')?.value ||
                 'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
               "
-              alt="Profile picture"
-              class="w-full h-full object-cover"
-            />
-
-            <!-- Hidden file input -->
-            <input
-              type="file"
-              accept="image/*"
-              class="hidden"
-              #fileInputEdit
-              (change)="onFileSelected($event)"
+              alt="Profile Preview"
             />
           </div>
-
-          <!-- Add Camera Button -->
           <button
-            mat-mini-fab
-            color="primary"
-            class="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4"
-            (click)="fileInputEdit.click()"
             type="button"
+            mat-stroked-button
+            color="primary"
+            class="upload-button"
+            (click)="editFileInput.click()"
           >
-            <mat-icon>add_a_photo</mat-icon>
+            <mat-icon>cloud_upload</mat-icon> Change Image
           </button>
-        </div>
-
-        <mat-form-field>
-          <mat-label>Name</mat-label>
-          <input matInput formControlName="name" required />
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Email</mat-label>
-          <input matInput formControlName="email" type="email" required />
-        </mat-form-field>
-
-        <!-- Password field in edit dialog - no confirmPassword field -->
-        <mat-form-field>
-          <mat-label>New Password</mat-label>
-          <input matInput formControlName="password" type="password" />
-          <mat-hint>Leave blank to keep current password</mat-hint>
-          <mat-error *ngIf="childForm.get('password')?.errors?.['minlength']">
-            Password must be at least 6 characters
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Date of Birth</mat-label>
           <input
-            matInput
-            [matDatepicker]="editPicker"
-            formControlName="dateOfBirth"
-            required
+            hidden
+            type="file"
+            #editFileInput
+            (change)="onFileSelected($event)"
+            accept="image/*"
           />
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="editPicker"
-          ></mat-datepicker-toggle>
-          <mat-datepicker #editPicker></mat-datepicker>
-        </mat-form-field>
+        </div>
       </form>
-
-      <!-- Add error display -->
-      <div *ngIf="error$ | async as error" class="text-red-600 mt-4">
-        {{ error?.message || "An error occurred while updating the child." }}
-      </div>
     </mat-dialog-content>
+
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Cancel</button>
       <button
         mat-raised-button
         color="primary"
-        [disabled]="!childForm.valid"
         (click)="onSubmitChild(dialogRef)"
       >
-        Update
+        {{ data?.submitText || "Update Child" }}
       </button>
     </mat-dialog-actions>
   </ng-template>
 
-  <!-- Manage Points Dialog -->
-  <ng-template #managePointsDialog let-dialogRef="dialogRef" let-data="data">
-    <h2 mat-dialog-title>Manage Points for {{ data?.child?.name }}</h2>
+  <!-- Points Dialog -->
+  <ng-template #pointsDialog let-dialogRef="dialogRef" let-data="data">
+    <h2 mat-dialog-title>{{ data?.title || "Manage Points" }}</h2>
+
     <mat-dialog-content>
-      <form [formGroup]="pointsForm" class="flex flex-col gap-4">
-        <mat-form-field>
-          <mat-label>Points (positive or negative)</mat-label>
+      <form [formGroup]="pointsForm" class="points-form">
+        <div
+          class="points-value"
+          [ngClass]="{
+            positive: pointsForm.get('points')?.value > 0,
+            negative: pointsForm.get('points')?.value < 0,
+            zero: pointsForm.get('points')?.value == 0
+          }"
+        >
+          {{ formatPoints(pointsForm.get("points")?.value || 0) }} Points
+        </div>
+
+        <mat-slider
+          min="-100"
+          max="100"
+          step="5"
+          class="points-slider"
+          thumbLabel
+        >
+          <input matSliderThumb formControlName="points" />
+        </mat-slider>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Reason</mat-label>
           <input
             matInput
-            type="number"
-            formControlName="points"
-            required
-            placeholder="Enter points (e.g., 10 or -5)"
-          />
-          <mat-hint>Use positive numbers to award ,negative to deduct</mat-hint>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Reason</mat-label>
-          <textarea
-            matInput
             formControlName="reason"
-            required
-            rows="3"
-            placeholder="Explain why points are being awarded or deducted"
-          ></textarea>
+            placeholder="Why are you adding/removing points?"
+          />
+          <mat-icon matPrefix>note</mat-icon>
+          <mat-error *ngIf="hasError(pointsForm, 'reason', 'required')"
+            >Reason is required</mat-error
+          >
+          <mat-error *ngIf="hasError(pointsForm, 'reason', 'maxlength')"
+            >Reason cannot exceed 100 characters</mat-error
+          >
         </mat-form-field>
       </form>
     </mat-dialog-content>
+
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Cancel</button>
       <button
         mat-raised-button
         color="primary"
         (click)="onSubmitPoints(dialogRef)"
-        [disabled]="!pointsForm.valid"
       >
-        Award Points
+        {{ data?.submitText || "Add Points" }}
       </button>
     </mat-dialog-actions>
   </ng-template>
 
   <!-- Point History Dialog -->
-  <ng-template #pointHistoryDialog let-dialogRef="dialogRef" let-data="data">
-    <h2 mat-dialog-title>Point History for {{ data?.child?.name }}</h2>
+  <ng-template #historyDialog let-dialogRef="dialogRef" let-data="data">
+    <h2 mat-dialog-title>{{ data?.title || "Point History" }}</h2>
+
     <mat-dialog-content>
-      <div class="max-h-96 overflow-y-auto">
-        <ng-container *ngIf="(loading$ | async) === false; else loading">
-          <ng-container *ngIf="(error$ | async) === null; else error">
-            <ng-container *ngIf="pointHistory$ | async as points">
-              <div
-                *ngIf="points.length === 0"
-                class="text-center py-4 text-gray-500"
-              >
-                No point history available
-              </div>
-              <mat-list *ngIf="points.length > 0">
-                <mat-list-item *ngFor="let point of points">
-                  <div class="flex justify-between items-center w-full py-2">
-                    <div class="flex flex-col">
-                      <span class="text-gray-800">{{ point.reason }}</span>
-                      <span class="text-sm text-gray-500">{{
-                        point.createdAt | date : "medium"
-                      }}</span>
-                    </div>
-                    <span
-                      [class.text-green-600]="point.points > 0"
-                      [class.text-red-600]="point.points < 0"
-                      class="font-semibold"
-                    >
-                      {{ point.points > 0 ? "+" : "" }}{{ point.points }}
-                    </span>
-                  </div>
-                  <mat-divider></mat-divider>
-                </mat-list-item>
-              </mat-list>
-            </ng-container>
-          </ng-container>
+      <div class="point-history">
+        <ng-container *ngIf="(pointHistory$ | async)?.length === 0">
+          <div class="empty-history">
+            No point history available for this child.
+          </div>
         </ng-container>
+
+        <div *ngFor="let entry of pointHistory$ | async" class="history-item">
+          <div class="points" [ngClass]="getPointsClass(entry.points)">
+            {{ formatPoints(entry.points) }}
+          </div>
+          <div class="details">
+            <div class="reason">{{ entry.reason }}</div>
+            <div class="date">{{ formatDate(entry.date) }}</div>
+          </div>
+        </div>
       </div>
     </mat-dialog-content>
+
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Close</button>
     </mat-dialog-actions>
   </ng-template>
 
-  <ng-template #loading>
-    <div class="flex justify-center py-4">
-      <mat-spinner diameter="40"></mat-spinner>
-    </div>
-  </ng-template>
-
-  <ng-template #error>
-    <div class="text-center py-4 text-red-600">
-      Error loading point history. Please try again.
-    </div>
-  </ng-template>
-
   <!-- Delete Confirmation Dialog -->
-  <ng-template #deleteChildDialog let-data>
-    <h2 mat-dialog-title class="text-red-600">Delete Child Account</h2>
+  <ng-template #deleteChildDialog let-dialogRef="dialogRef" let-data="data">
+    <h2 mat-dialog-title>{{ data?.title || "Delete Child Profile" }}</h2>
+
     <mat-dialog-content>
       <p>
-        Are you sure you want to delete {{ data?.child?.name }}? This action
-        cannot be undone.
+        Are you sure you want to delete
+        {{ data?.child?.name || "this child" }}'s profile?
+      </p>
+      <p class="text-warn">
+        This action cannot be undone. All tasks, points, and rewards associated
+        with this child will be permanently deleted.
       </p>
     </mat-dialog-content>
+
     <mat-dialog-actions align="end">
-      <button mat-button [mat-dialog-close]="false">Cancel</button>
-      <button mat-raised-button color="warn" [mat-dialog-close]="true">
-        Delete
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button mat-raised-button color="warn" (click)="dialogRef.close(true)">
+        {{ data?.confirmText || "Delete" }}
       </button>
     </mat-dialog-actions>
   </ng-template>
