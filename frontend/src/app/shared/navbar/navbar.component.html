@@ -51,7 +51,7 @@
       <!-- Show profile for ADMIN and PARENT only -->
       <button
         mat-menu-item
-        [routerLink]="['/profil']"
+        [routerLink]="['/parent/profil']"
         *ngIf="(user$ | async)?.role !== 'CHILD'"
       >
         <mat-icon>person</mat-icon>

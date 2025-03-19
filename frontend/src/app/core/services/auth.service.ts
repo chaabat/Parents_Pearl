@@ -15,7 +15,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<any>(null)
   public currentUser$ = this.currentUserSubject.asObservable()
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false)
-  public isAuthenticated$ = this.isAuthenticatedSubject.asObservable()
+  isAuthenticated$ = this.isAuthenticatedSubject.asObservable()
 
   constructor(
     private http: HttpClient,
@@ -29,7 +29,6 @@ export class AuthService {
     const user = localStorage.getItem("user")
     if (user) {
       this.currentUserSubject.next(JSON.parse(user))
-      this.isAuthenticatedSubject.next(true)
     }
   }
 
@@ -42,7 +41,6 @@ export class AuthService {
 
         // Update the current user subject
         this.currentUserSubject.next(response.user)
-        this.isAuthenticatedSubject.next(true)
       }),
       catchError((error) => {
         console.error("Login error:", error)
@@ -58,22 +56,9 @@ export class AuthService {
 
     // Clear current user
     this.currentUserSubject.next(null)
-    this.isAuthenticatedSubject.next(false)
 
     // Navigate to login page
     this.router.navigate(["/login"])
-  }
-
-  register(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, userData).pipe(
-      tap(() => {
-        console.log("User registered successfully")
-      }),
-      catchError((error) => {
-        console.error("Registration error:", error)
-        return throwError(() => error)
-      })
-    )
   }
 
   refreshUserData(): void {
@@ -112,6 +97,10 @@ export class AuthService {
 
     // Dispatch action to update store
     this.store.dispatch(AuthActions.updateUser({ user: updatedUser }))
+  }
+
+  register(userData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, userData)
   }
 }
 

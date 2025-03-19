@@ -116,8 +116,8 @@
               </p>
             </div>
 
-            <!-- Date of Birth Field - Show for ALL users -->
-            <div>
+            <!-- Date of Birth Field - Only show for Parent users -->
+            <div *ngIf="userRole !== 'ADMIN'">
               <label for="dateOfBirth" class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
               <div class="relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -185,7 +185,7 @@
               class="w-full sm:w-auto"
               [disabled]="!profileForm.valid || (!profileForm.dirty && !selectedFile)"
             >
-              <mat-icon class="mr-2 white">save</mat-icon>
+              <mat-icon class="mr-2">save</mat-icon>
               Save Changes
             </button>
 

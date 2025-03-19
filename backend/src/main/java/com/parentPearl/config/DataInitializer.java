@@ -26,7 +26,7 @@ public class DataInitializer implements CommandLineRunner {
         // Vérifier si l'admin existe
         if (!userRepository.existsByEmail(adminEmail)) {
             String encodedPassword = passwordEncoder.encode(rawPassword);
-            log.info("Création admin - Email: {}, Password brut: {}, Password encodé: {}", 
+            log.info("Création admin - Email: {}, Password brut: {},Role :{}, Password encodé: {}", 
                 adminEmail, rawPassword, encodedPassword);
             
             User admin = User.builder()

@@ -1,13 +1,4 @@
-import {
-  Component,
-   OnInit,
-  ViewChild,
-   ElementRef,
-   TemplateRef,
-   OnDestroy,
-  Inject,
-  forwardRef,
-} from "@angular/core"
+import { Component,  OnInit, ViewChild,  ElementRef,  TemplateRef,  OnDestroy } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { MaterialModule } from "../../../shared/material.module"
 import { ReactiveFormsModule,  FormBuilder,  FormGroup, Validators,  AbstractControl } from "@angular/forms"
@@ -17,7 +8,7 @@ import { map, catchError, takeUntil } from "rxjs/operators"
 import {  HttpClient, HttpHeaders } from "@angular/common/http"
 import {  MatDialog, MatDialogModule } from "@angular/material/dialog"
 import  { MatSnackBar } from "@angular/material/snack-bar"
-import  { Router, ActivatedRoute } from "@angular/router"
+import  { Router } from "@angular/router"
 import * as ParentActions from "../../../store/parent/parent.actions"
 import * as ParentSelectors from "../../../store/parent/parent.selectors"
 import * as AuthSelectors from "../../../store/auth/auth.selectors"
@@ -50,17 +41,16 @@ export class ProfilComponent implements OnInit, OnDestroy {
   error$ = this.store.select(ParentSelectors.selectParentError)
   originalProfile: any = null
   isLoading = false
-  errorMessage: string | null = null;
+  errorMessage: string | null = null
 
   constructor(
     private fb: FormBuilder,
     private store: Store,
     private http: HttpClient,
     private parentService: ParentService,
-    @Inject(forwardRef(() => AdminService)) private adminService: AdminService,
+    private adminService: AdminService,
     private dialog: MatDialog,
     private router: Router,
-    private route: ActivatedRoute,
     private snackBar: MatSnackBar,
   ) {
     this.profileForm = this.fb.group({
@@ -90,9 +80,6 @@ export class ProfilComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Clear admin profile cache to ensure fresh data on load
-    this.adminService.clearAdminProfileCache()
-
     // Load current user's profile
     this.store
       .select(AuthSelectors.selectUser)
@@ -101,9 +88,6 @@ export class ProfilComponent implements OnInit, OnDestroy {
         if (user?.id) {
           this.userId = user.id
           this.userRole = user.role
-
-          // Check and fix the route if needed
-          this.checkAndFixRoute()
 
           // Handle different roles
           if (user.role === Role.ADMIN) {
@@ -122,13 +106,6 @@ export class ProfilComponent implements OnInit, OnDestroy {
           }
         }
       })
-  }
-
-  checkAndFixRoute(): void {
-    if (this.userRole === Role.ADMIN && this.router.url.includes("/parent/")) {
-      // Redirect admin users to the admin profile route
-      this.router.navigate(["/admin/profil"])
-    }
   }
 
   ngOnDestroy(): void {
@@ -188,7 +165,7 @@ export class ProfilComponent implements OnInit, OnDestroy {
       {
         name: profile.name || "",
         email: profile.email || "",
-        dateOfBirth: profile.dateOfBirth ? new Date(profile.dateOfBirth) : new Date("1970-01-01"),
+        dateOfBirth: profile.dateOfBirth ? new Date(profile.dateOfBirth) : null,
         picture: profile.picture || "",
         password: "",
       },
@@ -269,13 +246,49 @@ export class ProfilComponent implements OnInit, OnDestroy {
     this.errorMessage = null
 
     if (this.userRole === Role.ADMIN) {
-      // For admin users, use the admin service directly
-      this.adminService.updateAdminProfile(this.userId, updateData).subscribe({
-        next: (updatedProfile) => {
+      // For admin users, we need to ensure all required fields are included
+      // Create a complete admin profile update object
+      const adminUpdateData = {
+        // Include all fields from the original profile to ensure we don't lose any data
+        ...this.originalProfile,
+
+        // Override with the updated fields
+        name: updateData.name,
+        email: updateData.email,
+        dateOfBirth: updateData.dateOfBirth,
+
+        // Keep the original picture if not updated
+        picture: updateData.picture || this.originalProfile.picture,
+
+        // Only update password if provided, otherwise keep the original (by not including it)
+        ...(updateData.password ? { password: updateData.password } : {}),
+
+        // Ensure these fields are never null
+        deleted: false,
+        role: Role.ADMIN,
+      }
+
+      // Make a direct HTTP request to update the admin profile
+      const token = localStorage.getItem("token")
+      if (!token) {
+        this.isLoading = false
+        this.errorMessage = "Authentication token not found"
+        return
+      }
+
+      const headers = new HttpHeaders().set("Authorization", `Bearer ${token}`)
+      const url = `${environment.apiUrl}/admin/profile/${this.userId}`
+
+      this.http.put(url, adminUpdateData, { headers }).subscribe({
+        next: (response: any) => {
           this.isLoading = false
 
           // Update the form with the updated profile
-          this.updateFormWithProfileData(updatedProfile)
+          this.updateFormWithProfileData({
+            ...this.originalProfile,
+            ...updateData,
+            picture: updateData.picture || this.originalProfile.picture,
+          })
 
           // Update auth state to reflect changes in navbar immediately
           const updatedUser = {
@@ -286,23 +299,16 @@ export class ProfilComponent implements OnInit, OnDestroy {
             dateOfBirth: updateData.dateOfBirth,
           }
 
-          // Update localStorage to ensure persistence
-          const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
-          const updatedLocalUser = {
-            ...currentUser,
-            name: updateData.name,
-            email: updateData.email,
-            picture: updateData.picture || this.originalProfile.picture,
-          }
-          localStorage.setItem("user", JSON.stringify(updatedLocalUser))
-
           // Dispatch proper auth action to update user in store
-          this.store.dispatch(AuthActions.updateUser({ user: updatedUser }))
+          this.store.dispatch(AuthActions.updateUserSuccess({ user: updatedUser }))
 
           this.snackBar.open("Profile updated successfully", "Close", {
             duration: 3000,
             panelClass: ["success-snackbar"],
           })
+
+          // Force refresh dashboard data if needed
+          this.refreshDashboardData()
         },
         error: (error) => {
           this.isLoading = false
@@ -332,24 +338,32 @@ export class ProfilComponent implements OnInit, OnDestroy {
         dateOfBirth: updateData.dateOfBirth,
       }
 
-      // Update localStorage to ensure persistence
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
-      const updatedLocalUser = {
-        ...currentUser,
-        name: updateData.name,
-        email: updateData.email,
-        picture: updateData.picture || this.originalProfile.picture,
-      }
-      localStorage.setItem("user", JSON.stringify(updatedLocalUser))
-
       // Dispatch proper auth action to update user in store
-      this.store.dispatch(AuthActions.updateUser({ user: updatedUser }))
+      this.store.dispatch(AuthActions.updateUserSuccess({ user: updatedUser }))
 
       this.isLoading = false
       this.snackBar.open("Profile updated successfully", "Close", {
         duration: 3000,
         panelClass: ["success-snackbar"],
       })
+
+      // Force refresh dashboard data if needed
+      this.refreshDashboardData()
+    }
+  }
+
+  // Force refresh dashboard data
+  refreshDashboardData(): void {
+    // This method will force a refresh of dashboard data
+    // You can dispatch actions to reload any necessary data for the dashboard
+    if (this.userRole === Role.ADMIN) {
+      // Dispatch actions to reload admin dashboard data
+      // For example:
+      // this.store.dispatch(AdminActions.loadDashboardData());
+    } else if (this.userRole === Role.PARENT) {
+      // Dispatch actions to reload parent dashboard data
+      // For example:
+      // this.store.dispatch(ParentActions.loadDashboardData());
     }
   }
 

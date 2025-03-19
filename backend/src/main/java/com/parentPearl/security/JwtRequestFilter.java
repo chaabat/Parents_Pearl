@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.io.IOException;
 
@@ -32,58 +33,58 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+            
         String path = request.getRequestURI();
         
-        // Only log token warnings for secured endpoints
-        boolean isPublicEndpoint = path.startsWith("/api/auth/");
-        
+        // Skip authentication for public endpoints
+        if (path.startsWith("/api/auth/") || path.startsWith("/uploads/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
+        
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                
+                if (tokenBlacklist.isBlacklisted(token)) {
+                    sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token is blacklisted");
+                    return;
+                }
 
-        if (!isPublicEndpoint) {
-            log.info("Processing secured request to: {}", path);
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                log.warn("No Bearer token found in header");
+                String email = jwtUtil.extractEmail(token);
+                
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    try {
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                        if (jwtUtil.validateToken(token, email)) {
+                            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authToken);
+                        }
+                    } catch (UsernameNotFoundException e) {
+                        log.error("User not found: {}", email);
+                        sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Invalid token - User not found");
+                        return;
+                    }
+                }
             }
-        }
-
-        String token = null;
-        String email = null;
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
             
-            // Log pour debug
-           log.info("Token reçu: " + token);
-            log.info("Est dans la liste noire? " + tokenBlacklist.isBlacklisted(token));
-
-            if (tokenBlacklist.isBlacklisted(token)) {
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.setContentType("application/json");
-                String jsonResponse = "{\"status\":\"UNAUTHORIZED\",\"message\":\"Token blacklisted. Please login again.\"}";
-                response.getWriter().write(jsonResponse);
-                return;
-            }
-
-            try {
-                email = jwtUtil.extractEmail(token);
-                log.debug("Token found for user: {}", email);
-            } catch (Exception e) {
-                log.error("Error extracting token: {}", e.getMessage());
-            }
+            filterChain.doFilter(request, response);
+            
+        } catch (Exception e) {
+            log.error("Authentication error: ", e);
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Authentication failed");
         }
+    }
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-            if (jwtUtil.validateToken(token, email)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                log.debug("Authentication successful for user: {}", email);
-            }
-        }
-
-        filterChain.doFilter(request, response);
+    private void sendErrorResponse(HttpServletResponse response, HttpStatus status, String message) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType("application/json");
+        String jsonResponse = String.format("{\"status\":\"%s\",\"message\":\"%s\"}", status, message);
+        response.getWriter().write(jsonResponse);
     }
 }
+ 
