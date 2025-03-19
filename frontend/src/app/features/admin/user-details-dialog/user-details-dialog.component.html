@@ -1,0 +1,69 @@
+<div class="p-6">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+      <mat-icon class="mr-3 text-indigo-600">person</mat-icon>
+      User Details
+    </h2>
+    
+    <mat-divider class="mb-6"></mat-divider>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <!-- User Avatar -->
+      <div class="flex flex-col items-center justify-center">
+        <div class="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center mb-4">
+          <mat-icon class="text-indigo-600 text-5xl">{{ data.banned ? 'person_off' : 'person' }}</mat-icon>
+        </div>
+        <span [ngClass]="data.banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'" 
+              class="px-3 py-1 rounded-full text-sm font-medium">
+          {{ data.banned ? 'Banned' : 'Active' }}
+        </span>
+      </div>
+      
+      <!-- User Information -->
+      <div class="space-y-4">
+        <div>
+          <h3 class="text-sm font-medium text-gray-500">Name</h3>
+          <p class="mt-1 text-lg font-semibold text-gray-900">{{ data.name }}</p>
+        </div>
+        
+        <div>
+          <h3 class="text-sm font-medium text-gray-500">Email</h3>
+          <p class="mt-1 text-lg font-semibold text-gray-900">{{ data.email }}</p>
+        </div>
+        
+        <div>
+          <h3 class="text-sm font-medium text-gray-500">Role</h3>
+          <p class="mt-1 text-lg font-semibold text-gray-900">{{ data.role || 'User' }}</p>
+        </div>
+        
+        <div *ngIf="data.createdAt">
+          <h3 class="text-sm font-medium text-gray-500">Joined</h3>
+          <p class="mt-1 text-lg font-semibold text-gray-900">{{ data.createdAt | date }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Additional Information -->
+    <div class="bg-gray-50 p-4 rounded-lg mb-6" *ngIf="data.totalPoints !== undefined || data.parentId !== undefined">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div *ngIf="data.totalPoints !== undefined">
+          <h4 class="text-sm font-medium text-gray-500">Total Points</h4>
+          <p class="mt-1 text-lg font-semibold text-indigo-600">{{ data.totalPoints }}</p>
+        </div>
+        
+        <div *ngIf="data.parentName !== undefined">
+          <h4 class="text-sm font-medium text-gray-500">Parent Name</h4>
+          <p class="mt-1 text-lg font-semibold text-gray-900">{{ data.parentName }}</p>
+        </div>
+      </div>
+    </div>
+
+    <mat-divider class="mb-6"></mat-divider>
+    
+    <div class="flex justify-end">
+      <button mat-flat-button color="primary" mat-dialog-close class="bg-indigo-600 hover:bg-indigo-700">
+        Close
+      </button>
+    </div>
+  </div>

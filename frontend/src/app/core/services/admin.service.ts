@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, forkJoin, map } from 'rxjs';
+import { Observable, forkJoin, map, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { tap, catchError } from 'rxjs/operators';
 import { Parent } from '../models/parent.model';
@@ -121,18 +121,30 @@ export class AdminService {
   // Admin Profile Management
   getAdminProfile(id: number): Observable<Admin> {
     return this.http
-      .get<Admin>(`${this.apiUrl}/admin/${id}`, {
+      .get<Admin>(`${this.apiUrl}/admin/profile/${id}`, {
         headers: this.getAuthHeaders(),
       })
       .pipe(tap((profile) => console.log('Fetched admin profile:', profile)));
   }
 
   updateAdminProfile(id: number, data: Partial<Admin>): Observable<Admin> {
+    // Create a copy of the data and remove the password if it's empty or undefined
+    const updateData = { ...data };
+    if (!updateData.password) {
+      delete updateData.password;  // Remove password if not provided
+    }
+
     return this.http
-      .put<Admin>(`${this.apiUrl}/admin/${id}`, data, {
+      .put<Admin>(`${this.apiUrl}/admin/profile/${id}`, updateData, {
         headers: this.getAuthHeaders(),
       })
-      .pipe(tap((updated) => console.log('Updated admin profile:', updated)));
+      .pipe(
+        tap((updated) => console.log('Updated admin profile:', updated)),
+        catchError((error) => {
+          console.error('Error updating admin profile:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   // Statistics
@@ -146,5 +158,15 @@ export class AdminService {
         headers: this.getAuthHeaders(),
       })
       .pipe(tap((stats) => console.log('Fetched system stats:', stats)));
+  }
+
+  uploadProfilePicture(file: File): Observable<any> {
+    const formData: FormData = new FormData();
+    formData.append('file', file);
+    return this.http.post(`${environment.apiUrl}/uploads/images`, formData);
+  }
+
+  getProfilePicture(fileName: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/uploads/images/${fileName}`, { responseType: 'blob' });
   }
 }

@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Reward } from '../models/reward.model';
-import { tap, map } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { Child, ChildResponse } from '../models/child.model';
@@ -68,7 +69,10 @@ export class ChildService {
   searchMyTasks(childId: number, keyword: string): Observable<Task[]> {
     return this.http.get<Task[]>(
       `${this.apiUrl}/children/${childId}/tasks/search`,
-      { params: { keyword }, headers: this.getAuthHeaders() }
+      {
+        params: { keyword },
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -80,7 +84,9 @@ export class ChildService {
     return this.http.post<TaskAnswer>(
       `${this.apiUrl}/children/${childId}/tasks/${taskId}/submit`,
       answer,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -94,7 +100,9 @@ export class ChildService {
   getMyPointHistory(childId: number): Observable<Point[]> {
     return this.http.get<Point[]>(
       `${this.apiUrl}/children/${childId}/points/history`,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -108,7 +116,9 @@ export class ChildService {
   getPointHistory(childId: number): Observable<Point[]> {
     return this.http.get<Point[]>(
       `${this.apiUrl}/children/${childId}/points/history`,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -154,7 +164,9 @@ export class ChildService {
   getRedemptionHistory(childId: number): Observable<RewardRedemption[]> {
     return this.http.get<RewardRedemption[]>(
       `${this.apiUrl}/children/${childId}/rewards/history`,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -183,5 +195,44 @@ export class ChildService {
       .pipe(
         tap((response) => console.log('Redemption history response:', response))
       );
+  }
+
+  // Update the uploadChildPicture method to use the correct endpoint
+  uploadChildPicture(file: File, childId: number): Observable<any> {
+    const formData: FormData = new FormData();
+    formData.append('file', file);
+
+    // Use the API endpoint for uploads
+    const uploadUrl = `${environment.apiUrl}/uploads/images`;
+
+    console.log('Uploading child picture to:', uploadUrl);
+
+    return this.http
+      .post(uploadUrl, formData, {
+        headers: new HttpHeaders().set(
+          'Authorization',
+          `Bearer ${localStorage.getItem('token')}`
+        ),
+        responseType: 'text',
+      })
+      .pipe(
+        tap((response) => console.log('Upload response:', response)),
+        catchError((error) => {
+          console.error('Upload error:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Update the getChildPicture method to use the correct path
+  getChildPicture(fileName: string): Observable<Blob> {
+    // Use the correct URL for accessing uploaded images
+    const imageUrl = `${environment.apiUrl.replace(
+      '/api',
+      ''
+    )}/uploads/images/${fileName}`;
+    console.log('Getting child picture from:', imageUrl);
+
+    return this.http.get(imageUrl, { responseType: 'blob' });
   }
 }

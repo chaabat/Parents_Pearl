@@ -1,0 +1,126 @@
+/* Custom styling for the admin users component */
+.search-container {
+    position: relative;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+  }
+  
+  .search-input {
+    padding-left: 40px !important;
+    border-radius: 9999px !important;
+    transition: all 0.3s ease;
+  }
+  
+  .search-input:focus {
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+  }
+  
+  .clear-button {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  /* Custom styling for mat-table */
+  .mat-mdc-table {
+    width: 100%;
+    background: transparent !important;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+  
+  .mat-mdc-header-row {
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .mat-mdc-header-cell {
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 16px;
+  }
+  
+  .mat-mdc-cell {
+    padding: 16px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .mat-mdc-row:hover {
+    background-color: #f9fafb;
+  }
+  
+  /* Custom styling for mat-paginator */
+  .mat-mdc-paginator {
+    background: transparent;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  /* Custom styling for mat-tabs */
+  .mat-mdc-tab-group {
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+  
+  .mat-mdc-tab-header {
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .mat-mdc-tab {
+    min-width: 120px;
+  }
+  
+  .mat-mdc-tab-body-content {
+    padding: 0;
+  }
+  
+  /* Animation for loading spinner */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  /* Custom dialog styling */
+  ::ng-deep .custom-dialog-container .mat-mdc-dialog-surface {
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Tab indicator styling */
+  ::ng-deep
+    .mat-mdc-tab-header
+    .mat-mdc-tab-label-container
+    .mat-mdc-tab-list
+    .mat-mdc-tab-labels
+    .mdc-tab--active
+    .mdc-tab-indicator__content--underline {
+    border-color: #4f46e5 !important;
+  }
+  
+  ::ng-deep .mat-mdc-tab-group.mat-primary .mat-mdc-tab:not(.mat-mdc-tab-disabled).mdc-tab--active .mdc-tab__text-label {
+    color: #4f46e5 !important;
+  }
+  
+  /* Badge styling */
+  .tab-badge {
+    margin-left: 8px;
+  }
+  
+  

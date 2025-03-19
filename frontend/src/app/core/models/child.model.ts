@@ -10,7 +10,8 @@ export interface Child {
   dateOfBirth: string;
   picture?: string;
   deleted: boolean;
-
+  gender: 'Male' | 'female';
+ Status : 'Superstar' | 'Rising Star' | 'Good Start' | 'Beginner';
   tasks?: any[];
   rewardRedemptions?: any[];
   role: string;

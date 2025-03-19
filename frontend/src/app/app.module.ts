@@ -9,10 +9,10 @@ import { NgModule } from '@angular/core';
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
-      multi: true
+      multi: true,
     },
     // other providers
   ],
   // ...
 })
-export class AppModule { }
+export class AppModule {}

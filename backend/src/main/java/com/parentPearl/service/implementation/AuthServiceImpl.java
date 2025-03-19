@@ -57,7 +57,7 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
         if (file != null && !file.isEmpty()) {
             picturePath = fileStorageService.storeFile(file);
         }
-
+        log.info("Picture path: {}", picturePath);
         Parent parent = Parent.builder()
                 .name(request.getName())
                 .email(request.getEmail())

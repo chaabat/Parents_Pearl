@@ -1,113 +1,106 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { tap, map } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
-import { Store } from '@ngrx/store';
-import * as AuthActions from '../../store/auth/auth.actions';
+import { Injectable } from "@angular/core"
+import  { HttpClient } from "@angular/common/http"
+import {  Observable, BehaviorSubject, throwError } from "rxjs"
+import { tap, catchError } from "rxjs/operators"
+import { environment } from "../../../environments/environment"
+import  { Router } from "@angular/router"
+import  { Store } from "@ngrx/store"
+import * as AuthActions from "../../store/auth/auth.actions"
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class AuthService {
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
-  private currentUserSubject = new BehaviorSubject<any>(null);
-  private apiUrl = `${environment.apiUrl}/auth`;
-  private baseUrl = environment.apiUrl;
+  private apiUrl = environment.apiUrl
+  private currentUserSubject = new BehaviorSubject<any>(null)
+  public currentUser$ = this.currentUserSubject.asObservable()
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false)
+  isAuthenticated$ = this.isAuthenticatedSubject.asObservable()
 
-  isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
-  currentUser$ = this.currentUserSubject.asObservable();
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private store: Store,
+  ) {
+    this.loadUserFromStorage()
+  }
 
-  constructor(private http: HttpClient, private store: Store) {
-    // Initialize auth state from localStorage
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (token && user) {
-      this.isAuthenticatedSubject.next(true);
-      this.currentUserSubject.next(JSON.parse(user));
+  private loadUserFromStorage(): void {
+    const user = localStorage.getItem("user")
+    if (user) {
+      this.currentUserSubject.next(JSON.parse(user))
     }
   }
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-    console.log('Token being used:', token);
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
-    console.log('Headers being sent:', headers);
-    return headers;
-  }
-
-  logout(): Observable<any> {
-    // Clear local storage
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-
-    // Clear auth state
-    this.store.dispatch(AuthActions.logout());
-
-    // Make API call to logout
-    return this.http.post(
-      `${this.apiUrl}/auth/logout`,
-      {},
-      {
-        headers: this.getAuthHeaders(),
-      }
-    );
-  }
-
-  register(userData: any): Observable<any> {
-    const formData = new FormData();
-    const userDataCopy = { ...userData };
-
-    console.log('userData before processing:', userDataCopy);
-
-    // Handle file separately
-    if (userDataCopy.picture instanceof File) {
-      console.log('Appending file:', userDataCopy.picture);
-      formData.append('file', userDataCopy.picture);
-      delete userDataCopy.picture;
-    }
-
-    // Add the rest of the data as a JSON string
-    formData.append('userData', JSON.stringify(userDataCopy));
-
-    return this.http.post<any>(`${this.apiUrl}/register`, formData);
-  }
-
-  // auth.service.ts
   login(email: string, password: string): Observable<any> {
-    return this.http
-      .post<any>(`${environment.apiUrl}/auth/login`, { email, password })
-      .pipe(
-        tap((response) => {
-          console.log('Login response in service:', response);
+    return this.http.post<any>(`${this.apiUrl}/auth/login`, { email, password }).pipe(
+      tap((response) => {
+        // Store user details and token in local storage
+        localStorage.setItem("token", response.token)
+        localStorage.setItem("user", JSON.stringify(response.user))
 
-          // Check for token in different possible properties
-          const token = response.token || response.accessToken || response.jwt;
+        // Update the current user subject
+        this.currentUserSubject.next(response.user)
+      }),
+      catchError((error) => {
+        console.error("Login error:", error)
+        return throwError(() => error)
+      }),
+    )
+  }
 
-          if (token) {
-            console.log('Storing token in service:', token);
-            localStorage.setItem('token', token);
-            this.isAuthenticatedSubject.next(true);
+  logout(): void {
+    // Clear local storage
+    localStorage.removeItem("token")
+    localStorage.removeItem("user")
 
-            // Store user if available
-            if (response.user) {
-              localStorage.setItem('user', JSON.stringify(response.user));
-              this.currentUserSubject.next(response.user);
-            }
-          } else {
-            console.error('No token found in response in service:', response);
-          }
-        })
-      );
+    // Clear current user
+    this.currentUserSubject.next(null)
+
+    // Navigate to login page
+    this.router.navigate(["/login"])
+  }
+
+  refreshUserData(): void {
+    // Reload user data from localStorage
+    const user = localStorage.getItem("user")
+    if (user) {
+      this.currentUserSubject.next(JSON.parse(user))
+    }
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem("token")
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken()
+  }
+
+  getCurrentUser(): any {
+    return this.currentUserSubject.value
+  }
+
+  // Method to update user data in the service and localStorage
+  updateUserData(userData: any): void {
+    // Get current user data
+    const currentUser = this.getCurrentUser()
+
+    // Update with new data
+    const updatedUser = { ...currentUser, ...userData }
+
+    // Update localStorage
+    localStorage.setItem("user", JSON.stringify(updatedUser))
+
+    // Update the BehaviorSubject
+    this.currentUserSubject.next(updatedUser)
+
+    // Dispatch action to update store
+    this.store.dispatch(AuthActions.updateUser({ user: updatedUser }))
+  }
+
+  register(userData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, userData)
   }
 }
+

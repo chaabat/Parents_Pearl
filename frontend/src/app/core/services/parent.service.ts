@@ -3,7 +3,6 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Child, Task, Reward, Point, Parent } from '../models';
-import { catchError as rxjsCatchError, tap as rxjsTap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -33,11 +32,18 @@ export class ParentService {
     parentId: number,
     profileData: Partial<Parent>
   ): Observable<Parent> {
-    return this.http.put<Parent>(
-      `${this.apiUrl}/parents/${parentId}`,
-      profileData,
-      { headers: this.getAuthHeaders() }
-    );
+    console.log('Updating profile for parent:', parentId, profileData);
+    return this.http
+      .put<Parent>(`${this.apiUrl}/parents/${parentId}`, profileData, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        tap((response) => console.log('Profile update response:', response)),
+        catchError((error) => {
+          console.error('Profile update error:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   deleteParentAccount(parentId: number): Observable<void> {
@@ -70,14 +76,18 @@ export class ParentService {
     return this.http.put<Child>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}`,
       child,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
   deleteChild(parentId: number, childId: number): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}`,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -100,7 +110,9 @@ export class ParentService {
   searchTasks(parentId: number, keyword: string): Observable<Task[]> {
     return this.http.get<Task[]>(
       `${this.apiUrl}/parents/${parentId}/tasks/search?keyword=${keyword}`,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -127,7 +139,9 @@ export class ParentService {
     return this.http.put<Task>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks/${taskId}`,
       task,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -138,7 +152,9 @@ export class ParentService {
   ): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}/tasks/${taskId}`,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -160,7 +176,9 @@ export class ParentService {
     return this.http.post<Reward>(
       `${this.apiUrl}/parents/${parentId}/rewards`,
       reward,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -172,14 +190,18 @@ export class ParentService {
     return this.http.put<Reward>(
       `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`,
       reward,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
   deleteReward(parentId: number, rewardId: number): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/parents/${parentId}/rewards/${rewardId}`,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -195,7 +217,9 @@ export class ParentService {
     return this.http.post<Child>(
       `${this.apiUrl}/parents/${parentId}/children`,
       child,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -203,7 +227,9 @@ export class ParentService {
     return this.http.put<Child>(
       `${this.apiUrl}/parents/${parentId}/children/${childId}`,
       child,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders(),
+      }
     );
   }
 
@@ -253,5 +279,44 @@ export class ParentService {
       {},
       { headers: this.getAuthHeaders() }
     );
+  }
+
+  // Update the uploadParentPicture method to use the correct endpoint
+  uploadParentPicture(file: File, parentId: number): Observable<any> {
+    const formData: FormData = new FormData();
+    formData.append('file', file);
+
+    // Use the API endpoint for uploads
+    const uploadUrl = `${environment.apiUrl}/uploads/images`;
+
+    console.log('Uploading parent picture to:', uploadUrl);
+
+    return this.http
+      .post(uploadUrl, formData, {
+        headers: new HttpHeaders().set(
+          'Authorization',
+          `Bearer ${localStorage.getItem('token')}`
+        ),
+        responseType: 'text',
+      })
+      .pipe(
+        tap((response) => console.log('Upload response:', response)),
+        catchError((error) => {
+          console.error('Upload error:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Update the getParentPicture method to use the correct path
+  getParentPicture(fileName: string): Observable<Blob> {
+    // Use the correct URL for accessing uploaded images
+    const imageUrl = `${environment.apiUrl.replace(
+      '/api',
+      ''
+    )}/uploads/images/${fileName}`;
+    console.log('Getting parent picture from:', imageUrl);
+
+    return this.http.get(imageUrl, { responseType: 'blob' });
   }
 }

@@ -3,19 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { MatDialog } from '@angular/material/dialog';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  map,
-  takeUntil,
-} from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import * as AdminActions from '../../../store/admin/admin.actions';
 import * as AdminSelectors from '../../../store/admin/admin.selectors';
-import { UserDetailsDialogComponent } from './user-details-dialog/user-details-dialog.component';
-import { Observable, Subject } from 'rxjs';
+import { UserDetailsDialogComponent } from '../user-details-dialog/user-details-dialog.component';
+import { Subject } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-// Material Imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -25,8 +19,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatBadgeModule } from '@angular/material/badge';
 
-// Models
 import { Parent } from '../../../core/models/parent.model';
 import { Child } from '../../../core/models/child.model';
 import { Admin } from '../../../core/models/admin.model';
@@ -47,6 +42,8 @@ import { Admin } from '../../../core/models/admin.model';
     MatMenuModule,
     MatDialogModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
+    MatBadgeModule,
   ],
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.css'],
@@ -56,7 +53,6 @@ export class UsersComponent implements OnInit, OnDestroy {
   protected AdminSelectors = AdminSelectors;
 
   displayedColumns: string[] = ['name', 'email', 'status', 'actions'];
-  searchResults: any[] = [];
   searchControl = new FormControl('');
   loading$ = this.store.select(AdminSelectors.selectAdminLoading);
   error$ = this.store.select(AdminSelectors.selectAdminError);
@@ -66,9 +62,13 @@ export class UsersComponent implements OnInit, OnDestroy {
   adminsDataSource = new MatTableDataSource<Admin>([]);
   bannedUsersDataSource = new MatTableDataSource<any>([]);
 
+  activeTabIndex = 0;
+  totalParents = 0;
+  totalChildren = 0;
+  totalBanned = 0;
+
   @ViewChild('parentsPaginator') parentsPaginator!: MatPaginator;
   @ViewChild('childrenPaginator') childrenPaginator!: MatPaginator;
-
   @ViewChild('bannedPaginator') bannedPaginator!: MatPaginator;
 
   constructor(private store: Store, private dialog: MatDialog) {
@@ -80,8 +80,8 @@ export class UsersComponent implements OnInit, OnDestroy {
       .select(AdminSelectors.selectParents)
       .pipe(takeUntil(this.destroy$))
       .subscribe((parents) => {
-        console.log('Parents data:', parents);
         this.parentsDataSource.data = parents;
+        this.totalParents = parents.length;
         if (this.parentsPaginator) {
           this.parentsDataSource.paginator = this.parentsPaginator;
         }
@@ -91,8 +91,8 @@ export class UsersComponent implements OnInit, OnDestroy {
       .select(AdminSelectors.selectChildren)
       .pipe(takeUntil(this.destroy$))
       .subscribe((children) => {
-        console.log('Children data:', children);
         this.childrenDataSource.data = children;
+        this.totalChildren = children.length;
         if (this.childrenPaginator) {
           this.childrenDataSource.paginator = this.childrenPaginator;
         }
@@ -102,8 +102,8 @@ export class UsersComponent implements OnInit, OnDestroy {
       .select(AdminSelectors.selectBannedUsers)
       .pipe(takeUntil(this.destroy$))
       .subscribe((users) => {
-        console.log('Banned users data:', users);
         this.bannedUsersDataSource.data = users || [];
+        this.totalBanned = users?.length || 0;
         if (this.bannedPaginator) {
           this.bannedUsersDataSource.paginator = this.bannedPaginator;
         }
@@ -116,10 +116,10 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((query) => {
-        if (query && query.trim()) {
-          this.searchLocally(query.trim().toLowerCase());
+        if (query) {
+          this.applyFilter(query);
         } else {
-          this.searchResults = [];
+          this.clearFilter();
         }
       });
   }
@@ -129,47 +129,37 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  searchLocally(query: string) {
-    const results: any[] = [];
+  applyFilter(filterValue: string) {
+    const filterValueLowercase = filterValue.trim().toLowerCase();
 
-    // Search in parents
-    this.parentsDataSource.data.forEach((parent) => {
-      const name = `${parent.name}`.toLowerCase();
-      if (name.includes(query)) {
-        results.push({
-          id: parent.id,
-          name: parent.name,
-          email: parent.email,
-          banned: parent.deleted,
-          userType: 'parent',
-        });
-      }
-    });
-
-    // Search in children
-    this.childrenDataSource.data.forEach((child) => {
-      const name = `${child.name}`.toLowerCase();
-      if (name.includes(query)) {
-        results.push({
-          id: child.id,
-          name: child.name,
-          email: child.email,
-          banned: child.deleted,
-          userType: 'child',
-        });
-      }
-    });
-
-    this.searchResults = results;
+    // Apply filter to the active tab's data source
+    switch (this.activeTabIndex) {
+      case 0: // Parents tab
+        this.parentsDataSource.filter = filterValueLowercase;
+        break;
+      case 1: // Children tab
+        this.childrenDataSource.filter = filterValueLowercase;
+        break;
+      case 2: // Banned users tab
+        this.bannedUsersDataSource.filter = filterValueLowercase;
+        break;
+    }
   }
 
-  clearSearch() {
+  clearFilter() {
     this.searchControl.setValue('');
-    this.searchResults = [];
+    this.parentsDataSource.filter = '';
+    this.childrenDataSource.filter = '';
+    this.bannedUsersDataSource.filter = '';
+  }
+
+  onTabChange(event: any) {
+    this.activeTabIndex = event.index;
+    // Clear filter when changing tabs
+    this.clearFilter();
   }
 
   banUser(userId: number) {
-    console.log('Banning user:', userId);
     this.store.dispatch(
       AdminActions.banUser({
         userId,
@@ -179,7 +169,6 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   unbanUser(userId: number) {
-    console.log('Unbanning user:', userId);
     this.store.dispatch(
       AdminActions.unbanUser({
         userId,
@@ -192,6 +181,7 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.dialog.open(UserDetailsDialogComponent, {
       width: '500px',
       data: user,
+      panelClass: 'custom-dialog-container',
     });
   }
 
@@ -199,5 +189,38 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.store.dispatch(AdminActions.loadParents());
     this.store.dispatch(AdminActions.loadChildren());
     this.store.dispatch(AdminActions.loadBannedUsers());
+  }
+
+  // Configure the filter predicate for each data source
+  setupFilterPredicates() {
+    this.parentsDataSource.filterPredicate = (data: Parent, filter: string) => {
+      return (
+        data.name.toLowerCase().includes(filter) ||
+        data.email.toLowerCase().includes(filter)
+      );
+    };
+
+    this.childrenDataSource.filterPredicate = (data: Child, filter: string) => {
+      return (
+        data.name.toLowerCase().includes(filter) ||
+        data.email.toLowerCase().includes(filter)
+      );
+    };
+
+    this.bannedUsersDataSource.filterPredicate = (
+      data: any,
+      filter: string
+    ) => {
+      return (
+        data.name?.toLowerCase().includes(filter) ||
+        data.email?.toLowerCase().includes(filter)
+      );
+    };
+  }
+
+  getStatusClass(banned: boolean): string {
+    return banned
+      ? 'bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium'
+      : 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium';
   }
 }

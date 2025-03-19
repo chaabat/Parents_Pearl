@@ -12,10 +12,12 @@ $primary-palette: (
   100: #ede9fe,
   200: #ddd6fe,
   300: #c4b5fd,
-  400: #9d4edd, // Lighter purple from your variables
+  400: #9d4edd,
+  // Lighter purple from your variables
   500: #7b2cbf,
   600: #5a189a,
-  700: #3f0d71, // Your current primary color
+  700: #3f0d71,
+  // Your current primary color
   800: #240046,
   900: #10002b,
   contrast: (
@@ -39,9 +41,11 @@ $accent-palette: (
   200: #ffe082,
   300: #ffd54f,
   400: #ffca28,
-  500: #ff9e00, // Your accent lighter color
+  500: #ff9e00,
+  // Your accent lighter color
   600: #ff8f00,
-  700: #ff6d00, // Your current accent color
+  700: #ff6d00,
+  // Your current accent color
   800: #ff5722,
   900: #e65100,
   contrast: (

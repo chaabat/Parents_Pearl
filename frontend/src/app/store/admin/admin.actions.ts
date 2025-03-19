@@ -126,3 +126,17 @@ export const updateSystemSettingsFailure = createAction(
   '[Admin] Update System Settings Failure',
   props<{ error: any }>()
 );
+
+export const loadAdminDashboard = createAction(
+  '[Admin] Load Dashboard'
+);
+
+export const loadAdminDashboardSuccess = createAction(
+  '[Admin] Load Dashboard Success',
+  props<{ data: any }>()
+);
+
+export const loadAdminDashboardFailure = createAction(
+  '[Admin] Load Dashboard Failure',
+  props<{ error: string }>()
+);

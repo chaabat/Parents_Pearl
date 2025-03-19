@@ -20,8 +20,14 @@ body {
   --mat-primary-color: #3f0d71; /* Deep purple */
   --mat-primary-lighter-color: #9d4edd;
   --mat-primary-darker-color: #240046;
-  --mat-primary-gradient: linear-gradient(135deg, #3f0d71, #3c096c, #5a189a, #7b2cbf);
-  
+  --mat-primary-gradient: linear-gradient(
+    135deg,
+    #3f0d71,
+    #3c096c,
+    #5a189a,
+    #7b2cbf
+  );
+
   /* Secondary/accent colors (Orange) */
   --mat-accent-color: #ff6d00;
   --mat-accent-lighter-color: #ff9e00;

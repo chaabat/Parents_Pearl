@@ -52,12 +52,7 @@
           {{ getChildStatus(child) }}
         </div>
         <div class="avatar-container">
-          <img
-            [src]="getImageUrl(child.picture)"
-            [alt]="child.name"
-            class="avatar"
-            (error)="onImageError($event)"
-          />
+          <img [src]="getImageUrl(child?.picture)" (error)="onImageError($event)" alt="Child Picture">
         </div>
       </div>
 
@@ -509,3 +504,5 @@
     </mat-dialog-actions>
   </ng-template>
 </div>
+
+<input type="file" (change)="handleFileInput($event)" />

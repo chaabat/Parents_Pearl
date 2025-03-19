@@ -52,21 +52,7 @@ export class AdminEffects {
     )
   );
 
-  loadAdmins$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(AdminActions.loadAdmins),
-      mergeMap(() =>
-        this.adminService.getAllAdmins().pipe(
-          tap((response) => console.log('Admins API Response:', response)),
-          map((admins) => AdminActions.loadAdminsSuccess({ admins })),
-          catchError((error) => {
-            console.error('Admins API Error:', error);
-            return of(AdminActions.loadAdminsFailure({ error: error.message }));
-          })
-        )
-      )
-    )
-  );
+  
 
   banUser$ = createEffect(() =>
     this.actions$.pipe(
@@ -155,7 +141,7 @@ export class AdminEffects {
       mergeMap(() => [
         AdminActions.loadParents(),
         AdminActions.loadChildren(),
-        AdminActions.loadAdmins(),
+       
         AdminActions.loadBannedUsers(),
         AdminActions.loadSystemStats(),
       ])
