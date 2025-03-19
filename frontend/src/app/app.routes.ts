@@ -45,7 +45,7 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'parent/profil',
+        path: 'profil',
         loadComponent: () =>
           import('./features/parent/profil/profil.component').then(
             (m) => m.ProfilComponent

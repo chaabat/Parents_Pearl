@@ -1,4 +1,4 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
@@ -28,6 +28,6 @@ export const appConfig: ApplicationConfig = {
       admin: adminReducer,
     }),
     provideEffects([AuthEffects, ParentEffects, ChildEffects, AdminEffects]),
-    provideStoreDevtools({ maxAge: 25 }),
+    provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],
 };
