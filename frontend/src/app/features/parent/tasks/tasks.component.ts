@@ -19,6 +19,9 @@ import {
   Validators,
   ReactiveFormsModule,
   FormControl,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
 } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Task, TaskStatus, TaskType } from '../../../core/models/task.model';
@@ -125,7 +128,13 @@ export class TasksComponent implements OnInit, OnDestroy {
       description: ['', Validators.required],
       pointValue: [0, [Validators.required, Validators.min(0)]],
       taskType: [TaskType.MAZE, Validators.required],
-      dueDate: [null, Validators.required],
+      dueDate: [
+        null,
+        [
+          Validators.required,
+          this.futureDateValidator(),  
+        ],
+      ],
       choices: [''],
       correctAnswer: ['', Validators.required],
       childId: [null, Validators.required],
@@ -143,11 +152,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
     // Replace the search subscription in ngOnInit
     this.searchControl.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        takeUntil(this.destroy$)
-      )
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((keyword) => {
         if (!keyword || keyword.length < 2) {
           // Reset to original tasks
@@ -155,16 +160,18 @@ export class TasksComponent implements OnInit, OnDestroy {
             this.store.dispatch(
               ParentActions.loadTasks({
                 parentId: this.parentId,
-                status: this.currentFilter === 'ALL' ? undefined : this.currentFilter,
+                status:
+                  this.currentFilter === 'ALL' ? undefined : this.currentFilter,
               })
             );
           }
         } else {
           // Filter tasks locally
-          this.store.select(ParentSelectors.selectTasks)
+          this.store
+            .select(ParentSelectors.selectTasks)
             .pipe(take(1))
-            .subscribe(tasks => {
-              const filteredTasks = tasks.filter(task => 
+            .subscribe((tasks) => {
+              const filteredTasks = tasks.filter((task) =>
                 task.title.toLowerCase().includes(keyword.toLowerCase())
               );
               this.dataSource.data = filteredTasks;
@@ -634,5 +641,39 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   clearSearch() {
     this.searchControl.setValue('');
+  }
+
+  // Custom validator for future dates
+  private futureDateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) {
+        return null;
+      }
+
+      const selectedDate = new Date(control.value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);  
+
+      if (selectedDate < today) {
+        return { pastDate: true };
+      }
+
+      return null;
+    };
+  }
+
+  // Add this to your getErrorMessage method
+  getErrorMessage(controlName: string): string {
+    const control = this.taskForm.get(controlName);
+    if (control?.hasError('required')) {
+      return `${
+        controlName.charAt(0).toUpperCase() + controlName.slice(1)
+      } is required`;
+    }
+    if (control?.hasError('pastDate')) {
+      return 'Due date must be in the future';
+    }
+    // ... other error messages
+    return '';
   }
 }

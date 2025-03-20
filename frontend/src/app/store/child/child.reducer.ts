@@ -65,7 +65,7 @@ export const childReducer = createReducer(
     profile: state.profile
       ? {
           ...state.profile,
-          totalPoints: (state.profile.totalPoints || 0) - redemption.pointCost,
+          totalPoints: (state.profile.totalPoints || 0) - redemption.points_spent,
         }
       : null,
     loading: false,

@@ -9,7 +9,7 @@ import * as ChildSelectors from '../../../store/child/child.selectors';
 import * as AuthSelectors from '../../../store/auth/auth.selectors';
 import { Reward, RewardRedemption } from '../../../core/models';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { take, tap } from 'rxjs/operators';
+import { take } from 'rxjs/operators';
 import { CustomDatePipe } from '../../../pipe/date.pipe';
 
 interface RewardDetails {
@@ -57,81 +57,118 @@ export class ChildRewardsComponent implements OnInit {
       .pipe(take(1))
       .subscribe((user) => {
         if (user?.id) {
-          // Load child profile and rewards data
-          this.store.dispatch(ChildActions.loadChildProfile({ childId: user.id }));
+          console.log('Loading data for child:', user.id);
+          this.store.dispatch(
+            ChildActions.loadChildProfile({ childId: user.id })
+          );
           this.store.dispatch(ChildActions.loadRewards({ childId: user.id }));
-          this.store.dispatch(ChildActions.loadRedemptions({ childId: user.id }));
+          this.store.dispatch(
+            ChildActions.loadRedemptions({ childId: user.id })
+          );
         }
       });
 
-    // Debug logging
-    this.redemptions$.subscribe(redemptions => {
-      console.log('Raw redemptions:', redemptions);
-      if (redemptions && redemptions.length > 0) {
-        redemptions.forEach(redemption => {
-          console.log('Redemption:', {
-            id: redemption.id,
-            rewardId: redemption.rewardId,
-            date: redemption.redemptionDate,
-            formattedDate: this.formatDate(redemption.redemptionDate)
-          });
-        });
-      }
-    });
-
-    // Debug rewards
-    this.rewards$.subscribe(rewards => {
-      console.log('Available rewards:', rewards);
+    // Debug subscriptions
+    this.redemptions$.subscribe((redemptions) => {
+      console.log('Current redemptions:', redemptions);
     });
   }
 
-  getRewardName(rewardId: number): Observable<string> {
-    return this.store.select(ChildSelectors.selectChildRewards).pipe(
-      map((rewards) => {
-        const reward = rewards.find((r) => r.id === rewardId);
-        return reward?.name || 'Unknown Reward';
-      })
-    );
+  getRewardName(redemption: RewardRedemption): string {
+    return redemption.reward?.name || 'Unknown Reward';
   }
+
   redeemReward(reward: Reward): void {
     if (this.isRewardRedeemed(reward.id)) {
       this.snackBar.open('Reward already redeemed', 'Close', {
         duration: 3000,
+        panelClass: ['bg-purple-700', 'text-white'],
       });
       return;
     }
 
-    const confirmed = confirm(
-      `Are you sure you want to redeem ${reward.name} for ${reward.pointCost} points?`
-    );
+    // Check if user has enough points
+    this.totalPoints$.pipe(take(1)).subscribe((points) => {
+      if (points < reward.pointCost) {
+        this.snackBar.open(
+          `Not enough points. You need ${
+            reward.pointCost - points
+          } more points.`,
+          'Close',
+          {
+            duration: 4000,
+            panelClass: ['bg-red-600', 'text-white'],
+          }
+        );
+        return;
+      }
 
-    if (confirmed) {
-      this.store.dispatch(ChildActions.redeemReward({ rewardId: reward.id }));
-    }
+      // Confirm redemption
+      const confirmed = confirm(
+        `Are you sure you want to redeem "${reward.name}" for ${reward.pointCost} points?`
+      );
+
+      if (confirmed) {
+        this.store.dispatch(ChildActions.redeemReward({ rewardId: reward.id }));
+
+        // Show success message
+        this.snackBar.open(
+          `Successfully redeemed "${reward.name}"!`,
+          'Awesome!',
+          {
+            duration: 5000,
+            panelClass: ['bg-green-600', 'text-white'],
+          }
+        );
+      }
+    });
   }
 
-  formatDate(dateString: string | Date | undefined): string {
-    if (!dateString) {
-      console.log('Missing date for redemption');
+  formatDate(date: string | null): string {
+    if (!date) {
+      console.log('No date provided');
       return 'Recently redeemed';
     }
 
     try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        console.log('Invalid date format:', dateString);
+      console.log('Formatting date:', date);
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        console.log('Invalid date:', date);
         return 'Recently redeemed';
       }
 
-      return new Intl.DateTimeFormat('en-US', {
+      const now = new Date();
+      const diff = now.getTime() - dateObj.getTime();
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+
+      if (minutes < 60) {
+        return minutes <= 1 ? 'Just now' : `${minutes} minutes ago`;
+      }
+
+      if (hours < 24) {
+        return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+      }
+
+      if (days < 7) {
+        return dateObj.toLocaleDateString('en-US', {
+          weekday: 'long',
+          hour: 'numeric',
+          minute: 'numeric',
+        });
+      }
+
+      return dateObj.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(date);
+        hour: 'numeric',
+        minute: 'numeric',
+      });
     } catch (error) {
-      console.error('Error formatting date:', error, 'for date:', dateString);
+      console.error('Error formatting date:', error);
       return 'Recently redeemed';
     }
   }
@@ -142,13 +179,17 @@ export class ChildRewardsComponent implements OnInit {
 
   getRewardDetails(redemption: RewardRedemption): Observable<RewardDetails> {
     return this.store.select(ChildSelectors.selectChildRewards).pipe(
-      map(rewards => {
-        const reward = rewards.find(r => r.id === redemption.rewardId);
+      map((rewards) => {
+        const reward = rewards.find((r) => r.id === redemption.rewardId);
         return {
           name: reward?.name || 'Unknown Reward',
-          points: redemption.pointCost
+          points: redemption.points_spent,
         };
       })
     );
+  }
+
+  getPointCost(redemption: RewardRedemption): number {
+    return redemption.points_spent;
   }
 }

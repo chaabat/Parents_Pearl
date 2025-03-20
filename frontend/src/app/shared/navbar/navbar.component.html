@@ -58,18 +58,7 @@
         <span>Profile</span>
       </button>
 
-      <!-- Show points for CHILD only -->
-      <div class="flex items-center" *ngIf="(user$ | async)?.role === 'CHILD'">
-        <mat-icon class="text-accent mr-2">stars</mat-icon>
-        <span class="text-sm font-medium text-purple-600">
-          <ng-container *ngIf="totalPoints$ | async as points; else loading">
-            {{ points }} points
-          </ng-container>
-          <ng-template #loading>
-            <mat-spinner diameter="16"></mat-spinner>
-          </ng-template>
-        </span>
-      </div>
+       
 
       <mat-divider></mat-divider>
       <button mat-menu-item (click)="logout()">

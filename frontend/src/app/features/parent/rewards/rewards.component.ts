@@ -34,7 +34,6 @@ import {
   MatPaginatorModule,
   PageEvent,
 } from '@angular/material/paginator';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-rewards',
@@ -48,7 +47,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatButtonModule,
     MatIconModule,
     MatPaginatorModule,
-    MatTooltipModule,
   ],
   templateUrl: './rewards.component.html',
   styleUrls: ['./rewards.component.css'],
@@ -81,7 +79,10 @@ export class RewardsComponent implements OnInit, AfterViewInit {
   rewardForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
     description: ['', [Validators.required, Validators.minLength(5)]],
-    pointCost: [0, [Validators.required, Validators.min(1), Validators.max(1000)]]
+    pointCost: [
+      0,
+      [Validators.required, Validators.min(1), Validators.max(1000)],
+    ],
   });
 
   parentId: number | undefined;

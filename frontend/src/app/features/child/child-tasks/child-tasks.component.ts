@@ -133,7 +133,7 @@ export class ChildTaskComponent implements OnInit, OnDestroy {
           // Show notification for failed task
           this.failedTaskTitle = task.title;
           this.snackBar.openFromTemplate(this.failedTaskNotification, {
-            duration: 5000,
+            duration: 1000,
             panelClass: ['warning-snackbar'],
           });
 
@@ -156,10 +156,7 @@ export class ChildTaskComponent implements OnInit, OnDestroy {
   updateTaskStatusOnServer(taskId: number, status: string): void {
     if (!this.childId) return;
 
-     
     console.log(`Updating task ${taskId} to status ${status}`);
-
-  
   }
 
   /**

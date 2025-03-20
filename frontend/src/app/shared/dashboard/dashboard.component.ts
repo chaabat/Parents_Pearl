@@ -412,8 +412,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         recentRedemptions.forEach((redemption) => {
           this.recentActivities.push({
             type: "reward_redeemed",
-            description: `You redeemed a reward for ${redemption.pointCost} points`,
-            time: this.getRelativeTime(new Date(redemption.redemptionDate)),
+            description: `You redeemed a reward for ${redemption.points_spent} points`,
+            time: this.getRelativeTime(new Date(redemption.redeemed_at || new Date())),
             icon: "redeem",
           })
         })

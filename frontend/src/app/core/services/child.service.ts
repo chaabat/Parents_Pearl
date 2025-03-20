@@ -162,12 +162,19 @@ export class ChildService {
   }
 
   getRedemptionHistory(childId: number): Observable<RewardRedemption[]> {
-    return this.http.get<RewardRedemption[]>(
-      `${this.apiUrl}/children/${childId}/rewards/history`,
-      {
-        headers: this.getAuthHeaders(),
-      }
-    );
+    console.log(`Fetching redemption history for child ${childId}`);
+    return this.http
+      .get<RewardRedemption[]>(
+        `${this.apiUrl}/children/${childId}/rewards/history`,
+        {
+          headers: this.getAuthHeaders(),
+        }
+      )
+      .pipe(
+        tap((redemptions) => {
+          console.log('Received redemptions:', redemptions);
+        })
+      );
   }
 
   getChildRewards(childId: number): Observable<Reward[]> {
