@@ -1,120 +1,157 @@
 /* rewards.component.css */
 .mat-tab-label {
-    min-width: 120px;
-  }
-  
-  .line-clamp-1 {
-    display: -webkit-box;
-    
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  
-  .line-clamp-2 {
-    display: -webkit-box;
-     
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  
-  .success-snackbar {
-    background-color: #4caf50;
-    color: white;
-  }
-  
-  /* Card hover effects */
-  .gift-card {
-    transition: all 0.3s ease;
-  }
-  
-  .gift-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  }
-  
-  /* Custom scrollbar for dialogs */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
-  
-  /* Animation for the gift icon */
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.1);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-  
-  .pulse-icon {
-    animation: pulse 2s infinite;
-  }
+  min-width: 120px;
+}
 
-  /* Card hover effect */
-  mat-card {
-    border-radius: 1rem;
-    overflow: hidden;
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.success-snackbar {
+  background-color: #4caf50;
+  color: white;
+}
+
+.error-snackbar {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Animated blobs */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
   }
-  
-  mat-card:hover {
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
   }
-  
-  /* Gradient animation */
-  .bg-gradient-to-r {
-    background-size: 200% 200%;
-    animation: gradient 15s ease infinite;
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
   }
-  
-  @keyframes gradient {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
+  100% {
+    transform: translate(0px, 0px) scale(1);
   }
-  
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 4px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: #666;
-  }
-  
-  /* Pagination styling */
-  .mat-paginator {
-    border-radius: 0.5rem;
-  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Dialog styles */
+.reward-dialog .mat-dialog-container {
+  padding: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.delete-dialog .mat-dialog-container {
+  padding: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+/* Make mat-icon larger in some contexts */
+.text-4xl.mat-icon {
+  font-size: 36px;
+  height: 36px;
+  width: 36px;
+}
+
+.text-5xl.mat-icon {
+  font-size: 48px;
+  height: 48px;
+  width: 48px;
+}
+
+.text-6xl.mat-icon {
+  font-size: 60px;
+  height: 60px;
+  width: 60px;
+}
+
+/* Fix for mat-card in grid layout */
+mat-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+mat-card-content {
+  flex-grow: 1;
+}
+
+/* Dark mode support */
+.dark .mat-paginator {
+  background: transparent;
+  color: white;
+}
+
+.dark .mat-paginator-page-size-label,
+.dark .mat-paginator-range-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .mat-form-field-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .mat-form-field-underline {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark .mat-form-field-ripple {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.dark .mat-input-element {
+  color: white;
+}
+
+.dark .mat-select-value {
+  color: white;
+}
+
+.dark .mat-select-arrow {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .mat-checkbox-frame {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+

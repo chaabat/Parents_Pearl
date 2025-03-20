@@ -22,14 +22,16 @@
           <mat-icon class="mr-2">add_circle</mat-icon>
           Create New Task
         </button>
-        
+
         <button
           mat-stroked-button
           class="border-white text-white hover:bg-white/10 transition-colors duration-200"
           (click)="toggleViewMode()"
         >
-          <mat-icon class="mr-2">{{ viewMode === 'table' ? 'grid_view' : 'view_list' }}</mat-icon>
-          {{ viewMode === 'table' ? 'Card View' : 'Table View' }}
+          <mat-icon class="mr-2">{{
+            viewMode === "table" ? "grid_view" : "view_list"
+          }}</mat-icon>
+          {{ viewMode === "table" ? "Card View" : "Table View" }}
         </button>
       </div>
     </div>
@@ -39,9 +41,7 @@
   <div
     class="bg-white rounded-xl shadow p-4 mb-6 transition-all duration-300 hover:shadow-md"
   >
-    <div
-      class="flex flex-col md:flex-row justify-between items-center gap-4"
-    >
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
       <!-- Search Field -->
       <div class="relative w-full md:w-96">
         <div class="relative">
@@ -51,8 +51,10 @@
             placeholder="Search tasks by title or description..."
             class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
           />
-          <mat-icon class="absolute left-3 top-2 text-gray-400">search</mat-icon>
-          <button 
+          <mat-icon class="absolute left-3 top-2 text-gray-400"
+            >search</mat-icon
+          >
+          <button
             *ngIf="searchControl.value"
             (click)="clearSearch()"
             class="absolute right-3 top-2 text-gray-400 hover:text-gray-600"
@@ -74,15 +76,31 @@
           *ngFor="let status of taskStatus"
           (click)="filterTasks(status)"
           class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
-          [ngClass]="currentFilter === status ? 
-            'bg-white text-indigo-700 shadow-sm' : 
-            'text-gray-600 hover:bg-gray-200'"
+          [ngClass]="
+            currentFilter === status
+              ? 'bg-white text-indigo-700 shadow-sm'
+              : 'text-gray-600 hover:bg-gray-200'
+          "
         >
           <ng-container [ngSwitch]="status">
-            <mat-icon *ngSwitchCase="'ALL'" class="mr-1 text-sm align-middle">all_inclusive</mat-icon>
-            <mat-icon *ngSwitchCase="'PENDING'" class="mr-1 text-sm align-middle text-yellow-500">pending</mat-icon>
-            <mat-icon *ngSwitchCase="'COMPLETED'" class="mr-1 text-sm align-middle text-green-500">check_circle</mat-icon>
-            <mat-icon *ngSwitchCase="'FAILED'" class="mr-1 text-sm align-middle text-red-500">error</mat-icon>
+            <mat-icon *ngSwitchCase="'ALL'" class="mr-1 text-sm align-middle"
+              >all_inclusive</mat-icon
+            >
+            <mat-icon
+              *ngSwitchCase="'PENDING'"
+              class="mr-1 text-sm align-middle text-yellow-500"
+              >pending</mat-icon
+            >
+            <mat-icon
+              *ngSwitchCase="'COMPLETED'"
+              class="mr-1 text-sm align-middle text-green-500"
+              >check_circle</mat-icon
+            >
+            <mat-icon
+              *ngSwitchCase="'FAILED'"
+              class="mr-1 text-sm align-middle text-red-500"
+              >error</mat-icon
+            >
           </ng-container>
           {{ status }}
         </button>
@@ -97,16 +115,26 @@
 
   <!-- No Tasks Message -->
   <div
-    *ngIf="(dataSource.data.length === 0 && !(loading$ | async))"
+    *ngIf="dataSource.data.length === 0 && !(loading$ | async)"
     class="bg-white rounded-xl shadow p-8 text-center"
   >
     <div class="flex flex-col items-center">
-      <div class="w-32 h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-6">
-        <mat-icon class="text-indigo-400" style="font-size: 64px; width: 64px; height: 64px;">assignment</mat-icon>
+      <div
+        class="w-32 h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-6"
+      >
+        <mat-icon
+          class="text-indigo-400"
+          style="font-size: 64px; width: 64px; height: 64px"
+          >assignment</mat-icon
+        >
       </div>
       <h3 class="text-xl font-semibold text-gray-700 mb-2">No tasks found</h3>
       <p class="text-gray-500 mb-6 max-w-md">
-        {{ searchControl.value ? 'No tasks match your search criteria. Try a different search term.' : 'Create educational tasks for children to complete and earn points.' }}
+        {{
+          searchControl.value
+            ? "No tasks match your search criteria. Try a different search term."
+            : "Create educational tasks for children to complete and earn points."
+        }}
       </p>
       <button
         mat-raised-button
@@ -121,14 +149,22 @@
 
   <!-- Table View -->
   <div
-    *ngIf="viewMode === 'table' && dataSource.data.length > 0 && !(loading$ | async)"
+    *ngIf="
+      viewMode === 'table' && dataSource.data.length > 0 && !(loading$ | async)
+    "
     class="bg-white rounded-xl shadow-md overflow-hidden"
   >
     <div class="overflow-x-auto">
       <table mat-table [dataSource]="dataSource" class="w-full">
         <!-- Title Column -->
         <ng-container matColumnDef="title">
-          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Title</th>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="font-semibold text-gray-700 px-6 py-4"
+          >
+            Title
+          </th>
           <td mat-cell *matCellDef="let task" class="px-6 py-4">
             <div class="flex items-center">
               <div
@@ -142,15 +178,29 @@
 
         <!-- Description Column -->
         <ng-container matColumnDef="description">
-          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Description</th>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="font-semibold text-gray-700 px-6 py-4"
+          >
+            Description
+          </th>
           <td mat-cell *matCellDef="let task" class="px-6 py-4">
-            <div class="text-gray-600 max-w-xs truncate">{{ task.description }}</div>
+            <div class="text-gray-600 max-w-xs truncate">
+              {{ task.description }}
+            </div>
           </td>
         </ng-container>
 
         <!-- Points Column -->
         <ng-container matColumnDef="pointValue">
-          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Points</th>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="font-semibold text-gray-700 px-6 py-4"
+          >
+            Points
+          </th>
           <td mat-cell *matCellDef="let task" class="px-6 py-4">
             <div class="flex items-center">
               <mat-icon class="text-amber-500 mr-1 text-sm">stars</mat-icon>
@@ -161,14 +211,22 @@
 
         <!-- Task Type Column -->
         <ng-container matColumnDef="taskType">
-          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Type</th>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="font-semibold text-gray-700 px-6 py-4"
+          >
+            Type
+          </th>
           <td mat-cell *matCellDef="let task" class="px-6 py-4">
             <div class="flex items-center">
               <span
                 class="px-2 py-1 rounded-full text-xs font-medium flex items-center"
                 [ngClass]="getTaskTypeClass(task.taskType)"
               >
-                <mat-icon class="mr-1 text-sm">{{ getTaskTypeIcon(task.taskType) }}</mat-icon>
+                <mat-icon class="mr-1 text-sm">{{
+                  getTaskTypeIcon(task.taskType)
+                }}</mat-icon>
                 {{ task.taskType }}
               </span>
             </div>
@@ -177,7 +235,13 @@
 
         <!-- Status Column -->
         <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Status</th>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="font-semibold text-gray-700 px-6 py-4"
+          >
+            Status
+          </th>
           <td mat-cell *matCellDef="let task" class="px-6 py-4">
             <span
               [ngClass]="getStatusColor(task.status)"
@@ -193,7 +257,13 @@
 
         <!-- Due Date Column -->
         <ng-container matColumnDef="dueDate">
-          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Due Date</th>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="font-semibold text-gray-700 px-6 py-4"
+          >
+            Due Date
+          </th>
           <td mat-cell *matCellDef="let task" class="px-6 py-4">
             <div
               class="flex items-center"
@@ -209,13 +279,21 @@
 
         Actions Column
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Actions</th>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="font-semibold text-gray-700 px-6 py-4"
+          >
+            Actions
+          </th>
           <td mat-cell *matCellDef="let task" class="px-6 py-4">
             <div class="flex items-center space-x-1">
               <button
                 mat-icon-button
                 color="primary"
-                (click)="editTask(task, editTaskDialog); $event.stopPropagation()"
+                (click)="
+                  editTask(task, editTaskDialog); $event.stopPropagation()
+                "
                 matTooltip="Edit Task"
                 class="text-indigo-600 hover:text-indigo-800"
               >
@@ -233,21 +311,25 @@
               <button
                 mat-icon-button
                 color="warn"
-                (click)="deleteTask(task, deleteTaskDialog); $event.stopPropagation()"
+                (click)="
+                  deleteTask(task, deleteTaskDialog); $event.stopPropagation()
+                "
                 matTooltip="Delete Task"
                 class="text-red-600 hover:text-red-800"
               >
                 <mat-icon>delete</mat-icon>
               </button>
-               
 
               <!-- Task Action Menu -->
-         
             </div>
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns" class="bg-gray-50"></tr>
+        <tr
+          mat-header-row
+          *matHeaderRowDef="displayedColumns"
+          class="bg-gray-50"
+        ></tr>
         <tr
           mat-row
           *matRowDef="let row; columns: displayedColumns"
@@ -267,7 +349,9 @@
 
   <!-- Card View -->
   <div
-    *ngIf="viewMode === 'card' && dataSource.data.length > 0 && !(loading$ | async)"
+    *ngIf="
+      viewMode === 'card' && dataSource.data.length > 0 && !(loading$ | async)
+    "
     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
   >
     <div
@@ -283,7 +367,9 @@
             class="px-2 py-1 rounded-full text-xs font-medium"
             [ngClass]="getStatusClass(task.status)"
           >
-            <mat-icon class="text-sm mr-1 align-middle">{{ getStatusIcon(task.status) }}</mat-icon>
+            <mat-icon class="text-sm mr-1 align-middle">{{
+              getStatusIcon(task.status)
+            }}</mat-icon>
             {{ task.status }}
           </span>
         </div>
@@ -300,7 +386,9 @@
             class="px-2 py-1 rounded-full text-xs font-medium flex items-center"
             [ngClass]="getTaskTypeClass(task.taskType)"
           >
-            <mat-icon class="mr-1 text-sm">{{ getTaskTypeIcon(task.taskType) }}</mat-icon>
+            <mat-icon class="mr-1 text-sm">{{
+              getTaskTypeIcon(task.taskType)
+            }}</mat-icon>
             {{ task.taskType }}
           </span>
         </div>
@@ -313,7 +401,7 @@
             <mat-icon class="text-sm mr-1">event</mat-icon>
             <span>Due: {{ task.dueDate | date : "MMM d, y" }}</span>
           </div>
-          
+
           <div class="flex items-center text-gray-600">
             <mat-icon class="text-sm mr-1">person</mat-icon>
             <span>{{ getChildName(task.childId) }}</span>
@@ -321,7 +409,10 @@
         </div>
 
         <!-- Multiple Choice Preview -->
-        <div *ngIf="task.choices && task.choices.length > 0" class="bg-gray-50 p-3 rounded-lg mb-4">
+        <div
+          *ngIf="task.choices && task.choices.length > 0"
+          class="bg-gray-50 p-3 rounded-lg mb-4"
+        >
           <div class="text-sm font-medium text-gray-700 mb-2">
             Answer Choices:
           </div>
@@ -329,10 +420,16 @@
             <div
               *ngFor="let choice of getChoicesArray(task.choices)"
               class="bg-white p-2 rounded border border-gray-200 text-sm text-center"
-              [ngClass]="{'bg-green-50 border-green-300': choice === task.correctAnswer}"
+              [ngClass]="{
+                'bg-green-50 border-green-300': choice === task.correctAnswer
+              }"
             >
               {{ choice }}
-              <mat-icon *ngIf="choice === task.correctAnswer" class="text-green-500 text-sm">check_circle</mat-icon>
+              <mat-icon
+                *ngIf="choice === task.correctAnswer"
+                class="text-green-500 text-sm"
+                >check_circle</mat-icon
+              >
             </div>
           </div>
         </div>
@@ -357,13 +454,13 @@
           <button
             mat-icon-button
             color="warn"
-            (click)="deleteTask(task, deleteTaskDialog); $event.stopPropagation()"
+            (click)="
+              deleteTask(task, deleteTaskDialog); $event.stopPropagation()
+            "
             class="text-red-600 hover:text-red-800"
           >
             <mat-icon>delete</mat-icon>
           </button>
-           
-           
         </div>
       </div>
     </div>
@@ -1255,10 +1352,19 @@
         </p>
       </mat-dialog-content>
       <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded">
+        <button
+          mat-button
+          mat-dialog-close
+          class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded"
+        >
           Cancel
         </button>
-        <button mat-raised-button color="warn" [mat-dialog-close]="true" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+        <button
+          mat-raised-button
+          color="warn"
+          [mat-dialog-close]="true"
+          class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
+        >
           Delete
         </button>
       </mat-dialog-actions>
@@ -1268,19 +1374,26 @@
   <!-- Task Details Dialog -->
   <ng-template #taskDetailsDialog>
     <div *ngIf="selectedTask" class="p-6">
-      <h2 mat-dialog-title class="text-2xl font-bold text-indigo-700 flex items-center gap-2 mb-6">
+      <h2
+        mat-dialog-title
+        class="text-2xl font-bold text-indigo-700 flex items-center gap-2 mb-6"
+      >
         <mat-icon>visibility</mat-icon> Task Details
       </h2>
       <mat-dialog-content>
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
           <!-- Task Header -->
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-bold text-gray-800">{{ selectedTask.title }}</h3>
+            <h3 class="text-xl font-bold text-gray-800">
+              {{ selectedTask.title }}
+            </h3>
             <span
               class="px-3 py-1 rounded-full text-sm font-medium"
               [ngClass]="getStatusClass(selectedTask?.status)"
             >
-              <mat-icon class="mr-1 text-sm align-middle">{{ getStatusIcon(selectedTask.status) }}</mat-icon>
+              <mat-icon class="mr-1 text-sm align-middle">{{
+                getStatusIcon(selectedTask.status)
+              }}</mat-icon>
               {{ selectedTask?.status }}
             </span>
           </div>
@@ -1291,7 +1404,9 @@
               class="px-3 py-1 rounded-full text-sm font-medium inline-flex items-center"
               [ngClass]="getTaskTypeClass(selectedTask.taskType)"
             >
-              <mat-icon class="mr-1 text-sm">{{ getTaskTypeIcon(selectedTask.taskType) }}</mat-icon>
+              <mat-icon class="mr-1 text-sm">{{
+                getTaskTypeIcon(selectedTask.taskType)
+              }}</mat-icon>
               {{ selectedTask.taskType }}
             </span>
           </div>
@@ -1299,7 +1414,11 @@
           <!-- Description -->
           <div class="mb-6">
             <h4 class="text-sm font-medium text-gray-500 mb-2">Description</h4>
-            <p class="text-gray-700 bg-white p-4 rounded-lg border border-gray-200">{{ selectedTask.description }}</p>
+            <p
+              class="text-gray-700 bg-white p-4 rounded-lg border border-gray-200"
+            >
+              {{ selectedTask.description }}
+            </p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -1332,7 +1451,10 @@
               <h4 class="text-sm font-medium text-gray-500 mb-2">
                 Assigned To
               </h4>
-              <div class="flex items-center text-lg text-gray-700" *ngIf="selectedTask?.childId">
+              <div
+                class="flex items-center text-lg text-gray-700"
+                *ngIf="selectedTask?.childId"
+              >
                 <mat-icon class="mr-2">person</mat-icon>
                 {{ getChildName(selectedTask?.childId) }}
               </div>
@@ -1380,9 +1502,11 @@
               </span>
             </div>
           </div>
-          
+
           <!-- Action Buttons -->
-          <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+          <div
+            class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200"
+          >
             <button
               mat-stroked-button
               color="primary"
@@ -1391,15 +1515,18 @@
             >
               <mat-icon class="mr-2">edit</mat-icon> Edit Task
             </button>
-          
-           
           </div>
         </div>
       </mat-dialog-content>
       <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded">Close</button>
+        <button
+          mat-button
+          mat-dialog-close
+          class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded"
+        >
+          Close
+        </button>
       </mat-dialog-actions>
     </div>
   </ng-template>
 </div>
-

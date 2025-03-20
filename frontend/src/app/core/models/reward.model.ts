@@ -4,4 +4,5 @@ export interface Reward {
   description: string;
   pointCost: number;
   parentId: number;
+  gradient?: string;
 }

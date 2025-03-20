@@ -203,19 +203,19 @@
       </h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <button mat-raised-button color="primary" class="p-4" routerLink="/admin/users">
-          <mat-icon>people</mat-icon>
+          <mat-icon class="white">people</mat-icon>
           <span class="block mt-2">User Management</span>
         </button>
-        <button mat-raised-button color="accent" class="p-4" routerLink="/admin/profile">
-          <mat-icon>person</mat-icon>
+        <button mat-raised-button color="accent" class="p-4" routerLink="/profile">
+          <mat-icon class="white">person</mat-icon>
           <span class="block mt-2">Profile</span>
         </button>
         <button mat-raised-button color="warn" class="p-4" routerLink="/admin/reports">
-          <mat-icon>assessment</mat-icon>
+          <mat-icon class="white">assessment</mat-icon>
           <span class="block mt-2">Reports</span>
         </button>
         <button mat-raised-button class="p-4" routerLink="/admin/settings">
-          <mat-icon>settings</mat-icon>
+          <mat-icon class="white">settings</mat-icon>
           <span class="block mt-2">System Settings</span>
         </button>
       </div>
@@ -387,20 +387,20 @@
         </h2>
         <div class="grid grid-cols-2 gap-4">
           <button mat-raised-button color="primary" class="p-4" [routerLink]="['/parent/tasks']">
-            <mat-icon>add_circle</mat-icon>
-            <span class="block mt-2">New Task</span>
+            <mat-icon class="white">add_circle</mat-icon>
+            <span class="white">New Task</span>
           </button>
           <button mat-raised-button color="accent" class="p-4" [routerLink]="['/parent/rewards']">
-            <mat-icon>card_giftcard</mat-icon>
-            <span class="block mt-2">Add Reward</span>
+            <mat-icon class="primary">card_giftcard</mat-icon>
+            <span class="white">Add Reward</span>
           </button>
           <button mat-raised-button color="warn" class="p-4" [routerLink]="['/parent/children']">
-            <mat-icon>person_add</mat-icon>
-            <span class="block mt-2">Add Child</span>
+            <mat-icon class="white">person_add</mat-icon>
+            <span class="white">Add Child</span>
           </button>
-          <button mat-raised-button class="p-4" [routerLink]="['/parent/profil']">
-            <mat-icon>assessment</mat-icon>
-            <span class="block mt-2">Profile</span>
+          <button mat-raised-button class="p-4" [routerLink]="['/profil']">
+            <mat-icon class="primary">assessment</mat-icon>
+            <span class="white">Profile</span>
           </button>
         </div>
       </div>

@@ -108,12 +108,23 @@ export class ParentService {
   }
 
   searchTasks(parentId: number, keyword: string): Observable<Task[]> {
-    return this.http.get<Task[]>(
-      `${this.apiUrl}/parents/${parentId}/tasks/search?keyword=${keyword}`,
-      {
+    const url = `${
+      this.apiUrl
+    }/parents/${parentId}/tasks/search?keyword=${encodeURIComponent(keyword)}`;
+    console.log('Searching tasks with:', { parentId, keyword });
+    console.log('Search URL:', url);
+
+    return this.http
+      .get<Task[]>(url, {
         headers: this.getAuthHeaders(),
-      }
-    );
+      })
+      .pipe(
+        tap((response) => console.log('Search response:', response)),
+        catchError((error) => {
+          console.error('Search error:', error);
+          throw error;
+        })
+      );
   }
 
   private getAuthHeaders(): HttpHeaders {
