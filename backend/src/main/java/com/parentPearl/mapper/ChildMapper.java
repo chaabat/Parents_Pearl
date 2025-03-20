@@ -19,7 +19,6 @@ public interface ChildMapper {
     @Mapping(target = "rewardRedemptions", ignore = true)
     @Mapping(target = "totalPoints", ignore = true)
     @Mapping(target = "picture", ignore = true)
-    @Mapping(target = "dateOfBirth", ignore = true)
     Child toEntity(ChildRequest request);
     
     @Mapping(target = "parentId", source = "parent.id")

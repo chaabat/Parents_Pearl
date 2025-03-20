@@ -74,14 +74,14 @@ public class ParentServiceImpl implements ParentService {
     public ChildResponse addChild(Long parentId, ChildRequest request) {
         Parent parent = parentRepository.findById(parentId)
                 .orElseThrow(() -> new NotFoundException("Parent not found with id: " + parentId));
-        
-        Child child = childMapper.toEntity(request);
+                
+                Child child = childMapper.toEntity(request);
+                System.out.println("Child added: " + child);
         if (request.getPassword() != null) {
             child.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         child.setParent(parent);
         child = childRepository.save(child);
-        
         return childMapper.toResponse(child);
     }
 

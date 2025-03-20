@@ -76,15 +76,13 @@
           <div class="detail-item">
             <mat-icon>assignment</mat-icon>
             <span class="label">Tasks:</span>
-            <span class="value">{{ child.tasks?.length || 0 }}</span>
+            <span class="value">{{ child.id && childStats[child.id] ? childStats[child.id].taskCount : 0 }}</span>
           </div>
 
           <div class="detail-item">
             <mat-icon>redeem</mat-icon>
             <span class="label">Rewards:</span>
-            <span class="value">{{
-              child.rewardRedemptions?.length || 0
-            }}</span>
+            <span class="value">{{ child.id && childStats[child.id] ? childStats[child.id].rewardCount : 0 }}</span>
           </div>
         </div>
       </div>
@@ -138,49 +136,74 @@
     <p>No children found.</p>
   </ng-template>
 
-  <!-- Add Child Dialog -->
   <ng-template #addChildDialog let-dialogRef="dialogRef" let-data="data">
-    <h2 mat-dialog-title>{{ data?.title || "Add New Child" }}</h2>
-
-    <mat-dialog-content>
-      <form [formGroup]="childForm" class="dialog-form">
-        <div class="form-row">
+    <div class="p-6">
+      <!-- Dialog Header -->
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-gray-800">{{ data?.title || "Add New Child" }}</h2>
+      </div>
+  
+      <!-- Profile Picture Upload -->
+      <div class="flex justify-center mb-6">
+        <div class="relative w-24 h-24 rounded-full overflow-hidden shadow-md">
+          <img
+            [src]="imagePreview || 'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'"
+            alt="Profile Preview"
+            class="w-full h-full object-cover"
+          />
+          <div
+            class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+            (click)="fileInput.click()"
+          >
+            <mat-icon class="text-white text-lg">photo_camera</mat-icon>
+            <span class="text-white text-xs mt-1">Upload Photo</span>
+          </div>
+        </div>
+        <input
+          hidden
+          type="file"
+          #fileInput
+          (change)="onFileSelected($event)"
+          accept="image/*"
+        />
+      </div>
+  
+      <!-- Form Fields -->
+      <form [formGroup]="childForm" class="space-y-4">
+        <!-- Child's Name -->
+        <div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Child's Name</mat-label>
             <input
               matInput
               formControlName="name"
               placeholder="Enter child's name"
+              class="w-full"
             />
-            <mat-icon matPrefix>person</mat-icon>
-            <mat-error *ngIf="hasError(childForm, 'name', 'required')"
-              >Name is required</mat-error
-            >
-            <mat-error *ngIf="hasError(childForm, 'name', 'minlength')"
-              >Name must be at least 2 characters</mat-error
-            >
+            <mat-icon matPrefix class="text-gray-500">person</mat-icon>
+            <mat-error *ngIf="hasError(childForm, 'name', 'required')">Name is required</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'name', 'minlength')">Name must be at least 2 characters</mat-error>
           </mat-form-field>
         </div>
-
-        <div class="form-row">
+  
+        <!-- Email Address -->
+        <div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Email Address</mat-label>
             <input
               matInput
               formControlName="email"
               placeholder="Enter email address"
+              class="w-full"
             />
-            <mat-icon matPrefix>email</mat-icon>
-            <mat-error *ngIf="hasError(childForm, 'email', 'required')"
-              >Email is required</mat-error
-            >
-            <mat-error *ngIf="hasError(childForm, 'email', 'email')"
-              >Please enter a valid email address</mat-error
-            >
+            <mat-icon matPrefix class="text-gray-500">email</mat-icon>
+            <mat-error *ngIf="hasError(childForm, 'email', 'required')">Email is required</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'email', 'email')">Please enter a valid email address</mat-error>
           </mat-form-field>
         </div>
-
-        <div class="form-row">
+  
+        <!-- Password -->
+        <div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Password</mat-label>
             <input
@@ -188,18 +211,16 @@
               type="password"
               formControlName="password"
               placeholder="Enter password"
+              class="w-full"
             />
-            <mat-icon matPrefix>lock</mat-icon>
-            <mat-hint
-              >Leave blank to keep current password (when editing)</mat-hint
-            >
-            <mat-error *ngIf="hasError(childForm, 'password', 'minlength')"
-              >Password must be at least 6 characters</mat-error
-            >
+            <mat-icon matPrefix class="text-gray-500">lock</mat-icon>
+            <mat-hint>Leave blank to keep current password (when editing)</mat-hint>
+            <mat-error *ngIf="hasError(childForm, 'password', 'minlength')">Password must be at least 6 characters</mat-error>
           </mat-form-field>
         </div>
-
-        <div class="form-row">
+  
+        <!-- Date of Birth -->
+        <div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Date of Birth</mat-label>
             <input
@@ -207,110 +228,106 @@
               [matDatepicker]="picker"
               formControlName="dateOfBirth"
               placeholder="MM/DD/YYYY"
+              class="w-full"
             />
-            <mat-datepicker-toggle
-              matIconSuffix
-              [for]="picker"
-            ></mat-datepicker-toggle>
+            <mat-datepicker-toggle matIconSuffix [for]="picker" class="text-gray-500"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
-            <mat-icon matPrefix>cake</mat-icon>
+            <mat-icon matPrefix class="text-gray-500">cake</mat-icon>
             <mat-hint>Child must be between 6 and 18 years old</mat-hint>
-            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'required')"
-              >Date of birth is required</mat-error
-            >
+            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'required')">Date of birth is required</mat-error>
             <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'ageRange')">
               {{ getErrorMessage(childForm, "dateOfBirth") }}
             </mat-error>
           </mat-form-field>
         </div>
-
-        <div class="image-upload">
-          <label class="text-center">Profile Picture</label>
-          <div class="preview-container">
-            <img
-              [src]="
-                imagePreview ||
-                'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
-              "
-              alt="Profile Preview"
-            />
-          </div>
-          <button
-            type="button"
-            mat-stroked-button
-            color="primary"
-            class="upload-button"
-            (click)="fileInput.click()"
-          >
-            <mat-icon>cloud_upload</mat-icon> Upload Image
-          </button>
-          <input
-            hidden
-            type="file"
-            #fileInput
-            (change)="onFileSelected($event)"
-            accept="image/*"
-          />
-        </div>
       </form>
-    </mat-dialog-content>
-
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Cancel</button>
+    </div>
+  
+    <!-- Dialog Actions -->
+    <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
+      <button mat-button mat-dialog-close class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded">
+        Cancel
+      </button>
       <button
         mat-raised-button
         color="primary"
         [disabled]="childForm.invalid"
         (click)="dialogRef.close(childForm.value)"
+        class="px-4 py-2 rounded"
       >
         {{ data?.submitText || "Add Child" }}
       </button>
-    </mat-dialog-actions>
+    </div>
   </ng-template>
 
-  <!-- Edit Child Dialog -->
   <ng-template #editChildDialog let-dialogRef="dialogRef" let-data="data">
-    <h2 mat-dialog-title>{{ data?.title || "Edit Child Profile" }}</h2>
-
-    <mat-dialog-content>
-      <form [formGroup]="childForm" class="dialog-form">
-        <div class="form-row">
+    <div class="p-6">
+      <!-- Dialog Header -->
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-gray-800">{{ data?.title || "Edit Child Profile" }}</h2>
+      </div>
+  
+      <!-- Profile Picture Upload -->
+      <div class="flex justify-center mb-6">
+        <div class="relative w-24 h-24 rounded-full overflow-hidden shadow-md">
+          <img
+            [src]="imagePreview || 'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'"
+            alt="Profile Preview"
+            class="w-full h-full object-cover"
+          />
+          <div
+            class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+            (click)="editFileInput.click()"
+          >
+            <mat-icon class="text-white text-lg">photo_camera</mat-icon>
+            <span class="text-white text-xs mt-1">Change Photo</span>
+          </div>
+        </div>
+        <input
+          hidden
+          type="file"
+          #editFileInput
+          (change)="onFileSelected($event)"
+          accept="image/*"
+        />
+      </div>
+  
+      <!-- Form Fields -->
+      <form [formGroup]="childForm" class="space-y-4">
+        <!-- Child's Name -->
+        <div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Child's Name</mat-label>
             <input
               matInput
               formControlName="name"
               placeholder="Enter child's name"
+              class="w-full"
             />
-            <mat-icon matPrefix>person</mat-icon>
-            <mat-error *ngIf="hasError(childForm, 'name', 'required')"
-              >Name is required</mat-error
-            >
-            <mat-error *ngIf="hasError(childForm, 'name', 'minlength')"
-              >Name must be at least 2 characters</mat-error
-            >
+            <mat-icon matPrefix class="text-gray-500">person</mat-icon>
+            <mat-error *ngIf="hasError(childForm, 'name', 'required')">Name is required</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'name', 'minlength')">Name must be at least 2 characters</mat-error>
           </mat-form-field>
         </div>
-
-        <div class="form-row">
+  
+        <!-- Email Address -->
+        <div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Email Address</mat-label>
             <input
               matInput
               formControlName="email"
               placeholder="Enter email address"
+              class="w-full"
             />
-            <mat-icon matPrefix>email</mat-icon>
-            <mat-error *ngIf="hasError(childForm, 'email', 'required')"
-              >Email is required</mat-error
-            >
-            <mat-error *ngIf="hasError(childForm, 'email', 'email')"
-              >Please enter a valid email address</mat-error
-            >
+            <mat-icon matPrefix class="text-gray-500">email</mat-icon>
+            <mat-error *ngIf="hasError(childForm, 'email', 'required')">Email is required</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'email', 'email')">Please enter a valid email address</mat-error>
           </mat-form-field>
         </div>
-
-        <div class="form-row">
+  
+        <!-- Password -->
+        <div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Password</mat-label>
             <input
@@ -318,16 +335,16 @@
               type="password"
               formControlName="password"
               placeholder="Enter new password"
+              class="w-full"
             />
-            <mat-icon matPrefix>lock</mat-icon>
+            <mat-icon matPrefix class="text-gray-500">lock</mat-icon>
             <mat-hint>Leave blank to keep current password</mat-hint>
-            <mat-error *ngIf="hasError(childForm, 'password', 'minlength')"
-              >Password must be at least 6 characters</mat-error
-            >
+            <mat-error *ngIf="hasError(childForm, 'password', 'minlength')">Password must be at least 6 characters</mat-error>
           </mat-form-field>
         </div>
-
-        <div class="form-row">
+  
+        <!-- Date of Birth -->
+        <div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Date of Birth</mat-label>
             <input
@@ -335,65 +352,38 @@
               [matDatepicker]="editPicker"
               formControlName="dateOfBirth"
               placeholder="MM/DD/YYYY"
+              class="w-full"
             />
-            <mat-datepicker-toggle
-              matIconSuffix
-              [for]="editPicker"
-            ></mat-datepicker-toggle>
+            <mat-datepicker-toggle matIconSuffix [for]="editPicker" class="text-gray-500"></mat-datepicker-toggle>
             <mat-datepicker #editPicker></mat-datepicker>
-            <mat-icon matPrefix>cake</mat-icon>
+            <mat-icon matPrefix class="text-gray-500">cake</mat-icon>
             <mat-hint>Child must be between 6 and 18 years old</mat-hint>
-            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'required')"
-              >Date of birth is required</mat-error
-            >
+            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'required')">Date of birth is required</mat-error>
             <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'ageRange')">
               {{ getErrorMessage(childForm, "dateOfBirth") }}
             </mat-error>
           </mat-form-field>
         </div>
-
-        <div class="image-upload">
-          <label class="text-center">Profile Picture</label>
-          <div class="preview-container">
-            <img
-              [src]="
-                imagePreview ||
-                'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
-              "
-              alt="Profile Preview"
-            />
-          </div>
-          <button
-            type="button"
-            mat-stroked-button
-            color="primary"
-            class="upload-button"
-            (click)="editFileInput.click()"
-          >
-            <mat-icon>cloud_upload</mat-icon> Change Image
-          </button>
-          <input
-            hidden
-            type="file"
-            #editFileInput
-            (change)="onFileSelected($event)"
-            accept="image/*"
-          />
-        </div>
       </form>
-    </mat-dialog-content>
-
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Cancel</button>
+    </div>
+  
+    <!-- Dialog Actions -->
+    <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
+      <button mat-button mat-dialog-close class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded">
+        Cancel
+      </button>
       <button
         mat-raised-button
         color="primary"
+        [disabled]="childForm.invalid"
         (click)="onSubmitChild(dialogRef)"
+        class="px-4 py-2 rounded"
       >
         {{ data?.submitText || "Update Child" }}
       </button>
-    </mat-dialog-actions>
+    </div>
   </ng-template>
+
 
   <!-- Points Dialog -->
   <ng-template #pointsDialog let-dialogRef="dialogRef" let-data="data">
@@ -505,4 +495,4 @@
   </ng-template>
 </div>
 
-<input type="file" (change)="handleFileInput($event)" />
+ 

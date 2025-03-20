@@ -156,16 +156,10 @@ export class ChildTaskComponent implements OnInit, OnDestroy {
   updateTaskStatusOnServer(taskId: number, status: string): void {
     if (!this.childId) return;
 
-    // This would typically call an API endpoint to update the task status
-    // For now, we'll just log it
+     
     console.log(`Updating task ${taskId} to status ${status}`);
 
-    // In a real implementation, you would call your API:
-    // this.childService.updateTaskStatus(this.childId, taskId, status)
-    //   .pipe(takeUntil(this.destroy$))
-    //   .subscribe({
-    //     error: (error) => console.error('Error updating task status:', error)
-    //   });
+  
   }
 
   /**
