@@ -13,7 +13,7 @@
           Complete tasks to earn awesome rewards!
         </p>
       </div>
-      <div
+      <!-- <div
         class="bg-white rounded-xl shadow-lg p-4 flex items-center space-x-3"
       >
         <div class="bg-indigo-100 rounded-full p-2">
@@ -25,7 +25,7 @@
             {{ totalPoints || 0 }}
           </p>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <!-- Task filter tabs -->
@@ -188,22 +188,11 @@
               (click)="openTaskDialog(task)"
               class="flex items-center"
             >
-              <mat-icon class="mr-2">visibility</mat-icon>
+              <mat-icon class="mr-2 white">visibility</mat-icon>
               {{ task.status === "PENDING" ? "Answer Task" : "View Details" }}
             </button>
 
-            <!-- <button
-              *ngIf="task.status === 'PENDING'"
-              mat-stroked-button
-              color="accent"
-              (click)="openTaskDialog(task)"
-              class="flex items-center"
-            >
-              <mat-icon class="mr-2">edit</mat-icon>
-              Answer Task
-            </button> -->
-          </div>
-        </div>
+         
 
         <!-- Progress indicator for pending tasks -->
         <div *ngIf="task.status === 'PENDING'" class="h-2 bg-gray-200">
@@ -223,7 +212,7 @@
         </div>
       </div>
     </div>
-
+  </div>
     <!-- Pagination -->
     <div
       *ngIf="!isLoading && filteredTasks && filteredTasks.length > 0"
@@ -238,7 +227,7 @@
       ></mat-paginator>
     </div>
   </div>
-</div>
+
 
 <!-- Task detail dialog -->
 <ng-template #taskDetailDialog>
