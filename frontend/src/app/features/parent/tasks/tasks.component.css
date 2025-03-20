@@ -1,31 +1,88 @@
+/* Custom styles for the tasks component */
+
+/* Success snackbar */
 .success-snackbar {
-  background: #4caf50;
-  color: white;
+  background-color: #10b981 !important;
+  color: white !important;
 }
 
+/* Error snackbar */
 .error-snackbar {
-  background: #f44336;
-  color: white;
+  background-color: #ef4444 !important;
+  color: white !important;
 }
 
-::ng-deep .mat-mdc-snack-bar-action {
-  color: white;
+/* Custom dialog styling */
+.custom-dialog .mat-mdc-dialog-container {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
 }
 
-.task-card {
-  transition: all 0.3s ease;
+/* Improve table styling */
+.mat-mdc-table {
+  width: 100%;
+  background: transparent !important;
 }
 
-.task-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+.mat-mdc-header-row {
+  background-color: #f9fafb !important;
+  border-bottom: 1px solid #e5e7eb !important;
 }
 
-.status-indicator {
+.mat-mdc-row {
+  border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.mat-mdc-row:hover {
+  background-color: #eef2ff !important;
+}
+
+.mat-mdc-cell,
+.mat-mdc-header-cell {
+  padding: 16px !important;
+}
+
+/* Paginator styling */
+.mat-mdc-paginator {
+  background-color: #f9fafb !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+/* Fix icon alignment */
+.mat-icon {
+  vertical-align: middle !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 8px;
 }
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #818cf8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mat-mdc-table {
+    overflow-x: auto;
+  }
+
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    padding: 12px 8px !important;
+  }
+}
+

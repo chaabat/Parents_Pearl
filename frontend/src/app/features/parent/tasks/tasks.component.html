@@ -1,82 +1,91 @@
-<div class="min-h-screen bg-gray-50 p-6">
+<div class="min-h-screen bg-gray-50 p-4 md:p-6">
   <!-- Header with animated gradient background -->
   <div
-    class="bg-gradient-to-r from-[#3f0d71] to-[#5a189a] rounded-xl shadow-lg mb-8 p-6 transition-all duration-500 hover:shadow-xl"
+    class="bg-gradient-to-r from-indigo-800 to-purple-800 rounded-xl shadow-lg mb-6 p-6 transition-all duration-500 hover:shadow-xl"
   >
     <div
       class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
     >
       <div class="text-white">
         <h1 class="text-3xl font-bold">Learning Tasks</h1>
-        <p class="text-blue-200 mt-1">
-          Create and manage educational tasks with multiple-choice questions
+        <p class="text-indigo-200 mt-1">
+          Create and manage educational tasks for your children
         </p>
       </div>
 
       <div class="flex flex-wrap gap-3">
         <button
           mat-raised-button
-          class="bg-white text-[#2563eb] hover:bg-blue-100"
+          class="bg-white text-indigo-700 hover:bg-indigo-50 transition-colors duration-200"
           (click)="openAddTaskDialog(addTaskDialog)"
         >
-          <mat-icon class="white">add_circle</mat-icon>
+          <mat-icon class="mr-2">add_circle</mat-icon>
           Create New Task
+        </button>
+        
+        <button
+          mat-stroked-button
+          class="border-white text-white hover:bg-white/10 transition-colors duration-200"
+          (click)="toggleViewMode()"
+        >
+          <mat-icon class="mr-2">{{ viewMode === 'table' ? 'grid_view' : 'view_list' }}</mat-icon>
+          {{ viewMode === 'table' ? 'Card View' : 'Table View' }}
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Filters and View Options -->
+  <!-- Search and Filters -->
   <div
     class="bg-white rounded-xl shadow p-4 mb-6 transition-all duration-300 hover:shadow-md"
   >
     <div
-      class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"
+      class="flex flex-col md:flex-row justify-between items-center gap-4"
     >
-      <div class="flex items-center gap-4">
-        <!-- Search Field -->
-        <mat-form-field class="w-full md:w-64">
-          <mat-label>Search tasks</mat-label>
+      <!-- Search Field -->
+      <div class="relative w-full md:w-96">
+        <div class="relative">
           <input
-            matInput
+            type="text"
             [formControl]="searchControl"
-            placeholder="Search by title or description"
+            placeholder="Search tasks by title or description..."
+            class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
           />
-          <mat-icon matSuffix>search</mat-icon>
-          <mat-spinner
-            matSuffix
-            diameter="20"
-            *ngIf="loading$ | async"
-            class="mr-2"
-          ></mat-spinner>
-        </mat-form-field>
+          <mat-icon class="absolute left-3 top-2 text-gray-400">search</mat-icon>
+          <button 
+            *ngIf="searchControl.value"
+            (click)="clearSearch()"
+            class="absolute right-3 top-2 text-gray-400 hover:text-gray-600"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div *ngIf="searching" class="absolute right-12 top-2">
+          <mat-spinner diameter="20"></mat-spinner>
+        </div>
+        <div *ngIf="searchError" class="mt-2 text-red-500 text-sm">
+          {{ searchError }}
+        </div>
       </div>
 
-      <div class="flex justify-between items-center mb-4">
-        <div class="flex items-center gap-2">
-          <button
-            mat-button
-            [matMenuTriggerFor]="filterMenu"
-            class="text-gray-700"
-          >
-            <mat-icon>filter_list</mat-icon>
-            Filter: {{ currentFilter }}
-          </button>
-          <mat-menu #filterMenu="matMenu">
-            <button mat-menu-item (click)="filterTasks('ALL')">
-              <mat-icon>all_inclusive</mat-icon> All Tasks
-            </button>
-            <button mat-menu-item (click)="filterTasks('PENDING')">
-              <mat-icon>pending</mat-icon> Pending
-            </button>
-            <button mat-menu-item (click)="filterTasks('COMPLETED')">
-              <mat-icon>check_circle</mat-icon> Completed
-            </button>
-            <button mat-menu-item (click)="filterTasks('FAILED')">
-              <mat-icon>error</mat-icon> Failed
-            </button>
-          </mat-menu>
-        </div>
+      <!-- Filter Tabs -->
+      <div class="flex items-center space-x-1 bg-gray-100 p-1 rounded-lg">
+        <button
+          *ngFor="let status of taskStatus"
+          (click)="filterTasks(status)"
+          class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+          [ngClass]="currentFilter === status ? 
+            'bg-white text-indigo-700 shadow-sm' : 
+            'text-gray-600 hover:bg-gray-200'"
+        >
+          <ng-container [ngSwitch]="status">
+            <mat-icon *ngSwitchCase="'ALL'" class="mr-1 text-sm align-middle">all_inclusive</mat-icon>
+            <mat-icon *ngSwitchCase="'PENDING'" class="mr-1 text-sm align-middle text-yellow-500">pending</mat-icon>
+            <mat-icon *ngSwitchCase="'COMPLETED'" class="mr-1 text-sm align-middle text-green-500">check_circle</mat-icon>
+            <mat-icon *ngSwitchCase="'FAILED'" class="mr-1 text-sm align-middle text-red-500">error</mat-icon>
+          </ng-container>
+          {{ status }}
+        </button>
       </div>
     </div>
   </div>
@@ -88,213 +97,195 @@
 
   <!-- No Tasks Message -->
   <div
-    *ngIf="(tasks$ | async)?.length === 0 && !(loading$ | async)"
+    *ngIf="(dataSource.data.length === 0 && !(loading$ | async))"
     class="bg-white rounded-xl shadow p-8 text-center"
   >
-    <img
-      src="/assets/images/empty-tasks.svg"
-      alt="No tasks"
-      class="w-48 h-48 mx-auto mb-4 opacity-70"
-    />
-    <h3 class="text-xl font-semibold text-gray-700 mb-2">No tasks found</h3>
-    <p class="text-gray-500 mb-6">
-      Create educational tasks for children to complete and earn points
-    </p>
-    <button
-      mat-raised-button
-      color="primary"
-      class="bg-[#2563eb]"
-      (click)="openAddTaskDialog(addTaskDialog)"
-    >
-      <mat-icon>add_circle</mat-icon> Create First Task
-    </button>
+    <div class="flex flex-col items-center">
+      <div class="w-32 h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-6">
+        <mat-icon class="text-indigo-400" style="font-size: 64px; width: 64px; height: 64px;">assignment</mat-icon>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-700 mb-2">No tasks found</h3>
+      <p class="text-gray-500 mb-6 max-w-md">
+        {{ searchControl.value ? 'No tasks match your search criteria. Try a different search term.' : 'Create educational tasks for children to complete and earn points.' }}
+      </p>
+      <button
+        mat-raised-button
+        color="primary"
+        class="bg-indigo-600 hover:bg-indigo-700"
+        (click)="openAddTaskDialog(addTaskDialog)"
+      >
+        <mat-icon class="mr-2">add_circle</mat-icon> Create First Task
+      </button>
+    </div>
   </div>
 
-  <!-- Tasks Table View -->
+  <!-- Table View -->
   <div
-    *ngIf="((tasks$ | async)?.length ?? 0 > 0) && !(loading$ | async)"
+    *ngIf="viewMode === 'table' && dataSource.data.length > 0 && !(loading$ | async)"
     class="bg-white rounded-xl shadow-md overflow-hidden"
   >
-    <mat-table [dataSource]="dataSource" class="w-full">
-      <!-- Title Column -->
-      <ng-container matColumnDef="title">
-        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
-          >Title</mat-header-cell
-        >
-        <mat-cell *matCellDef="let task" class="font-medium">
-          <div class="flex items-center">
-            <div
-              class="w-2 h-2 rounded-full mr-2"
+    <div class="overflow-x-auto">
+      <table mat-table [dataSource]="dataSource" class="w-full">
+        <!-- Title Column -->
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Title</th>
+          <td mat-cell *matCellDef="let task" class="px-6 py-4">
+            <div class="flex items-center">
+              <div
+                class="w-2 h-2 rounded-full mr-2"
+                [ngClass]="getStatusColor(task.status)"
+              ></div>
+              <span class="font-medium text-gray-800">{{ task.title }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Description Column -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Description</th>
+          <td mat-cell *matCellDef="let task" class="px-6 py-4">
+            <div class="text-gray-600 max-w-xs truncate">{{ task.description }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Points Column -->
+        <ng-container matColumnDef="pointValue">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Points</th>
+          <td mat-cell *matCellDef="let task" class="px-6 py-4">
+            <div class="flex items-center">
+              <mat-icon class="text-amber-500 mr-1 text-sm">stars</mat-icon>
+              <span class="font-medium">{{ task.pointValue }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Task Type Column -->
+        <ng-container matColumnDef="taskType">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Type</th>
+          <td mat-cell *matCellDef="let task" class="px-6 py-4">
+            <div class="flex items-center">
+              <span
+                class="px-2 py-1 rounded-full text-xs font-medium flex items-center"
+                [ngClass]="getTaskTypeClass(task.taskType)"
+              >
+                <mat-icon class="mr-1 text-sm">{{ getTaskTypeIcon(task.taskType) }}</mat-icon>
+                {{ task.taskType }}
+              </span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Status</th>
+          <td mat-cell *matCellDef="let task" class="px-6 py-4">
+            <span
               [ngClass]="getStatusColor(task.status)"
-            ></div>
-            {{ task.title }}
-          </div>
-        </mat-cell>
-      </ng-container>
+              class="flex items-center gap-1"
+            >
+              <mat-icon class="text-sm">{{
+                getStatusIcon(task.status)
+              }}</mat-icon>
+              {{ task.status }}
+            </span>
+          </td>
+        </ng-container>
 
-      <!-- Description Column -->
-      <ng-container matColumnDef="description">
-        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
-          >Description</mat-header-cell
-        >
-        <mat-cell
-          *matCellDef="let task"
-          class="text-gray-600 max-w-xs truncate"
-          >{{ task.description }}</mat-cell
-        >
-      </ng-container>
+        <!-- Due Date Column -->
+        <ng-container matColumnDef="dueDate">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Due Date</th>
+          <td mat-cell *matCellDef="let task" class="px-6 py-4">
+            <div
+              class="flex items-center"
+              [ngClass]="
+                isOverdue(task.dueDate) ? 'text-red-600' : 'text-gray-600'
+              "
+            >
+              <mat-icon class="text-sm mr-1">event</mat-icon>
+              {{ task.dueDate | date : "MMM d, y" }}
+            </div>
+          </td>
+        </ng-container>
 
-      <!-- Points Column -->
-      <ng-container matColumnDef="pointValue">
-        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
-          >Points</mat-header-cell
-        >
-        <mat-cell *matCellDef="let task">
-          <div class="flex items-center">
-            <mat-icon class="text-amber-500 mr-1 text-sm">stars</mat-icon>
-            <span class="font-medium">{{ task.pointValue }}</span>
-          </div>
-        </mat-cell>
-      </ng-container>
+        Actions Column
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 px-6 py-4">Actions</th>
+          <td mat-cell *matCellDef="let task" class="px-6 py-4">
+            <div class="flex items-center space-x-1">
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="editTask(task, editTaskDialog); $event.stopPropagation()"
+                matTooltip="Edit Task"
+                class="text-indigo-600 hover:text-indigo-800"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="accent"
+                (click)="viewTaskDetails(task); $event.stopPropagation()"
+                matTooltip="View Details"
+                class="text-blue-600 hover:text-blue-800"
+              >
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="deleteTask(task, deleteTaskDialog); $event.stopPropagation()"
+                matTooltip="Delete Task"
+                class="text-red-600 hover:text-red-800"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+               
 
-      <!-- Task Type Column -->
-      <ng-container matColumnDef="taskType">
-        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
-          >Type</mat-header-cell
-        >
-        <mat-cell *matCellDef="let task">
-          <span
-            class="px-2 py-1 rounded-full text-xs font-medium"
-            [ngClass]="getTaskTypeClass(task.taskType)"
-          >
-            {{ task.taskType }}
-          </span>
-        </mat-cell>
-      </ng-container>
+              <!-- Task Action Menu -->
+         
+            </div>
+          </td>
+        </ng-container>
 
-      <!-- Status Column -->
-      <ng-container matColumnDef="status">
-        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
-          >Status</mat-header-cell
-        >
-        <mat-cell *matCellDef="let task">
-          <span
-            [ngClass]="getStatusColor(task.status)"
-            class="flex items-center gap-1"
-          >
-            <mat-icon class="text-sm">{{
-              getStatusIcon(task.status)
-            }}</mat-icon>
-            {{ task.status }}
-          </span>
-        </mat-cell>
-      </ng-container>
-
-      <!-- Due Date Column -->
-      <ng-container matColumnDef="dueDate">
-        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
-          >Due Date</mat-header-cell
-        >
-        <mat-cell *matCellDef="let task">
-          <div
-            class="flex items-center"
-            [ngClass]="
-              isOverdue(task.dueDate) ? 'text-red-600' : 'text-gray-600'
-            "
-          >
-            <mat-icon class="text-sm mr-1">event</mat-icon>
-            {{ task.dueDate | date : "MMM d, y" }}
-          </div>
-        </mat-cell>
-      </ng-container>
-
-      <!-- Actions Column -->
-      <ng-container matColumnDef="actions">
-        <mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700"
-          >Actions</mat-header-cell
-        >
-        <mat-cell *matCellDef="let task">
-          <button
-            mat-icon-button
-            color="primary"
-            (click)="editTask(task, editTaskDialog)"
-            matTooltip="Edit Task"
-          >
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            color="accent"
-            (click)="viewTaskDetails(task)"
-            matTooltip="View Details"
-          >
-            <mat-icon>visibility</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            color="warn"
-            (click)="deleteTask(task, deleteTaskDialog)"
-            matTooltip="Delete Task"
-          >
-            <mat-icon>delete</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            [matMenuTriggerFor]="taskActionMenu"
-            matTooltip="Task Actions"
-          >
-            <mat-icon>more_vert</mat-icon>
-          </button>
-
-          <!-- Task Action Menu -->
-          <mat-menu #taskActionMenu="matMenu">
-            <button mat-menu-item (click)="markTaskComplete(task)">
-              <mat-icon>check_circle</mat-icon> Mark Complete
-            </button>
-            <button mat-menu-item (click)="viewTaskDetails(task)">
-              <mat-icon>visibility</mat-icon> View Details
-            </button>
-          </mat-menu>
-        </mat-cell>
-      </ng-container>
-
-      <mat-header-row
-        *matHeaderRowDef="displayedColumns"
-        class="bg-gray-50"
-      ></mat-header-row>
-      <mat-row
-        *matRowDef="let row; columns: displayedColumns"
-        class="hover:bg-blue-50 transition-colors duration-150"
-      ></mat-row>
-    </mat-table>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns" class="bg-gray-50"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          class="hover:bg-indigo-50 transition-colors duration-150 cursor-pointer"
+          (click)="viewTaskDetails(row)"
+        ></tr>
+      </table>
+    </div>
 
     <mat-paginator
       [pageSize]="10"
       [pageSizeOptions]="[5, 10, 25, 100]"
       showFirstLastButtons
+      class="bg-gray-50 border-t border-gray-200"
     ></mat-paginator>
   </div>
 
-  <!-- Card View (Alternative View) -->
+  <!-- Card View -->
   <div
-    *ngIf="false"
+    *ngIf="viewMode === 'card' && dataSource.data.length > 0 && !(loading$ | async)"
     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
   >
     <div
-      *ngFor="let task of tasks$ | async"
-      class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden"
+      *ngFor="let task of dataSource.data"
+      class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer"
+      (click)="viewTaskDetails(task)"
     >
       <div class="h-2 w-full" [ngClass]="getStatusColorBar(task.status)"></div>
       <div class="p-6">
         <div class="flex justify-between items-start mb-4">
           <h3 class="text-lg font-bold text-gray-800">{{ task.title }}</h3>
-          <div
-            *ngIf="selectedTask"
-            class="text-xs font-medium"
-            [ngClass]="getStatusClass(selectedTask?.status)"
+          <span
+            class="px-2 py-1 rounded-full text-xs font-medium"
+            [ngClass]="getStatusClass(task.status)"
           >
-            {{ selectedTask?.status }}
-          </div>
+            <mat-icon class="text-sm mr-1 align-middle">{{ getStatusIcon(task.status) }}</mat-icon>
+            {{ task.status }}
+          </span>
         </div>
 
         <p class="text-gray-600 mb-4 line-clamp-2">{{ task.description }}</p>
@@ -306,23 +297,31 @@
           </div>
 
           <span
-            class="px-2 py-1 rounded-full text-xs font-medium"
+            class="px-2 py-1 rounded-full text-xs font-medium flex items-center"
             [ngClass]="getTaskTypeClass(task.taskType)"
           >
+            <mat-icon class="mr-1 text-sm">{{ getTaskTypeIcon(task.taskType) }}</mat-icon>
             {{ task.taskType }}
           </span>
         </div>
 
-        <div
-          class="flex items-center text-gray-600 mb-4"
-          [ngClass]="isOverdue(task.dueDate) ? 'text-red-600' : ''"
-        >
-          <mat-icon class="text-sm mr-1">event</mat-icon>
-          <span>Due: {{ task.dueDate | date : "MMM d, y" }}</span>
+        <div class="flex items-center justify-between mb-4">
+          <div
+            class="flex items-center text-gray-600"
+            [ngClass]="isOverdue(task.dueDate) ? 'text-red-600' : ''"
+          >
+            <mat-icon class="text-sm mr-1">event</mat-icon>
+            <span>Due: {{ task.dueDate | date : "MMM d, y" }}</span>
+          </div>
+          
+          <div class="flex items-center text-gray-600">
+            <mat-icon class="text-sm mr-1">person</mat-icon>
+            <span>{{ getChildName(task.childId) }}</span>
+          </div>
         </div>
 
         <!-- Multiple Choice Preview -->
-        <div *ngIf="task.choices" class="bg-gray-50 p-3 rounded-lg mb-4">
+        <div *ngIf="task.choices && task.choices.length > 0" class="bg-gray-50 p-3 rounded-lg mb-4">
           <div class="text-sm font-medium text-gray-700 mb-2">
             Answer Choices:
           </div>
@@ -330,17 +329,20 @@
             <div
               *ngFor="let choice of getChoicesArray(task.choices)"
               class="bg-white p-2 rounded border border-gray-200 text-sm text-center"
+              [ngClass]="{'bg-green-50 border-green-300': choice === task.correctAnswer}"
             >
               {{ choice }}
+              <mat-icon *ngIf="choice === task.correctAnswer" class="text-green-500 text-sm">check_circle</mat-icon>
             </div>
           </div>
         </div>
 
-        <div class="flex justify-end space-x-2">
+        <div class="flex justify-end space-x-2 mt-4 border-t pt-4">
           <button
             mat-icon-button
             color="primary"
             (click)="editTask(task, editTaskDialog); $event.stopPropagation()"
+            class="text-indigo-600 hover:text-indigo-800"
           >
             <mat-icon>edit</mat-icon>
           </button>
@@ -348,18 +350,20 @@
             mat-icon-button
             color="accent"
             (click)="viewTaskDetails(task); $event.stopPropagation()"
+            class="text-blue-600 hover:text-blue-800"
           >
             <mat-icon>visibility</mat-icon>
           </button>
           <button
             mat-icon-button
             color="warn"
-            (click)="
-              deleteTask(task, deleteTaskDialog); $event.stopPropagation()
-            "
+            (click)="deleteTask(task, deleteTaskDialog); $event.stopPropagation()"
+            class="text-red-600 hover:text-red-800"
           >
             <mat-icon>delete</mat-icon>
           </button>
+           
+           
         </div>
       </div>
     </div>
@@ -369,7 +373,7 @@
   <ng-template #addTaskDialog>
     <div class="p-6">
       <h2
-        class="text-2xl font-bold text-[#2563eb] flex items-center gap-3 mb-6"
+        class="text-2xl font-bold text-indigo-700 flex items-center gap-3 mb-6"
       >
         <mat-icon>add_task</mat-icon> Create New Learning Task
       </h2>
@@ -390,7 +394,7 @@
                     'text-red-700 dark:text-red-500':
                       taskForm.get('title')?.invalid &&
                       taskForm.get('title')?.touched,
-                    'text-blue-700 dark:text-blue-500': !(
+                    'text-indigo-700': !(
                       taskForm.get('title')?.invalid &&
                       taskForm.get('title')?.touched
                     )
@@ -405,10 +409,10 @@
                   placeholder="Enter task title"
                   class="border text-sm rounded-lg block w-full p-2.5"
                   [ngClass]="{
-                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500':
                       taskForm.get('title')?.invalid &&
                       taskForm.get('title')?.touched,
-                    'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                    'bg-indigo-50 border-indigo-300 text-indigo-900 placeholder-indigo-700 focus:ring-indigo-500 focus:border-indigo-500':
                       !(
                         taskForm.get('title')?.invalid &&
                         taskForm.get('title')?.touched
@@ -420,7 +424,7 @@
                     taskForm.get('title')?.invalid &&
                     taskForm.get('title')?.touched
                   "
-                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                  class="mt-2 text-sm text-red-600"
                 >
                   <span class="font-medium">Error!</span> Title is required.
                 </p>
@@ -432,10 +436,10 @@
                   for="pointValue"
                   class="block mb-2 text-sm font-medium"
                   [ngClass]="{
-                    'text-red-700 dark:text-red-500':
+                    'text-red-700':
                       taskForm.get('pointValue')?.invalid &&
                       taskForm.get('pointValue')?.touched,
-                    'text-blue-700 dark:text-blue-500': !(
+                    'text-indigo-700': !(
                       taskForm.get('pointValue')?.invalid &&
                       taskForm.get('pointValue')?.touched
                     )
@@ -452,10 +456,10 @@
                     placeholder="Enter points"
                     class="border text-sm rounded-lg block w-full p-2.5 pr-10"
                     [ngClass]="{
-                      'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                      'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500':
                         taskForm.get('pointValue')?.invalid &&
                         taskForm.get('pointValue')?.touched,
-                      'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                      'bg-indigo-50 border-indigo-300 text-indigo-900 placeholder-indigo-700 focus:ring-indigo-500 focus:border-indigo-500':
                         !(
                           taskForm.get('pointValue')?.invalid &&
                           taskForm.get('pointValue')?.touched
@@ -471,7 +475,7 @@
                     taskForm.get('pointValue')?.hasError('required') &&
                     taskForm.get('pointValue')?.touched
                   "
-                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                  class="mt-2 text-sm text-red-600"
                 >
                   <span class="font-medium">Error!</span> Points value is
                   required.
@@ -481,7 +485,7 @@
                     taskForm.get('pointValue')?.hasError('min') &&
                     taskForm.get('pointValue')?.touched
                   "
-                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                  class="mt-2 text-sm text-red-600"
                 >
                   <span class="font-medium">Error!</span> Must be at least 0
                   points.
@@ -495,10 +499,10 @@
                 for="description"
                 class="block mb-2 text-sm font-medium"
                 [ngClass]="{
-                  'text-red-700 dark:text-red-500':
+                  'text-red-700':
                     taskForm.get('description')?.invalid &&
                     taskForm.get('description')?.touched,
-                  'text-blue-700 dark:text-blue-500': !(
+                  'text-indigo-700': !(
                     taskForm.get('description')?.invalid &&
                     taskForm.get('description')?.touched
                   )
@@ -513,10 +517,10 @@
                 placeholder="Describe the task"
                 class="border text-sm rounded-lg block w-full p-2.5"
                 [ngClass]="{
-                  'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                  'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500':
                     taskForm.get('description')?.invalid &&
                     taskForm.get('description')?.touched,
-                  'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                  'bg-indigo-50 border-indigo-300 text-indigo-900 placeholder-indigo-700 focus:ring-indigo-500 focus:border-indigo-500':
                     !(
                       taskForm.get('description')?.invalid &&
                       taskForm.get('description')?.touched
@@ -528,7 +532,7 @@
                   taskForm.get('description')?.invalid &&
                   taskForm.get('description')?.touched
                 "
-                class="mt-2 text-sm text-red-600 dark:text-red-500"
+                class="mt-2 text-sm text-red-600"
               >
                 <span class="font-medium">Error!</span> Description is required.
               </p>
@@ -546,10 +550,10 @@
                   for="taskType"
                   class="block mb-2 text-sm font-medium"
                   [ngClass]="{
-                    'text-red-700 dark:text-red-500':
+                    'text-red-700':
                       taskForm.get('taskType')?.invalid &&
                       taskForm.get('taskType')?.touched,
-                    'text-blue-700 dark:text-blue-500': !(
+                    'text-indigo-700': !(
                       taskForm.get('taskType')?.invalid &&
                       taskForm.get('taskType')?.touched
                     )
@@ -562,10 +566,10 @@
                   formControlName="taskType"
                   class="border text-sm rounded-lg block w-full p-2.5"
                   [ngClass]="{
-                    'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                    'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500':
                       taskForm.get('taskType')?.invalid &&
                       taskForm.get('taskType')?.touched,
-                    'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                    'bg-indigo-50 border-indigo-300 text-indigo-900 focus:ring-indigo-500 focus:border-indigo-500':
                       !(
                         taskForm.get('taskType')?.invalid &&
                         taskForm.get('taskType')?.touched
@@ -582,7 +586,7 @@
                     taskForm.get('taskType')?.invalid &&
                     taskForm.get('taskType')?.touched
                   "
-                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                  class="mt-2 text-sm text-red-600"
                 >
                   <span class="font-medium">Error!</span> Task type is required.
                 </p>
@@ -594,10 +598,10 @@
                   for="dueDate"
                   class="block mb-2 text-sm font-medium"
                   [ngClass]="{
-                    'text-red-700 dark:text-red-500':
+                    'text-red-700':
                       taskForm.get('dueDate')?.invalid &&
                       taskForm.get('dueDate')?.touched,
-                    'text-blue-700 dark:text-blue-500': !(
+                    'text-indigo-700': !(
                       taskForm.get('dueDate')?.invalid &&
                       taskForm.get('dueDate')?.touched
                     )
@@ -612,10 +616,10 @@
                     formControlName="dueDate"
                     class="border text-sm rounded-lg block w-full p-2.5"
                     [ngClass]="{
-                      'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                      'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500':
                         taskForm.get('dueDate')?.invalid &&
                         taskForm.get('dueDate')?.touched,
-                      'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                      'bg-indigo-50 border-indigo-300 text-indigo-900 focus:ring-indigo-500 focus:border-indigo-500':
                         !(
                           taskForm.get('dueDate')?.invalid &&
                           taskForm.get('dueDate')?.touched
@@ -628,7 +632,7 @@
                     taskForm.get('dueDate')?.invalid &&
                     taskForm.get('dueDate')?.touched
                   "
-                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                  class="mt-2 text-sm text-red-600"
                 >
                   <span class="font-medium">Error!</span> Due date is required.
                 </p>
@@ -641,10 +645,10 @@
                 for="childId"
                 class="block mb-2 text-sm font-medium"
                 [ngClass]="{
-                  'text-red-700 dark:text-red-500':
+                  'text-red-700':
                     taskForm.get('childId')?.invalid &&
                     taskForm.get('childId')?.touched,
-                  'text-blue-700 dark:text-blue-500': !(
+                  'text-indigo-700': !(
                     taskForm.get('childId')?.invalid &&
                     taskForm.get('childId')?.touched
                   )
@@ -657,10 +661,10 @@
                 formControlName="childId"
                 class="border text-sm rounded-lg block w-full p-2.5"
                 [ngClass]="{
-                  'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                  'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500':
                     taskForm.get('childId')?.invalid &&
                     taskForm.get('childId')?.touched,
-                  'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                  'bg-indigo-50 border-indigo-300 text-indigo-900 focus:ring-indigo-500 focus:border-indigo-500':
                     !(
                       taskForm.get('childId')?.invalid &&
                       taskForm.get('childId')?.touched
@@ -680,7 +684,7 @@
                   taskForm.get('childId')?.invalid &&
                   taskForm.get('childId')?.touched
                 "
-                class="mt-2 text-sm text-red-600 dark:text-red-500"
+                class="mt-2 text-sm text-red-600"
               >
                 <span class="font-medium">Error!</span> Child assignment is
                 required.
@@ -689,8 +693,8 @@
           </div>
 
           <!-- Multiple Choice Section -->
-          <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
-            <h3 class="text-blue-800 font-medium mb-5 flex items-center">
+          <div class="bg-indigo-50 p-6 rounded-lg border border-indigo-100">
+            <h3 class="text-indigo-800 font-medium mb-5 flex items-center">
               <mat-icon class="mr-3">quiz</mat-icon> Multiple Choice Options
             </h3>
 
@@ -698,7 +702,7 @@
             <div class="mb-6">
               <label
                 for="choices"
-                class="block mb-2 text-sm font-medium text-blue-700 dark:text-blue-500"
+                class="block mb-2 text-sm font-medium text-indigo-700"
               >
                 Answer Choices (comma-separated)
               </label>
@@ -707,9 +711,9 @@
                 id="choices"
                 formControlName="choices"
                 placeholder="30,35,40,45"
-                class="bg-blue-50 border border-blue-500 text-blue-900 dark:text-blue-400 placeholder-blue-700 dark:placeholder-blue-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-blue-500"
+                class="bg-indigo-50 border border-indigo-300 text-indigo-900 placeholder-indigo-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
               />
-              <p class="mt-2 text-sm text-blue-600 dark:text-blue-500">
+              <p class="mt-2 text-sm text-indigo-600">
                 Enter choices separated by commas
               </p>
             </div>
@@ -721,7 +725,7 @@
             >
               <div
                 *ngFor="let choice of getFormChoicesArray()"
-                class="bg-white p-4 rounded-lg border border-blue-200 text-center text-blue-800 shadow-sm"
+                class="bg-white p-4 rounded-lg border border-indigo-200 text-center text-indigo-800 shadow-sm"
               >
                 {{ choice }}
               </div>
@@ -733,10 +737,10 @@
                 for="correctAnswer"
                 class="block mb-2 text-sm font-medium"
                 [ngClass]="{
-                  'text-red-700 dark:text-red-500':
+                  'text-red-700':
                     taskForm.get('correctAnswer')?.invalid &&
                     taskForm.get('correctAnswer')?.touched,
-                  'text-green-700 dark:text-green-500': !(
+                  'text-green-700': !(
                     taskForm.get('correctAnswer')?.invalid &&
                     taskForm.get('correctAnswer')?.touched
                   )
@@ -752,10 +756,10 @@
                   placeholder="Enter correct answer"
                   class="border text-sm rounded-lg block w-full p-2.5 pr-10"
                   [ngClass]="{
-                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500':
                       taskForm.get('correctAnswer')?.invalid &&
                       taskForm.get('correctAnswer')?.touched,
-                    'bg-green-50 border-green-500 text-green-900 dark:text-green-400 placeholder-green-700 dark:placeholder-green-500 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-green-500':
+                    'bg-green-50 border-green-500 text-green-900 placeholder-green-700 focus:ring-green-500 focus:border-green-500':
                       !(
                         taskForm.get('correctAnswer')?.invalid &&
                         taskForm.get('correctAnswer')?.touched
@@ -771,7 +775,7 @@
                   taskForm.get('correctAnswer')?.invalid &&
                   taskForm.get('correctAnswer')?.touched
                 "
-                class="mt-2 text-sm text-red-600 dark:text-red-500"
+                class="mt-2 text-sm text-red-600"
               >
                 <span class="font-medium">Error!</span> Correct answer is
                 required.
@@ -785,12 +789,12 @@
         <button
           mat-button
           mat-dialog-close
-          class="text-gray-600 px-6 py-2 rounded-lg mr-4"
+          class="text-gray-600 px-6 py-2 rounded-lg mr-4 hover:bg-gray-100"
         >
           Cancel
         </button>
         <button
-          class="bg-[#2563eb] text-white px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          class="bg-indigo-600 text-white px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700"
           [disabled]="!taskForm.valid"
           (click)="dialogRef.close(taskForm.value)"
         >
@@ -804,7 +808,7 @@
   <ng-template #editTaskDialog>
     <div class="p-6">
       <h2
-        class="text-2xl font-bold text-[#2563eb] flex items-center gap-3 mb-6"
+        class="text-2xl font-bold text-indigo-700 flex items-center gap-3 mb-6"
       >
         <mat-icon>edit</mat-icon> Edit Learning Task
       </h2>
@@ -822,10 +826,10 @@
                   for="edit-title"
                   class="block mb-2 text-sm font-medium"
                   [ngClass]="{
-                    'text-red-700 dark:text-red-500':
+                    'text-red-700':
                       taskForm.get('title')?.invalid &&
                       taskForm.get('title')?.touched,
-                    'text-blue-700 dark:text-blue-500': !(
+                    'text-indigo-700': !(
                       taskForm.get('title')?.invalid &&
                       taskForm.get('title')?.touched
                     )
@@ -840,10 +844,10 @@
                   placeholder="Enter task title"
                   class="border text-sm rounded-lg block w-full p-2.5"
                   [ngClass]="{
-                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500':
                       taskForm.get('title')?.invalid &&
                       taskForm.get('title')?.touched,
-                    'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                    'bg-indigo-50 border-indigo-300 text-indigo-900 placeholder-indigo-700 focus:ring-indigo-500 focus:border-indigo-500':
                       !(
                         taskForm.get('title')?.invalid &&
                         taskForm.get('title')?.touched
@@ -855,7 +859,7 @@
                     taskForm.get('title')?.invalid &&
                     taskForm.get('title')?.touched
                   "
-                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                  class="mt-2 text-sm text-red-600"
                 >
                   <span class="font-medium">Error!</span> Title is required.
                 </p>
@@ -867,10 +871,10 @@
                   for="edit-pointValue"
                   class="block mb-2 text-sm font-medium"
                   [ngClass]="{
-                    'text-red-700 dark:text-red-500':
+                    'text-red-700':
                       taskForm.get('pointValue')?.invalid &&
                       taskForm.get('pointValue')?.touched,
-                    'text-blue-700 dark:text-blue-500': !(
+                    'text-indigo-700': !(
                       taskForm.get('pointValue')?.invalid &&
                       taskForm.get('pointValue')?.touched
                     )
@@ -887,10 +891,10 @@
                     placeholder="Enter points"
                     class="border text-sm rounded-lg block w-full p-2.5 pr-10"
                     [ngClass]="{
-                      'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                      'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500':
                         taskForm.get('pointValue')?.invalid &&
                         taskForm.get('pointValue')?.touched,
-                      'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                      'bg-indigo-50 border-indigo-300 text-indigo-900 placeholder-indigo-700 focus:ring-indigo-500 focus:border-indigo-500':
                         !(
                           taskForm.get('pointValue')?.invalid &&
                           taskForm.get('pointValue')?.touched
@@ -906,7 +910,7 @@
                     taskForm.get('pointValue')?.hasError('required') &&
                     taskForm.get('pointValue')?.touched
                   "
-                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                  class="mt-2 text-sm text-red-600"
                 >
                   <span class="font-medium">Error!</span> Points value is
                   required.
@@ -916,7 +920,7 @@
                     taskForm.get('pointValue')?.hasError('min') &&
                     taskForm.get('pointValue')?.touched
                   "
-                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                  class="mt-2 text-sm text-red-600"
                 >
                   <span class="font-medium">Error!</span> Must be at least 0
                   points.
@@ -930,10 +934,10 @@
                 for="edit-description"
                 class="block mb-2 text-sm font-medium"
                 [ngClass]="{
-                  'text-red-700 dark:text-red-500':
+                  'text-red-700':
                     taskForm.get('description')?.invalid &&
                     taskForm.get('description')?.touched,
-                  'text-blue-700 dark:text-blue-500': !(
+                  'text-indigo-700': !(
                     taskForm.get('description')?.invalid &&
                     taskForm.get('description')?.touched
                   )
@@ -948,10 +952,10 @@
                 placeholder="Describe the task"
                 class="border text-sm rounded-lg block w-full p-2.5"
                 [ngClass]="{
-                  'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                  'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500':
                     taskForm.get('description')?.invalid &&
                     taskForm.get('description')?.touched,
-                  'bg-blue-50 border-blue-500 text-blue-900 placeholder-blue-700 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:placeholder-blue-500 dark:border-blue-500':
+                  'bg-indigo-50 border-indigo-300 text-indigo-900 placeholder-indigo-700 focus:ring-indigo-500 focus:border-indigo-500':
                     !(
                       taskForm.get('description')?.invalid &&
                       taskForm.get('description')?.touched
@@ -963,7 +967,7 @@
                   taskForm.get('description')?.invalid &&
                   taskForm.get('description')?.touched
                 "
-                class="mt-2 text-sm text-red-600 dark:text-red-500"
+                class="mt-2 text-sm text-red-600"
               >
                 <span class="font-medium">Error!</span> Description is required.
               </p>
@@ -981,10 +985,10 @@
                   for="edit-taskType"
                   class="block mb-2 text-sm font-medium"
                   [ngClass]="{
-                    'text-red-700 dark:text-red-500':
+                    'text-red-700':
                       taskForm.get('taskType')?.invalid &&
                       taskForm.get('taskType')?.touched,
-                    'text-blue-700 dark:text-blue-500': !(
+                    'text-indigo-700': !(
                       taskForm.get('taskType')?.invalid &&
                       taskForm.get('taskType')?.touched
                     )
@@ -997,10 +1001,10 @@
                   formControlName="taskType"
                   class="border text-sm rounded-lg block w-full p-2.5"
                   [ngClass]="{
-                    'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                    'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500':
                       taskForm.get('taskType')?.invalid &&
                       taskForm.get('taskType')?.touched,
-                    'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                    'bg-indigo-50 border-indigo-300 text-indigo-900 focus:ring-indigo-500 focus:border-indigo-500':
                       !(
                         taskForm.get('taskType')?.invalid &&
                         taskForm.get('taskType')?.touched
@@ -1017,7 +1021,7 @@
                     taskForm.get('taskType')?.invalid &&
                     taskForm.get('taskType')?.touched
                   "
-                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                  class="mt-2 text-sm text-red-600"
                 >
                   <span class="font-medium">Error!</span> Task type is required.
                 </p>
@@ -1029,10 +1033,10 @@
                   for="edit-dueDate"
                   class="block mb-2 text-sm font-medium"
                   [ngClass]="{
-                    'text-red-700 dark:text-red-500':
+                    'text-red-700':
                       taskForm.get('dueDate')?.invalid &&
                       taskForm.get('dueDate')?.touched,
-                    'text-blue-700 dark:text-blue-500': !(
+                    'text-indigo-700': !(
                       taskForm.get('dueDate')?.invalid &&
                       taskForm.get('dueDate')?.touched
                     )
@@ -1047,10 +1051,10 @@
                     formControlName="dueDate"
                     class="border text-sm rounded-lg block w-full p-2.5"
                     [ngClass]="{
-                      'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                      'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500':
                         taskForm.get('dueDate')?.invalid &&
                         taskForm.get('dueDate')?.touched,
-                      'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                      'bg-indigo-50 border-indigo-300 text-indigo-900 focus:ring-indigo-500 focus:border-indigo-500':
                         !(
                           taskForm.get('dueDate')?.invalid &&
                           taskForm.get('dueDate')?.touched
@@ -1063,7 +1067,7 @@
                     taskForm.get('dueDate')?.invalid &&
                     taskForm.get('dueDate')?.touched
                   "
-                  class="mt-2 text-sm text-red-600 dark:text-red-500"
+                  class="mt-2 text-sm text-red-600"
                 >
                   <span class="font-medium">Error!</span> Due date is required.
                 </p>
@@ -1076,10 +1080,10 @@
                 for="edit-childId"
                 class="block mb-2 text-sm font-medium"
                 [ngClass]="{
-                  'text-red-700 dark:text-red-500':
+                  'text-red-700':
                     taskForm.get('childId')?.invalid &&
                     taskForm.get('childId')?.touched,
-                  'text-blue-700 dark:text-blue-500': !(
+                  'text-indigo-700': !(
                     taskForm.get('childId')?.invalid &&
                     taskForm.get('childId')?.touched
                   )
@@ -1092,10 +1096,10 @@
                 formControlName="childId"
                 class="border text-sm rounded-lg block w-full p-2.5"
                 [ngClass]="{
-                  'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:border-red-500':
+                  'bg-red-50 border-red-500 text-red-900 focus:ring-red-500 focus:border-red-500':
                     taskForm.get('childId')?.invalid &&
                     taskForm.get('childId')?.touched,
-                  'bg-blue-50 border-blue-500 text-blue-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-blue-500 dark:border-blue-500':
+                  'bg-indigo-50 border-indigo-300 text-indigo-900 focus:ring-indigo-500 focus:border-indigo-500':
                     !(
                       taskForm.get('childId')?.invalid &&
                       taskForm.get('childId')?.touched
@@ -1115,7 +1119,7 @@
                   taskForm.get('childId')?.invalid &&
                   taskForm.get('childId')?.touched
                 "
-                class="mt-2 text-sm text-red-600 dark:text-red-500"
+                class="mt-2 text-sm text-red-600"
               >
                 <span class="font-medium">Error!</span> Child assignment is
                 required.
@@ -1124,8 +1128,8 @@
           </div>
 
           <!-- Multiple Choice Section -->
-          <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
-            <h3 class="text-blue-800 font-medium mb-5 flex items-center">
+          <div class="bg-indigo-50 p-6 rounded-lg border border-indigo-100">
+            <h3 class="text-indigo-800 font-medium mb-5 flex items-center">
               <mat-icon class="mr-3">quiz</mat-icon> Multiple Choice Options
             </h3>
 
@@ -1133,7 +1137,7 @@
             <div class="mb-6">
               <label
                 for="edit-choices"
-                class="block mb-2 text-sm font-medium text-blue-700 dark:text-blue-500"
+                class="block mb-2 text-sm font-medium text-indigo-700"
               >
                 Answer Choices (comma-separated)
               </label>
@@ -1142,9 +1146,9 @@
                 id="edit-choices"
                 formControlName="choices"
                 placeholder="30,35,40,45"
-                class="bg-blue-50 border border-blue-500 text-blue-900 dark:text-blue-400 placeholder-blue-700 dark:placeholder-blue-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-blue-500"
+                class="bg-indigo-50 border border-indigo-300 text-indigo-900 placeholder-indigo-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
               />
-              <p class="mt-2 text-sm text-blue-600 dark:text-blue-500">
+              <p class="mt-2 text-sm text-indigo-600">
                 Enter choices separated by commas
               </p>
             </div>
@@ -1156,7 +1160,7 @@
             >
               <div
                 *ngFor="let choice of getFormChoicesArray()"
-                class="bg-white p-4 rounded-lg border border-blue-200 text-center text-blue-800 shadow-sm"
+                class="bg-white p-4 rounded-lg border border-indigo-200 text-center text-indigo-800 shadow-sm"
               >
                 {{ choice }}
               </div>
@@ -1168,10 +1172,10 @@
                 for="edit-correctAnswer"
                 class="block mb-2 text-sm font-medium"
                 [ngClass]="{
-                  'text-red-700 dark:text-red-500':
+                  'text-red-700':
                     taskForm.get('correctAnswer')?.invalid &&
                     taskForm.get('correctAnswer')?.touched,
-                  'text-green-700 dark:text-green-500': !(
+                  'text-green-700': !(
                     taskForm.get('correctAnswer')?.invalid &&
                     taskForm.get('correctAnswer')?.touched
                   )
@@ -1187,10 +1191,10 @@
                   placeholder="Enter correct answer"
                   class="border text-sm rounded-lg block w-full p-2.5 pr-10"
                   [ngClass]="{
-                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500':
+                    'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500':
                       taskForm.get('correctAnswer')?.invalid &&
                       taskForm.get('correctAnswer')?.touched,
-                    'bg-green-50 border-green-500 text-green-900 dark:text-green-400 placeholder-green-700 dark:placeholder-green-500 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-green-500':
+                    'bg-green-50 border-green-500 text-green-900 placeholder-green-700 focus:ring-green-500 focus:border-green-500':
                       !(
                         taskForm.get('correctAnswer')?.invalid &&
                         taskForm.get('correctAnswer')?.touched
@@ -1206,7 +1210,7 @@
                   taskForm.get('correctAnswer')?.invalid &&
                   taskForm.get('correctAnswer')?.touched
                 "
-                class="mt-2 text-sm text-red-600 dark:text-red-500"
+                class="mt-2 text-sm text-red-600"
               >
                 <span class="font-medium">Error!</span> Correct answer is
                 required.
@@ -1220,12 +1224,12 @@
         <button
           mat-button
           mat-dialog-close
-          class="text-gray-600 px-6 py-2 rounded-lg mr-4"
+          class="text-gray-600 px-6 py-2 rounded-lg mr-4 hover:bg-gray-100"
         >
           Cancel
         </button>
         <button
-          class="bg-[#2563eb] text-white px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          class="bg-indigo-600 text-white px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700"
           [disabled]="!taskForm.valid"
           (click)="dialogRef.close(taskForm.value)"
         >
@@ -1251,10 +1255,10 @@
         </p>
       </mat-dialog-content>
       <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close class="text-gray-600">
+        <button mat-button mat-dialog-close class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded">
           Cancel
         </button>
-        <button mat-raised-button color="warn" [mat-dialog-close]="true">
+        <button mat-raised-button color="warn" [mat-dialog-close]="true" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
           Delete
         </button>
       </mat-dialog-actions>
@@ -1263,61 +1267,73 @@
 
   <!-- Task Details Dialog -->
   <ng-template #taskDetailsDialog>
-    <div *ngIf="selectedTask">
-      <h2 mat-dialog-title>Task Details</h2>
+    <div *ngIf="selectedTask" class="p-6">
+      <h2 mat-dialog-title class="text-2xl font-bold text-indigo-700 flex items-center gap-2 mb-6">
+        <mat-icon>visibility</mat-icon> Task Details
+      </h2>
       <mat-dialog-content>
-        <div class="bg-gray-50 p-4 rounded-lg mb-4">
-          <!-- Task Details -->
-          <div class="flex justify-between items-center mb-4">
+        <div class="bg-gray-50 p-6 rounded-lg mb-6">
+          <!-- Task Header -->
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-800">{{ selectedTask.title }}</h3>
             <span
-              class="px-2 py-1 rounded-full text-xs font-medium"
-              [ngClass]="getTaskTypeClass(selectedTask.taskType)"
-            >
-              {{ selectedTask.taskType }}
-            </span>
-            <div
-              *ngIf="selectedTask"
-              class="text-xs font-medium"
+              class="px-3 py-1 rounded-full text-sm font-medium"
               [ngClass]="getStatusClass(selectedTask?.status)"
             >
+              <mat-icon class="mr-1 text-sm align-middle">{{ getStatusIcon(selectedTask.status) }}</mat-icon>
               {{ selectedTask?.status }}
-            </div>
+            </span>
           </div>
 
-          <h3 class="text-sm font-medium text-gray-500 mb-1">Description</h3>
-          <p class="text-gray-700 mb-4">{{ selectedTask.description }}</p>
+          <!-- Task Type -->
+          <div class="mb-6">
+            <span
+              class="px-3 py-1 rounded-full text-sm font-medium inline-flex items-center"
+              [ngClass]="getTaskTypeClass(selectedTask.taskType)"
+            >
+              <mat-icon class="mr-1 text-sm">{{ getTaskTypeIcon(selectedTask.taskType) }}</mat-icon>
+              {{ selectedTask.taskType }}
+            </span>
+          </div>
 
-          <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-1">
+          <!-- Description -->
+          <div class="mb-6">
+            <h4 class="text-sm font-medium text-gray-500 mb-2">Description</h4>
+            <p class="text-gray-700 bg-white p-4 rounded-lg border border-gray-200">{{ selectedTask.description }}</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+              <h4 class="text-sm font-medium text-gray-500 mb-2">
                 Points Value
-              </h3>
-              <div class="flex items-center text-amber-600 font-bold">
-                <mat-icon class="text-amber-500 mr-1">stars</mat-icon>
+              </h4>
+              <div class="flex items-center text-amber-600 font-bold text-xl">
+                <mat-icon class="text-amber-500 mr-2">stars</mat-icon>
                 {{ selectedTask.pointValue }} points
               </div>
             </div>
 
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-1">Due Date</h3>
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+              <h4 class="text-sm font-medium text-gray-500 mb-2">Due Date</h4>
               <div
-                class="flex items-center"
+                class="flex items-center text-lg"
                 [ngClass]="
                   isOverdue(selectedTask.dueDate)
                     ? 'text-red-600'
                     : 'text-gray-700'
                 "
               >
-                <mat-icon class="text-sm mr-1">event</mat-icon>
+                <mat-icon class="mr-2">event</mat-icon>
                 {{ selectedTask.dueDate | date : "MMM d, y" }}
               </div>
             </div>
 
-            <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-1">
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+              <h4 class="text-sm font-medium text-gray-500 mb-2">
                 Assigned To
-              </h3>
-              <div *ngIf="selectedTask?.childId">
+              </h4>
+              <div class="flex items-center text-lg text-gray-700" *ngIf="selectedTask?.childId">
+                <mat-icon class="mr-2">person</mat-icon>
                 {{ getChildName(selectedTask?.childId) }}
               </div>
             </div>
@@ -1325,50 +1341,65 @@
 
           <!-- Multiple Choice Question Preview -->
           <div
-            *ngIf="selectedTask.choices"
-            class="bg-white p-4 rounded-lg border border-gray-200 mb-4"
+            *ngIf="selectedTask.choices && selectedTask.choices.length > 0"
+            class="bg-white p-6 rounded-lg border border-gray-200 mb-6"
           >
-            <h3
-              class="text-sm font-medium text-gray-700 mb-3 flex items-center"
+            <h4
+              class="text-lg font-medium text-gray-700 mb-4 flex items-center"
             >
-              <mat-icon class="mr-2 text-blue-500">quiz</mat-icon> Multiple
+              <mat-icon class="mr-2 text-indigo-500">quiz</mat-icon> Multiple
               Choice Question
-            </h3>
+            </h4>
 
-            <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="grid grid-cols-2 gap-4 mb-6">
               <div
                 *ngFor="let choice of getChoicesArray(selectedTask.choices)"
-                class="p-3 rounded-lg border text-center transition-colors duration-200"
+                class="p-4 rounded-lg border text-center transition-colors duration-200"
                 [ngClass]="
                   choice === selectedTask.correctAnswer
                     ? 'bg-green-50 border-green-200 text-green-800'
-                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200'
+                    : 'bg-gray-50 border-gray-200 text-gray-700'
                 "
               >
                 {{ choice }}
                 <mat-icon
                   *ngIf="choice === selectedTask.correctAnswer"
-                  class="ml-1 text-green-500 text-sm"
+                  class="ml-1 text-green-500"
                   >check_circle</mat-icon
                 >
               </div>
             </div>
 
             <div
-              class="flex items-center text-green-700 bg-green-50 p-2 rounded-lg"
+              class="flex items-center text-green-700 bg-green-50 p-4 rounded-lg"
             >
               <mat-icon class="mr-2 text-green-500">check_circle</mat-icon>
-              <span
-                >Correct Answer:
-                <strong>{{ selectedTask.correctAnswer }}</strong></span
-              >
+              <span class="text-lg">
+                Correct Answer:
+                <strong>{{ selectedTask.correctAnswer }}</strong>
+              </span>
             </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+            <button
+              mat-stroked-button
+              color="primary"
+              (click)="editTask(selectedTask, editTaskDialog)"
+              class="border-indigo-500 text-indigo-600 hover:bg-indigo-50"
+            >
+              <mat-icon class="mr-2">edit</mat-icon> Edit Task
+            </button>
+          
+           
           </div>
         </div>
       </mat-dialog-content>
       <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close class="text-gray-600">Close</button>
+        <button mat-button mat-dialog-close class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded">Close</button>
       </mat-dialog-actions>
     </div>
   </ng-template>
 </div>
+
