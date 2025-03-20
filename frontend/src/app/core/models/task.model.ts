@@ -18,12 +18,17 @@ export interface Task {
   title: string;
   description: string;
   pointValue: number;
+  points: number;
   taskType: TaskType;
   status: TaskStatus;
   childId: number;
   dueDate: string | Date;
+  createdAt: string | Date;
   choices?: string[];
   correctAnswer?: string;
+  parentName?: string;
+  completedDate?: string | Date;
+  answer?: string;
 }
 
 export interface TaskAnswer {

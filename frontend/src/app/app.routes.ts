@@ -55,7 +55,7 @@ export const routes: Routes = [
         path: 'child/tasks',
         loadComponent: () =>
           import('./features/child/child-tasks/child-tasks.component').then(
-            (m) => m.ChildTasksComponent
+            (m) => m.ChildTaskComponent
           ),
       },
       {
