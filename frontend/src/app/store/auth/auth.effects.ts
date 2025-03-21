@@ -8,7 +8,6 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class AuthEffects {
-  // auth.effects.ts
   login$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.login),
@@ -38,12 +37,32 @@ export class AuthEffects {
             });
           }),
           catchError((error) => {
+            let errorMessage = '🤔 An error occurred during login.';
+
+            // Handle specific error responses from the backend
+            if (error.error?.message) {
+              switch (error.status) {
+                case 404:
+                  errorMessage = '👤 No account exists with this email';
+                  break;
+                case 401:
+                  errorMessage = '🔐 Incorrect email or password';
+                  break;
+                case 403:
+                  errorMessage =
+                    '🚫 Your account has been disabled. Please contact admin@parentPearl.com.';
+                  break;
+                case 500:
+                  errorMessage = '🛠️ A server error occurred during login';
+                  break;
+                default:
+                  // Use the backend message if available
+                  errorMessage = `⚠️ ${error.error.message}`;
+              }
+            }
+
             console.error('Login error:', error);
-            return of(
-              AuthActions.loginFailure({
-                error: error.message || 'Login failed',
-              })
-            );
+            return of(AuthActions.loginFailure({ error: errorMessage }));
           })
         )
       )
@@ -140,7 +159,7 @@ export class AuthEffects {
           // Clear local storage
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          
+
           // Navigate to login page
           this.router.navigate(['/auth/login']);
         })
