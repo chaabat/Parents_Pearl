@@ -148,16 +148,16 @@ export class AdminService {
   }
 
   // Statistics
-  getSystemStats(): Observable<{
-    activeUsers: number;
-    bannedUsers: number;
-    completedTasks: number;
-  }> {
-    return this.http
-      .get<any>(`${this.apiUrl}/admin/stats`, {
-        headers: this.getAuthHeaders(),
-      })
-      .pipe(tap((stats) => console.log('Fetched system stats:', stats)));
+  getActivityStats(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/admin/stats/activity`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  getSystemStats(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/admin/stats/system`, {
+      headers: this.getAuthHeaders()
+    });
   }
 
   uploadProfilePicture(file: File): Observable<any> {
