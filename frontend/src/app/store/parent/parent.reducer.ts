@@ -1,6 +1,6 @@
-import { createReducer, on } from '@ngrx/store';
-import * as ParentActions from './parent.actions';
-import { initialParentState } from './parent.state';
+import { createReducer, on } from "@ngrx/store"
+import * as ParentActions from "./parent.actions"
+import { initialParentState } from "./parent.state"
 
 export const parentReducer = createReducer(
   initialParentState,
@@ -101,9 +101,7 @@ export const parentReducer = createReducer(
 
   on(ParentActions.updateChildSuccess, (state, { child }) => ({
     ...state,
-    children: state.children.map((c) =>
-      c.id === child.id ? { ...c, ...child } : c
-    ),
+    children: state.children.map((c) => (c.id === child.id ? { ...c, ...child } : c)),
     error: null,
     loading: false,
   })),
@@ -111,5 +109,27 @@ export const parentReducer = createReducer(
   on(ParentActions.completeTaskSuccess, (state, { task }) => ({
     ...state,
     tasks: state.tasks.map((t) => (t.id === task.id ? task : t)),
-  }))
-);
+  })),
+
+  // Search actions
+  on(ParentActions.searchTasks, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+
+  on(ParentActions.searchTasksSuccess, (state, { tasks }) => ({
+    ...state,
+    tasks,
+    searchResults: tasks,
+    loading: false,
+    error: null,
+  })),
+
+  on(ParentActions.searchTasksFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+)
+
