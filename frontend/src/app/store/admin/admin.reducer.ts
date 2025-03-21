@@ -148,6 +148,38 @@ export const adminReducer = createReducer(
     ...state,
     error,
     loading: false,
+  })),
+
+  // Admin Profile
+  on(AdminActions.loadAdminProfile, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+  on(AdminActions.loadAdminProfileSuccess, (state, { profile }) => ({
+    ...state,
+    adminProfile: profile,
+    loading: false,
+  })),
+  on(AdminActions.loadAdminProfileFailure, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
+  on(AdminActions.updateAdminProfile, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+  on(AdminActions.updateAdminProfileSuccess, (state, { profile }) => ({
+    ...state,
+    adminProfile: profile,
+    loading: false,
+  })),
+  on(AdminActions.updateAdminProfileFailure, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false,
   }))
 );
 export { AdminState };

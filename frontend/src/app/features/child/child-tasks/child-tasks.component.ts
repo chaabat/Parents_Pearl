@@ -344,14 +344,14 @@ export class ChildTaskComponent implements OnInit, OnDestroy {
           }
 
           // Show success notification
-          this.completedTaskPoints = task.points;
+          this.completedTaskPoints = task.pointValue;
           this.snackBar.openFromTemplate(this.successNotification, {
             duration: 5000,
             panelClass: ['success-snackbar'],
           });
 
           // Update points immediately
-          this.totalPoints += task.points;
+          this.totalPoints += task.pointValue;
         },
         error: (error) => {
           console.error('Error completing task:', error);

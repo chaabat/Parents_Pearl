@@ -52,8 +52,6 @@ export class AdminEffects {
     )
   );
 
-  
-
   banUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AdminActions.banUser),
@@ -141,10 +139,46 @@ export class AdminEffects {
       mergeMap(() => [
         AdminActions.loadParents(),
         AdminActions.loadChildren(),
-       
+
         AdminActions.loadBannedUsers(),
         AdminActions.loadSystemStats(),
       ])
+    )
+  );
+
+  loadAdminProfile$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AdminActions.loadAdminProfile),
+      mergeMap(({ adminId }) =>
+        this.adminService.getAdminProfile(adminId).pipe(
+          map((profile) => AdminActions.loadAdminProfileSuccess({ profile })),
+          catchError((error) =>
+            of(AdminActions.loadAdminProfileFailure({ error }))
+          )
+        )
+      )
+    )
+  );
+
+  updateAdminProfile$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AdminActions.updateAdminProfile),
+      mergeMap(({ adminId, profileData }) =>
+        this.adminService.updateAdminProfile(adminId, profileData).pipe(
+          map((profile) => {
+            this.snackBar.open('Profile updated successfully', 'Close', {
+              duration: 3000,
+            });
+            return AdminActions.updateAdminProfileSuccess({ profile });
+          }),
+          catchError((error) => {
+            this.snackBar.open('Failed to update profile', 'Close', {
+              duration: 3000,
+            });
+            return of(AdminActions.updateAdminProfileFailure({ error }));
+          })
+        )
+      )
     )
   );
 

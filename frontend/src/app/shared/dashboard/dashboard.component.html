@@ -8,12 +8,15 @@
   <div class="mb-6" *ngIf="!(loading$ | async)">
     <div class="bg-white rounded-xl shadow-md p-6 relative overflow-hidden">
       <!-- Background gradient decoration -->
-      <div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-purple-50 to-transparent"></div>
-      
+      <div
+        class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-purple-50 to-transparent"
+      ></div>
+
       <!-- Welcome message -->
       <div class="relative z-10">
         <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
-          Welcome back, <span class="text-purple-600">{{ user?.name || 'User' }}</span>
+          Welcome back,
+          <span class="text-purple-600">{{ user?.name || "User" }}</span>
         </h1>
         <p class="text-gray-600 mt-2">
           <ng-container *ngIf="userRole === 'ADMIN'">
@@ -27,10 +30,10 @@
           </ng-container>
         </p>
       </div>
-      
+
       <!-- Date display -->
       <div class="absolute bottom-6 right-6 text-sm text-gray-500">
-        {{ currentDate | date: 'EEEE, MMMM d, y' }}
+        {{ currentDate | date : "EEEE, MMMM d, y" }}
       </div>
     </div>
   </div>
@@ -45,24 +48,32 @@
           User Statistics
         </h2>
         <div class="h-64">
-          <canvas baseChart
+          <canvas
+            baseChart
             [data]="userChartData"
             [options]="userChartOptions"
-            [type]="'doughnut'">
+            [type]="'doughnut'"
+          >
           </canvas>
         </div>
         <div class="grid grid-cols-3 gap-4 mt-4">
           <div class="text-center">
             <p class="text-sm text-gray-500">Parents</p>
-            <p class="text-xl font-bold text-blue-500">{{ (parents$ | async)?.length || 0 }}</p>
+            <p class="text-xl font-bold text-blue-500">
+              {{ (parents$ | async)?.length || 0 }}
+            </p>
           </div>
           <div class="text-center">
             <p class="text-sm text-gray-500">Children</p>
-            <p class="text-xl font-bold text-pink-500">{{ (adminChildren$ | async)?.length || 0 }}</p>
+            <p class="text-xl font-bold text-pink-500">
+              {{ (adminChildren$ | async)?.length || 0 }}
+            </p>
           </div>
           <div class="text-center">
             <p class="text-sm text-gray-500">Banned</p>
-            <p class="text-xl font-bold text-red-500">{{ (bannedUsers$ | async)?.length || 0 }}</p>
+            <p class="text-xl font-bold text-red-500">
+              {{ (bannedUsers$ | async)?.length || 0 }}
+            </p>
           </div>
         </div>
       </div>
@@ -74,10 +85,12 @@
           Activity Trends
         </h2>
         <div class="chart-container">
-          <canvas baseChart
+          <canvas
+            baseChart
             [data]="activityChartData"
             [options]="activityChartOptions"
-            [type]="'line'">
+            [type]="'line'"
+          >
           </canvas>
         </div>
       </div>
@@ -88,7 +101,7 @@
           <mat-icon class="mr-2 text-purple-600">health_and_safety</mat-icon>
           System Status
         </h2>
-        
+
         <div class="space-y-4">
           <div>
             <div class="flex justify-between mb-1">
@@ -96,41 +109,53 @@
               <span class="text-sm font-medium text-gray-700">28%</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div class="bg-green-500 h-2.5 rounded-full animate-progress" style="width: 28%"></div>
+              <div
+                class="bg-green-500 h-2.5 rounded-full animate-progress"
+                style="width: 28%"
+              ></div>
             </div>
           </div>
-          
+
           <div>
             <div class="flex justify-between mb-1">
               <span class="text-sm font-medium text-gray-700">Database</span>
               <span class="text-sm font-medium text-gray-700">65%</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div class="bg-yellow-500 h-2.5 rounded-full animate-progress" style="width: 65%"></div>
+              <div
+                class="bg-yellow-500 h-2.5 rounded-full animate-progress"
+                style="width: 65%"
+              ></div>
             </div>
           </div>
-          
+
           <div>
             <div class="flex justify-between mb-1">
               <span class="text-sm font-medium text-gray-700">Storage</span>
               <span class="text-sm font-medium text-gray-700">42%</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div class="bg-blue-500 h-2.5 rounded-full animate-progress" style="width: 42%"></div>
+              <div
+                class="bg-blue-500 h-2.5 rounded-full animate-progress"
+                style="width: 42%"
+              ></div>
             </div>
           </div>
-          
+
           <div>
             <div class="flex justify-between mb-1">
               <span class="text-sm font-medium text-gray-700">Memory</span>
               <span class="text-sm font-medium text-gray-700">78%</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div class="bg-orange-500 h-2.5 rounded-full animate-progress" style="width: 78%"></div>
+              <div
+                class="bg-orange-500 h-2.5 rounded-full animate-progress"
+                style="width: 78%"
+              ></div>
             </div>
           </div>
         </div>
-        
+
         <div class="mt-6 pt-4 border-t border-gray-100">
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium text-gray-700">Last updated</span>
@@ -149,10 +174,12 @@
           Points Distribution by Category
         </h2>
         <div class="chart-container">
-          <canvas baseChart
+          <canvas
+            baseChart
             [data]="pointsChartData"
             [options]="pointsChartOptions"
-            [type]="'bar'">
+            [type]="'bar'"
+          >
           </canvas>
         </div>
       </div>
@@ -164,18 +191,29 @@
           Recent Activity
         </h2>
         <div class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar">
-          <div *ngFor="let activity of recentActivities" class="flex items-start p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <div [ngClass]="{'bg-blue-100': activity.type === 'task_created', 
-                            'bg-green-100': activity.type === 'task_completed',
-                            'bg-purple-100': activity.type === 'reward_added',
-                            'bg-yellow-100': activity.type === 'points_earned',
-                            'bg-pink-100': activity.type === 'reward_redeemed'}" 
-                 class="rounded-full p-2 mr-4">
-              <mat-icon [ngClass]="{'text-blue-600': activity.type === 'task_created', 
-                                  'text-green-600': activity.type === 'task_completed',
-                                  'text-purple-600': activity.type === 'reward_added',
-                                  'text-yellow-600': activity.type === 'points_earned',
-                                  'text-pink-600': activity.type === 'reward_redeemed'}">
+          <div
+            *ngFor="let activity of recentActivities"
+            class="flex items-start p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div
+              [ngClass]="{
+                'bg-blue-100': activity.type === 'task_created',
+                'bg-green-100': activity.type === 'task_completed',
+                'bg-purple-100': activity.type === 'reward_added',
+                'bg-yellow-100': activity.type === 'points_earned',
+                'bg-pink-100': activity.type === 'reward_redeemed'
+              }"
+              class="rounded-full p-2 mr-4"
+            >
+              <mat-icon
+                [ngClass]="{
+                  'text-blue-600': activity.type === 'task_created',
+                  'text-green-600': activity.type === 'task_completed',
+                  'text-purple-600': activity.type === 'reward_added',
+                  'text-yellow-600': activity.type === 'points_earned',
+                  'text-pink-600': activity.type === 'reward_redeemed'
+                }"
+              >
                 {{ activity.icon }}
               </mat-icon>
             </div>
@@ -185,10 +223,12 @@
               <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
             </div>
           </div>
-          
+
           <!-- Empty state for no activities -->
           <div *ngIf="recentActivities.length === 0" class="text-center py-8">
-            <mat-icon class="text-gray-400 text-5xl">notifications_off</mat-icon>
+            <mat-icon class="text-gray-400 text-5xl"
+              >notifications_off</mat-icon
+            >
             <p class="text-gray-500 mt-2">No recent activities</p>
           </div>
         </div>
@@ -202,15 +242,30 @@
         Quick Actions
       </h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <button mat-raised-button color="primary" class="p-4" routerLink="/admin/users">
+        <button
+          mat-raised-button
+          color="primary"
+          class="p-4"
+          routerLink="/admin/users"
+        >
           <mat-icon class="white">people</mat-icon>
           <span class="block mt-2">User Management</span>
         </button>
-        <button mat-raised-button color="accent" class="p-4" routerLink="/profile">
+        <button
+          mat-raised-button
+          color="accent"
+          class="p-4"
+          routerLink="/profile"
+        >
           <mat-icon class="white">person</mat-icon>
           <span class="block mt-2">Profile</span>
         </button>
-        <button mat-raised-button color="warn" class="p-4" routerLink="/admin/reports">
+        <button
+          mat-raised-button
+          color="warn"
+          class="p-4"
+          routerLink="/admin/reports"
+        >
           <mat-icon class="white">assessment</mat-icon>
           <span class="block mt-2">Reports</span>
         </button>
@@ -236,23 +291,41 @@
           <p class="text-gray-600">Total Children</p>
         </div>
         <div class="space-y-4">
-          <div *ngFor="let child of children$ | async" class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+          <div
+            *ngFor="let child of children$ | async"
+            class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div
+              class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-4"
+            >
               <mat-icon class="text-purple-600">face</mat-icon>
             </div>
             <div class="flex-1">
               <p class="font-medium text-gray-800">{{ child.name }}</p>
-              <p class="text-sm text-gray-500">{{ child.totalPoints || 0 }} points</p>
+              <p class="text-sm text-gray-500">
+                {{ child.totalPoints || 0 }} points
+              </p>
             </div>
-            <button mat-icon-button color="primary" [routerLink]="['/parent/children']">
+            <button
+              mat-icon-button
+              color="primary"
+              [routerLink]="['/parent/children']"
+            >
               <mat-icon>visibility</mat-icon>
             </button>
           </div>
         </div>
         <div *ngIf="(children$ | async)?.length === 0" class="text-center py-8">
-          <mat-icon class="text-gray-400 text-5xl">sentiment_dissatisfied</mat-icon>
+          <mat-icon class="text-gray-400 text-5xl"
+            >sentiment_dissatisfied</mat-icon
+          >
           <p class="text-gray-500 mt-2">No children added yet</p>
-          <button mat-raised-button color="primary" class="mt-4" [routerLink]="['/parent/children']">
+          <button
+            mat-raised-button
+            color="primary"
+            class="mt-4"
+            [routerLink]="['/parent/children']"
+          >
             <mat-icon>add</mat-icon> Add Child
           </button>
         </div>
@@ -270,31 +343,50 @@
             <p class="text-sm text-gray-600">Total</p>
           </div>
           <div class="text-center">
-            <div class="text-2xl font-bold text-green-600">{{ completedTaskCount }}</div>
+            <div class="text-2xl font-bold text-green-600">
+              {{ completedTaskCount }}
+            </div>
             <p class="text-sm text-gray-600">Completed</p>
           </div>
           <div class="text-center">
-            <div class="text-2xl font-bold text-yellow-600">{{ pendingTaskCount }}</div>
+            <div class="text-2xl font-bold text-yellow-600">
+              {{ pendingTaskCount }}
+            </div>
             <p class="text-sm text-gray-600">Pending</p>
           </div>
         </div>
-        
+
         <!-- Task completion progress -->
         <div class="mb-6">
           <div class="flex justify-between mb-1">
-            <span class="text-sm font-medium text-gray-700">Completion Rate</span>
+            <span class="text-sm font-medium text-gray-700"
+              >Completion Rate</span
+            >
             <span class="text-sm font-medium text-gray-700">
               {{ getProgressPercentage(completedTaskCount, taskCount) }}%
             </span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-2.5">
-            <div [ngClass]="getProgressColor(getProgressPercentage(completedTaskCount, taskCount))" 
-                 class="h-2.5 rounded-full animate-progress" 
-                 [style.width.%]="getProgressPercentage(completedTaskCount, taskCount)"></div>
+            <div
+              [ngClass]="
+                getProgressColor(
+                  getProgressPercentage(completedTaskCount, taskCount)
+                )
+              "
+              class="h-2.5 rounded-full animate-progress"
+              [style.width.%]="
+                getProgressPercentage(completedTaskCount, taskCount)
+              "
+            ></div>
           </div>
         </div>
-        
-        <button mat-raised-button color="primary" class="w-full" [routerLink]="['/parent/tasks']">
+
+        <button
+          mat-raised-button
+          color="primary"
+          class="w-full"
+          [routerLink]="['/parent/tasks']"
+        >
           <mat-icon>add</mat-icon> Create New Task
         </button>
       </div>
@@ -305,13 +397,14 @@
           <mat-icon class="mr-2 text-purple-600">event</mat-icon>
           Calendar
         </h2>
-        <mat-calendar 
+        <mat-calendar
           [selected]="selectedDate"
           [dateClass]="dateClass"
           (selectedChange)="onDateSelected($event)"
-          class="calendar-small">
+          class="calendar-small"
+        >
         </mat-calendar>
-        
+
         <div *ngIf="selectedDate" class="mt-4">
           <h3 class="text-sm font-semibold mb-2">
             Events for {{ selectedDate | date }}
@@ -321,7 +414,10 @@
               *ngFor="let event of getEventsForDate(selectedDate)"
               class="p-2 bg-gray-50 rounded-lg text-sm flex items-center"
             >
-              <div class="w-3 h-3 rounded-full mr-2" [style.background-color]="getEventColor(event)"></div>
+              <div
+                class="w-3 h-3 rounded-full mr-2"
+                [style.background-color]="getEventColor(event)"
+              ></div>
               <div>
                 <p class="font-medium">{{ event.title }}</p>
                 <p class="text-xs text-gray-500">
@@ -349,18 +445,29 @@
           Recent Activity
         </h2>
         <div class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar">
-          <div *ngFor="let activity of recentActivities" class="flex items-start p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <div [ngClass]="{'bg-blue-100': activity.type === 'task_created', 
-                            'bg-green-100': activity.type === 'task_completed',
-                            'bg-purple-100': activity.type === 'reward_added',
-                            'bg-yellow-100': activity.type === 'points_earned',
-                            'bg-pink-100': activity.type === 'reward_redeemed'}" 
-                 class="rounded-full p-2 mr-4">
-              <mat-icon [ngClass]="{'text-blue-600': activity.type === 'task_created', 
-                                  'text-green-600': activity.type === 'task_completed',
-                                  'text-purple-600': activity.type === 'reward_added',
-                                  'text-yellow-600': activity.type === 'points_earned',
-                                  'text-pink-600': activity.type === 'reward_redeemed'}">
+          <div
+            *ngFor="let activity of recentActivities"
+            class="flex items-start p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div
+              [ngClass]="{
+                'bg-blue-100': activity.type === 'task_created',
+                'bg-green-100': activity.type === 'task_completed',
+                'bg-purple-100': activity.type === 'reward_added',
+                'bg-yellow-100': activity.type === 'points_earned',
+                'bg-pink-100': activity.type === 'reward_redeemed'
+              }"
+              class="rounded-full p-2 mr-4"
+            >
+              <mat-icon
+                [ngClass]="{
+                  'text-blue-600': activity.type === 'task_created',
+                  'text-green-600': activity.type === 'task_completed',
+                  'text-purple-600': activity.type === 'reward_added',
+                  'text-yellow-600': activity.type === 'points_earned',
+                  'text-pink-600': activity.type === 'reward_redeemed'
+                }"
+              >
                 {{ activity.icon }}
               </mat-icon>
             </div>
@@ -370,10 +477,12 @@
               <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
             </div>
           </div>
-          
+
           <!-- Empty state for no activities -->
           <div *ngIf="recentActivities.length === 0" class="text-center py-8">
-            <mat-icon class="text-gray-400 text-5xl">notifications_off</mat-icon>
+            <mat-icon class="text-gray-400 text-5xl"
+              >notifications_off</mat-icon
+            >
             <p class="text-gray-500 mt-2">No recent activities</p>
           </div>
         </div>
@@ -386,15 +495,30 @@
           Quick Actions
         </h2>
         <div class="grid grid-cols-2 gap-4">
-          <button mat-raised-button color="primary" class="p-4" [routerLink]="['/parent/tasks']">
+          <button
+            mat-raised-button
+            color="primary"
+            class="p-4"
+            [routerLink]="['/parent/tasks']"
+          >
             <mat-icon class="white">add_circle</mat-icon>
             <span class="white">New Task</span>
           </button>
-          <button mat-raised-button color="accent" class="p-4" [routerLink]="['/parent/rewards']">
+          <button
+            mat-raised-button
+            color="accent"
+            class="p-4"
+            [routerLink]="['/parent/rewards']"
+          >
             <mat-icon class="primary">card_giftcard</mat-icon>
             <span class="white">Add Reward</span>
           </button>
-          <button mat-raised-button color="warn" class="p-4" [routerLink]="['/parent/children']">
+          <button
+            mat-raised-button
+            color="warn"
+            class="p-4"
+            [routerLink]="['/parent/children']"
+          >
             <mat-icon class="white">person_add</mat-icon>
             <span class="white">Add Child</span>
           </button>
@@ -417,10 +541,17 @@
           Your Points
         </h2>
         <div class="text-center">
-          <div class="text-5xl font-bold text-purple-600 mb-2">{{ totalPoints$ | async }}</div>
+          <div class="text-5xl font-bold text-purple-600 mb-2">
+            {{ totalPoints$ | async }}
+          </div>
           <p class="text-gray-600">Total Points</p>
-          
-          <button mat-raised-button color="primary" class="mt-6 w-full" [routerLink]="['/child/rewards']">
+
+          <button
+            mat-raised-button
+            color="primary"
+            class="mt-6 w-full"
+            [routerLink]="['/child/rewards']"
+          >
             <mat-icon>redeem</mat-icon> Redeem Rewards
           </button>
         </div>
@@ -432,37 +563,50 @@
           <mat-icon class="mr-2 text-purple-600">assignment</mat-icon>
           Task Progress
         </h2>
-        
+
         <div class="space-y-4">
-          <ng-container *ngIf="(childTasks$ | async) as tasks">
+          <ng-container *ngIf="childTasks$ | async as tasks">
             <ng-container *ngIf="tasks.length > 0; else noTasks">
               <div *ngFor="let task of tasks.slice(0, 4)">
                 <div class="flex justify-between mb-1">
-                  <span class="text-sm font-medium text-gray-700">{{ task.title }}</span>
+                  <span class="text-sm font-medium text-gray-700">{{
+                    task.title
+                  }}</span>
                   <span class="text-sm font-medium text-gray-700">
-                    {{ task.status === 'COMPLETED' ? '100%' : '0%' }}
+                    {{ task.status === "COMPLETED" ? "100%" : "0%" }}
                   </span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div 
-                    [ngClass]="task.status === 'COMPLETED' ? 'bg-green-500' : 'bg-yellow-500'" 
-                    class="h-2.5 rounded-full animate-progress" 
-                    [style.width]="task.status === 'COMPLETED' ? '100%' : '0%'">
-                  </div>
+                  <div
+                    [ngClass]="
+                      task.status === 'COMPLETED'
+                        ? 'bg-green-500'
+                        : 'bg-yellow-500'
+                    "
+                    class="h-2.5 rounded-full animate-progress"
+                    [style.width]="task.status === 'COMPLETED' ? '100%' : '0%'"
+                  ></div>
                 </div>
               </div>
             </ng-container>
-            
+
             <ng-template #noTasks>
               <div class="text-center py-8">
-                <mat-icon class="text-gray-400 text-5xl">assignment_late</mat-icon>
+                <mat-icon class="text-gray-400 text-5xl"
+                  >assignment_late</mat-icon
+                >
                 <p class="text-gray-500 mt-2">No tasks assigned yet</p>
               </div>
             </ng-template>
           </ng-container>
         </div>
-        
-        <button mat-raised-button color="primary" class="mt-6 w-full" [routerLink]="['/child/tasks']">
+
+        <button
+          mat-raised-button
+          color="primary"
+          class="mt-6 w-full"
+          [routerLink]="['/child/tasks']"
+        >
           <mat-icon>visibility</mat-icon> View All Tasks
         </button>
       </div>
@@ -473,18 +617,36 @@
           <mat-icon class="mr-2 text-purple-600">emoji_events</mat-icon>
           Achievements
         </h2>
-        
+
         <div class="grid grid-cols-3 gap-4">
-          <div *ngFor="let achievement of achievements" 
-               [ngClass]="{'achievement-badge': true, 'locked': !achievement.unlocked}"
-               class="flex flex-col items-center p-2 rounded-lg">
-            <div [style.background-color]="achievement.unlocked ? achievement.color : '#d1d5db'" 
-                 class="w-12 h-12 rounded-full flex items-center justify-center mb-2">
-              <mat-icon [ngClass]="achievement.unlocked ? 'text-white' : 'text-gray-400'">
+          <div
+            *ngFor="let achievement of achievements"
+            [ngClass]="{
+              'achievement-badge': true,
+              locked: !achievement.unlocked
+            }"
+            class="flex flex-col items-center p-2 rounded-lg"
+          >
+            <div
+              [style.background-color]="
+                achievement.unlocked ? achievement.color : '#d1d5db'
+              "
+              class="w-12 h-12 rounded-full flex items-center justify-center mb-2"
+            >
+              <mat-icon
+                [ngClass]="
+                  achievement.unlocked ? 'text-white' : 'text-gray-400'
+                "
+              >
                 {{ achievement.icon }}
               </mat-icon>
             </div>
-            <p class="text-xs text-center font-medium" [ngClass]="achievement.unlocked ? 'text-gray-800' : 'text-gray-500'">
+            <p
+              class="text-xs text-center font-medium"
+              [ngClass]="
+                achievement.unlocked ? 'text-gray-800' : 'text-gray-500'
+              "
+            >
               {{ achievement.name }}
             </p>
           </div>
@@ -500,13 +662,14 @@
           <mat-icon class="mr-2 text-purple-600">event</mat-icon>
           Calendar
         </h2>
-        <mat-calendar 
+        <mat-calendar
           [selected]="selectedDate"
           [dateClass]="dateClass"
           (selectedChange)="onDateSelected($event)"
-          class="calendar-small">
+          class="calendar-small"
+        >
         </mat-calendar>
-        
+
         <div *ngIf="selectedDate" class="mt-4">
           <h3 class="text-sm font-semibold mb-2">
             Events for {{ selectedDate | date }}
@@ -516,7 +679,10 @@
               *ngFor="let event of getEventsForDate(selectedDate)"
               class="p-2 bg-gray-50 rounded-lg text-sm flex items-center"
             >
-              <div class="w-3 h-3 rounded-full mr-2" [style.background-color]="getEventColor(event)"></div>
+              <div
+                class="w-3 h-3 rounded-full mr-2"
+                [style.background-color]="getEventColor(event)"
+              ></div>
               <div>
                 <p class="font-medium">{{ event.title }}</p>
                 <p class="text-xs text-gray-500">
@@ -541,30 +707,45 @@
           Recent Activity
         </h2>
         <div class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar">
-          <div *ngFor="let activity of recentActivities" class="flex items-start p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <div [ngClass]="{'bg-blue-100': activity.type === 'task_created', 
-                            'bg-green-100': activity.type === 'task_completed',
-                            'bg-purple-100': activity.type === 'reward_added',
-                            'bg-yellow-100': activity.type === 'points_earned',
-                            'bg-pink-100': activity.type === 'reward_redeemed'}" 
-                 class="rounded-full p-2 mr-4">
-              <mat-icon [ngClass]="{'text-blue-600': activity.type === 'task_created', 
-                                  'text-green-600': activity.type === 'task_completed',
-                                  'text-purple-600': activity.type === 'reward_added',
-                                  'text-yellow-600': activity.type === 'points_earned',
-                                  'text-pink-600': activity.type === 'reward_redeemed'}">
+          <div
+            *ngFor="let activity of recentActivities"
+            class="flex items-start p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div
+              [ngClass]="{
+                'bg-blue-100': activity.type === 'task_created',
+                'bg-green-100': activity.type === 'task_completed',
+                'bg-purple-100': activity.type === 'reward_added',
+                'bg-yellow-100': activity.type === 'points_earned',
+                'bg-pink-100': activity.type === 'reward_redeemed'
+              }"
+              class="rounded-full p-2 mr-4"
+            >
+              <mat-icon
+                [ngClass]="{
+                  'text-blue-600': activity.type === 'task_created',
+                  'text-green-600': activity.type === 'task_completed',
+                  'text-purple-600': activity.type === 'reward_added',
+                  'text-yellow-600': activity.type === 'points_earned',
+                  'text-pink-600': activity.type === 'reward_redeemed'
+                }"
+              >
                 {{ activity.icon }}
               </mat-icon>
             </div>
             <div class="flex-1">
-              <p class="font-medium text-gray-800">{{ activity.description }}</p>
+              <p class="font-medium text-gray-800">
+                {{ activity.description }}
+              </p>
               <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
             </div>
           </div>
-          
+
           <!-- Empty state for no activities -->
           <div *ngIf="recentActivities.length === 0" class="text-center py-8">
-            <mat-icon class="text-gray-400 text-5xl">notifications_off</mat-icon>
+            <mat-icon class="text-gray-400 text-5xl"
+              >notifications_off</mat-icon
+            >
             <p class="text-gray-500 mt-2">No recent activities</p>
           </div>
         </div>
@@ -572,4 +753,3 @@
     </div>
   </ng-container>
 </div>
-

@@ -17,6 +17,7 @@ export interface AdminState {
   systemSettings: any;
   loading: boolean;
   error: string | null;
+  adminProfile: Admin | null;
 }
 
 export const initialAdminState: AdminState = {
@@ -30,4 +31,5 @@ export const initialAdminState: AdminState = {
   systemSettings: null,
   loading: false,
   error: null,
+  adminProfile: null,
 };

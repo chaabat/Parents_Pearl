@@ -140,3 +140,34 @@ export const loadAdminDashboardFailure = createAction(
   '[Admin] Load Dashboard Failure',
   props<{ error: string }>()
 );
+
+// Add these new actions
+export const loadAdminProfile = createAction(
+  '[Admin] Load Admin Profile',
+  props<{ adminId: number }>()
+);
+
+export const loadAdminProfileSuccess = createAction(
+  '[Admin] Load Admin Profile Success',
+  props<{ profile: Admin }>()
+);
+
+export const loadAdminProfileFailure = createAction(
+  '[Admin] Load Admin Profile Failure',
+  props<{ error: any }>()
+);
+
+export const updateAdminProfile = createAction(
+  '[Admin] Update Admin Profile',
+  props<{ adminId: number; profileData: any }>()
+);
+
+export const updateAdminProfileSuccess = createAction(
+  '[Admin] Update Admin Profile Success',
+  props<{ profile: Admin }>()
+);
+
+export const updateAdminProfileFailure = createAction(
+  '[Admin] Update Admin Profile Failure',
+  props<{ error: any }>()
+);

@@ -128,13 +128,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       description: ['', Validators.required],
       pointValue: [0, [Validators.required, Validators.min(0)]],
       taskType: [TaskType.MAZE, Validators.required],
-      dueDate: [
-        null,
-        [
-          Validators.required,
-          this.futureDateValidator(),  
-        ],
-      ],
+      dueDate: [null, [Validators.required, this.futureDateValidator()]],
       choices: [''],
       correctAnswer: ['', Validators.required],
       childId: [null, Validators.required],
@@ -652,7 +646,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
       const selectedDate = new Date(control.value);
       const today = new Date();
-      today.setHours(0, 0, 0, 0);  
+      today.setHours(0, 0, 0, 0);
 
       if (selectedDate < today) {
         return { pastDate: true };

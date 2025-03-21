@@ -42,3 +42,8 @@ export const selectSearchResults = createSelector(
   selectAdminState,
   (state) => state.searchResults || []
 );
+
+export const selectAdminProfile = createSelector(
+  selectAdminState,
+  (state) => state?.adminProfile ?? null
+);
