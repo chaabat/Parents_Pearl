@@ -84,6 +84,7 @@ export class ProfilComponent implements OnInit, OnDestroy {
   adminProfile$ = this.store.select(AdminSelectors.selectAdminProfile);
   adminLoading$ = this.store.select(AdminSelectors.selectAdminLoading);
   adminError$ = this.store.select(AdminSelectors.selectAdminError);
+  hidePassword = true;
 
   constructor(
     private fb: FormBuilder,
@@ -96,34 +97,29 @@ export class ProfilComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar
   ) {
     this.profileForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
+      name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
+      password: [
+        '',
+        [
+          // Make password optional but validate if provided
+          (control: AbstractControl) => {
+            const value = control.value;
+            if (!value) return null; // Allow empty password
+            if (value.length < 6) return { minlength: true };
+            if (!/[A-Za-z]/.test(value)) return { noLetter: true };
+            if (!/[0-9]/.test(value)) return { noNumber: true };
+            return null;
+          },
+        ],
+      ],
       dateOfBirth: ['', [Validators.required, ageValidator]],
       picture: [''],
-      password: ['', [this.passwordValidator]],
     });
   }
 
-  // Password validator - either empty or meets requirements
-  passwordValidator(
-    control: AbstractControl
-  ): { [key: string]: boolean } | null {
-    const value = control.value;
-    if (!value) return null; // Empty is valid
-
-    // At least 6 characters, with at least one letter and one number
-    const hasLetter = /[a-zA-Z]/.test(value);
-    const hasNumber = /[0-9]/.test(value);
-    const isLongEnough = value.length >= 6;
-
-    if (!hasLetter || !hasNumber || !isLongEnough) {
-      return { invalidPassword: true };
-    }
-
-    return null;
-  }
-
   ngOnInit(): void {
+    this.initializeForm();
     // Get user role and ID first
     this.store
       .select(AuthSelectors.selectUser)
@@ -143,13 +139,38 @@ export class ProfilComponent implements OnInit, OnDestroy {
       });
   }
 
+  private initializeForm(): void {
+    this.profileForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: [
+        '',
+        [
+          // Make password optional but validate if provided
+          (control: AbstractControl) => {
+            const value = control.value;
+            if (!value) return null; // Allow empty password
+            if (value.length < 6) return { minlength: true };
+            if (!/[A-Za-z]/.test(value)) return { noLetter: true };
+            if (!/[0-9]/.test(value)) return { noNumber: true };
+            return null;
+          },
+        ],
+      ],
+      dateOfBirth: ['', [Validators.required, ageValidator]],
+      picture: [''],
+    });
+  }
+
   private loadAdminProfile(): void {
     if (!this.userId) return;
 
-    this.store.dispatch(AdminActions.loadAdminProfile({ adminId: this.userId }));
+    this.store.dispatch(
+      AdminActions.loadAdminProfile({ adminId: this.userId })
+    );
 
     // Subscribe to admin profile changes
-    this.adminProfile$.pipe(takeUntil(this.destroy$)).subscribe(profile => {
+    this.adminProfile$.pipe(takeUntil(this.destroy$)).subscribe((profile) => {
       if (profile) {
         this.originalProfile = { ...profile };
         this.profileForm.patchValue({
@@ -227,39 +248,48 @@ export class ProfilComponent implements OnInit, OnDestroy {
 
     // Check if email or password is being changed
     const isEmailChanged = formData.email !== this.originalProfile.email;
-    const isPasswordChanged = formData.password && formData.password.trim().length > 0;
+    const isPasswordChanged =
+      formData.password && formData.password.trim().length > 0;
 
-    this.adminService.updateAdminProfile(this.userId, formData).pipe(
-      tap(() => {
-        this.snackBar.open('Profile updated successfully', 'Close', {
-          duration: 3000,
-        });
+    this.adminService
+      .updateAdminProfile(this.userId, formData)
+      .pipe(
+        tap(() => {
+          this.snackBar.open('Profile updated successfully', 'Close', {
+            duration: 3000,
+          });
 
-        // If email or password changed, show message and logout
-        if (isEmailChanged || isPasswordChanged) {
-          this.snackBar.open(
-            'Your credentials have been updated. Please login again.',
-            'Close',
-            { duration: 5000 }
-          );
-          
-          // Short delay before logout to allow user to read the message
-          setTimeout(() => {
-            this.store.dispatch(AuthActions.logout());
-          }, 2000);
-        }
-      }),
-      catchError(error => {
-        this.snackBar.open('Failed to update profile', 'Close', {
-          duration: 3000,
-        });
-        throw error;
-      })
-    ).subscribe();
+          // If email or password changed, show message and logout
+          if (isEmailChanged || isPasswordChanged) {
+            this.snackBar.open(
+              'Your credentials have been updated. Please login again.',
+              'Close',
+              { duration: 5000 }
+            );
+
+            // Short delay before logout to allow user to read the message
+            setTimeout(() => {
+              this.store.dispatch(AuthActions.logout());
+            }, 2000);
+          }
+        }),
+        catchError((error) => {
+          this.snackBar.open('Failed to update profile', 'Close', {
+            duration: 3000,
+          });
+          throw error;
+        })
+      )
+      .subscribe();
   }
 
   private submitParentProfile(formData: any): void {
     if (!this.userId) return;
+
+    // Check if email or password is being changed
+    const isEmailChanged = formData.email !== this.originalProfile.email;
+    const isPasswordChanged =
+      formData.password && formData.password.trim().length > 0;
 
     const updateData: any = {
       name: formData.name,
@@ -271,37 +301,50 @@ export class ProfilComponent implements OnInit, OnDestroy {
       updateData.password = formData.password;
     }
 
+    // Handle image upload first if needed
+    const updateProfile = (data: any) => {
+      this.store.dispatch(
+        ParentActions.updateParentProfile({
+          parentId: this.userId!,
+          profileData: data,
+        })
+      );
+
+      // Show success message and handle logout if needed
+      this.snackBar.open('Profile updated successfully', 'Close', {
+        duration: 3000,
+      });
+
+      // If email or password changed, show message and logout
+      if (isEmailChanged || isPasswordChanged) {
+        this.snackBar.open(
+          'Your credentials have been updated. Please login again.',
+          'Close',
+          { duration: 5000 }
+        );
+
+        // Short delay before logout to allow user to read the message
+        setTimeout(() => {
+          this.store.dispatch(AuthActions.logout());
+        }, 2000);
+      }
+    };
+
     if (this.selectedFile) {
       this.uploadImage().subscribe({
         next: (imageUrl) => {
           if (imageUrl) {
             updateData.picture = imageUrl;
           }
-          this.store.dispatch(
-            ParentActions.updateParentProfile({
-              parentId: this.userId!,
-              profileData: updateData,
-            })
-          );
+          updateProfile(updateData);
         },
         error: (error) => {
           console.error('Image upload failed:', error);
-          // Continue with update without the new image
-          this.store.dispatch(
-            ParentActions.updateParentProfile({
-              parentId: this.userId!,
-              profileData: updateData,
-            })
-          );
+          updateProfile(updateData);
         },
       });
     } else {
-      this.store.dispatch(
-        ParentActions.updateParentProfile({
-          parentId: this.userId!,
-          profileData: updateData,
-        })
-      );
+      updateProfile(updateData);
     }
   }
 
@@ -461,9 +504,10 @@ export class ProfilComponent implements OnInit, OnDestroy {
     if (control.errors['maxlength'])
       return `Maximum ${control.errors['maxlength'].requiredLength} characters allowed`;
     if (control.errors['tooYoung']) return 'You must be at least 18 years old';
-    if (control.errors['invalidPassword'])
-      return 'Password must be at least 6 characters with at least one letter and one number';
-    if (control.errors['passwordMismatch']) return 'Passwords do not match';
+    if (control.errors['noLetter'])
+      return 'Password must contain at least one letter';
+    if (control.errors['noNumber'])
+      return 'Password must contain at least one number';
 
     return 'Invalid input';
   }

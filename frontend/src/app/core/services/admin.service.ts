@@ -131,7 +131,7 @@ export class AdminService {
     // Create a copy of the data and remove the password if it's empty or undefined
     const updateData = { ...data };
     if (!updateData.password) {
-      delete updateData.password;  // Remove password if not provided
+      delete updateData.password; // Remove password if not provided
     }
 
     return this.http
@@ -148,16 +148,16 @@ export class AdminService {
   }
 
   // Statistics
-  getActivityStats(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/admin/stats/activity`, {
-      headers: this.getAuthHeaders()
-    });
-  }
-
-  getSystemStats(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/admin/stats/system`, {
-      headers: this.getAuthHeaders()
-    });
+  getSystemStats(): Observable<{
+    activeUsers: number;
+    bannedUsers: number;
+    completedTasks: number;
+  }> {
+    return this.http
+      .get<any>(`${this.apiUrl}/admin/stats`, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(tap((stats) => console.log('Fetched system stats:', stats)));
   }
 
   uploadProfilePicture(file: File): Observable<any> {
@@ -167,6 +167,8 @@ export class AdminService {
   }
 
   getProfilePicture(fileName: string): Observable<Blob> {
-    return this.http.get(`${environment.apiUrl}/uploads/images/${fileName}`, { responseType: 'blob' });
+    return this.http.get(`${environment.apiUrl}/uploads/images/${fileName}`, {
+      responseType: 'blob',
+    });
   }
 }

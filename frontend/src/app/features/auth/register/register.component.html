@@ -1,204 +1,221 @@
 <div
-  class="h-screen flex items-center justify-center p-4"
-  style="
-    background-image: url('https://res.cloudinary.com/dlwyetxjd/image/upload/v1741169930/iplsv6boxpppfb0rldxv.jpg');
-    background-size: cover;
-    background-position: center;
-  "
+  class="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
+  style="background-image: url('https://res.cloudinary.com/dlwyetxjd/image/upload/v1741169930/iplsv6boxpppfb0rldxv.jpg');"
 >
-  <div class="max-w-2xl w-full bg-white rounded-xl shadow-lg overflow-hidden">
-    <!-- Header -->
+  <div class="max-w-2xl w-full bg-white rounded-xl shadow-2xl overflow-hidden animate-fadeIn">
+    <!-- Header with background image -->
     <div
-      class="p-4 text-center"
-      style="
-        background-image: url('https://res.cloudinary.com/dlwyetxjd/image/upload/v1741190272/z63tyzvmi1ffocivntkw.jpg');
-        background-size: cover;
-        background-position: center;
-      "
+      class="p-6 text-center"
+      style="background-image: url('https://res.cloudinary.com/dlwyetxjd/image/upload/v1741190272/z63tyzvmi1ffocivntkw.jpg'); background-size: cover; background-position: center;"
     >
-      <div class="mb-4 relative mx-auto w-28 h-28">
-        <div
-          class="w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg"
-        >
+      <div class="mb-4 relative mx-auto w-28 h-28 animate-float">
+        <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg">
           <img
-            [src]="
-              imagePreview ||
-              'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741189897/bb1aexk0lnjm9tqxlvvg.jpg'
-            "
+            [src]="imagePreview || 'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741189897/bb1aexk0lnjm9tqxlvvg.jpg'"
             alt="Profile picture"
             class="w-full h-full object-cover"
           />
-
-          <!-- Hidden file input -->
-          <input
-            type="file"
-            accept="image/*"
-            class="hidden"
-            #fileInput
-            (change)="onFileSelected($event)"
-          />
         </div>
 
-        <!-- Add Camera Button -->
+        <!-- Hidden file input -->
+        <input
+          type="file"
+          accept="image/*"
+          class="hidden"
+          #fileInput
+          (change)="onFileSelected($event)"
+        />
+
+        <!-- Camera Button with pulse animation -->
         <button
-          mat-mini-fab
-          color="white"
-          class="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4"
-          (click)="fileInput.click()"
           type="button"
+          class="absolute bottom-0 right-0 bg-white text-purple-600 rounded-full p-2 shadow-lg transform translate-x-1/4 translate-y-1/4 hover:bg-purple-50 transition-colors animate-pulse-slow"
+          (click)="fileInput.click()"
         >
-          <mat-icon>add_a_photo</mat-icon>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+          </svg>
         </button>
       </div>
+      <h2 class="text-white text-2xl font-bold mt-2 animate-slideUp">Create Your Account</h2>
+      <p class="text-purple-100 mt-1 animate-slideUp animation-delay-100">Join our community of parents</p>
     </div>
 
-    <!-- Add error message for invalid file -->
-    <mat-error
-      class="text-center mb-4"
-      *ngIf="registerForm.get('picture')?.hasError('invalidFile')"
-    >
-      Please upload a valid image file (max 10MB)
-    </mat-error>
+    <!-- File upload error message -->
+    <div *ngIf="registerForm.get('picture')?.hasError('invalidFile') && registerForm.get('picture')?.touched" 
+         class="bg-red-50 text-red-600 p-3 text-center text-sm animate-fadeIn">
+      {{ registerForm.get('picture')?.errors?.['invalidFile'] }}
+    </div>
 
     <!-- Parenting Message -->
-    <div class="text-center px-8 pb-4 mt-4">
+    <div class="text-center px-8 py-4 bg-purple-50 animate-fadeIn animation-delay-200">
       <p class="text-gray-600 italic">
         "Being a parent means guiding your child with love, wisdom, and
         patience. Register today to start your journey of raising the next
         generation with care and dedication."
       </p>
-      <p class="text-red-600 font-medium mt-2">
-        Note: You must be 18 years or older to register. If you're under 18,
-        please have a parent or guardian register on your behalf.
+      <p class="text-purple-600 font-medium mt-2">
+        Note: You must be 18 years or older to register as a parent.
       </p>
     </div>
 
     <!-- Registration Form -->
     <div class="p-8">
-      <form
-        [formGroup]="registerForm"
-        (ngSubmit)="onSubmit()"
-        class="space-y-6"
-      >
-        <!-- Name and Email with better spacing -->
-        <div class="grid md:grid-cols-2 gap-6">
-          <mat-form-field class="w-full">
-            <mat-label>Full Name</mat-label>
-            <input
-              matInput
-              formControlName="name"
-              placeholder="John Doe"
-              class="py-1"
-            />
-            <mat-icon matPrefix class="mr-2 text-gray-400">person</mat-icon>
-            <mat-error *ngIf="registerForm.get('name')?.hasError('required')">
-              Name is required
-            </mat-error>
-          </mat-form-field>
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Name and Email in one line -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slideUp animation-delay-300">
+          <!-- Name Field -->
+          <div class="space-y-2">
+            <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+            <div class="relative rounded-md shadow-sm">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                id="name"
+                formControlName="name"
+                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition-all hover:border-purple-300"
+                placeholder="John Doe"
+              />
+            </div>
+            <div *ngIf="registerForm.get('name')?.invalid && (registerForm.get('name')?.dirty || registerForm.get('name')?.touched)" class="text-red-600 text-sm mt-1">
+              <div *ngIf="registerForm.get('name')?.errors?.['required']">Name is required</div>
+              <div *ngIf="registerForm.get('name')?.errors?.['minlength']">Name must be at least 3 characters</div>
+            </div>
+          </div>
 
-          <mat-form-field class="w-full">
-            <mat-label>Email</mat-label>
-            <input
-              matInput
-              formControlName="email"
-              type="email"
-              placeholder="your@email.com"
-              class="py-1"
-            />
-            <mat-icon matPrefix class="mr-2 text-gray-400">email</mat-icon>
-            <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
-              Email is required
-            </mat-error>
-            <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
-              Please enter a valid email
-            </mat-error>
-          </mat-form-field>
+          <!-- Email Field -->
+          <div class="space-y-2">
+            <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+            <div class="relative rounded-md shadow-sm">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+              </div>
+              <input
+                type="email"
+                id="email"
+                formControlName="email"
+                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition-all hover:border-purple-300"
+                placeholder="your@email.com"
+              />
+            </div>
+            <div *ngIf="registerForm.get('email')?.invalid && (registerForm.get('email')?.dirty || registerForm.get('email')?.touched)" class="text-red-600 text-sm mt-1">
+              <div *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</div>
+              <div *ngIf="registerForm.get('email')?.errors?.['email']">Please enter a valid email address</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Password fields with better spacing -->
-        <div class="grid md:grid-cols-2 gap-6">
-          <mat-form-field class="w-full">
-            <mat-label>Password</mat-label>
-            <input
-              matInput
-              formControlName="password"
-              [type]="hidePassword ? 'password' : 'text'"
-              class="py-1"
-            />
-            <mat-icon matPrefix class="mr-2 text-gray-400">lock</mat-icon>
-            <button
-              mat-icon-button
-              matSuffix
-              (click)="hidePassword = !hidePassword"
-              type="button"
-            >
-              <mat-icon>{{
-                hidePassword ? "visibility_off" : "visibility"
-              }}</mat-icon>
-            </button>
-            <mat-error
-              *ngIf="registerForm.get('password')?.hasError('required')"
-            >
-              Password is required
-            </mat-error>
-          </mat-form-field>
+        <!-- Password and Date of Birth in one line -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slideUp animation-delay-400">
+          <!-- Password Field -->
+          <div class="space-y-2">
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <div class="relative rounded-md shadow-sm">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <input
+                [type]="hidePassword ? 'password' : 'text'"
+                id="password"
+                formControlName="password"
+                class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition-all hover:border-purple-300"
+                placeholder="••••••••"
+              />
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button
+                  type="button"
+                  class="text-gray-400 hover:text-gray-500 focus:outline-none"
+                  (click)="hidePassword = !hidePassword"
+                >
+                  <svg *ngIf="hidePassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                  </svg>
+                  <svg *ngIf="!hidePassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
+                    <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div *ngIf="registerForm.get('password')?.invalid && (registerForm.get('password')?.dirty || registerForm.get('password')?.touched)" class="text-red-600 text-sm mt-1">
+              <div *ngIf="registerForm.get('password')?.errors?.['required']">Password is required</div>
+              <div *ngIf="registerForm.get('password')?.errors?.['minlength']">Password must be at least 6 characters</div>
+            </div>
+          </div>
 
-          <mat-form-field class="w-full">
-            <mat-label>Date of Birth</mat-label>
-            <input
-              matInput
-              formControlName="dateOfBirth"
-              [matDatepicker]="picker"
-              class="py-1"
-            />
-            <mat-datepicker-toggle
-              matSuffix
-              [for]="picker"
-            ></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-            <mat-error
-              *ngIf="registerForm.get('dateOfBirth')?.hasError('required')"
-            >
-              Date of birth is required
-            </mat-error>
-          </mat-form-field>
+          <!-- Date of Birth Field -->
+          <div class="space-y-2">
+            <label for="dateOfBirth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
+            <div class="relative rounded-md shadow-sm">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <input
+                matInput
+                [matDatepicker]="picker"
+                formControlName="dateOfBirth"
+                class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition-all hover:border-purple-300"
+                placeholder="MM/DD/YYYY"
+              />
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <mat-datepicker-toggle [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </div>
+            </div>
+            <div *ngIf="registerForm.get('dateOfBirth')?.invalid && (registerForm.get('dateOfBirth')?.dirty || registerForm.get('dateOfBirth')?.touched)" class="text-red-600 text-sm mt-1">
+              <div *ngIf="registerForm.get('dateOfBirth')?.errors?.['required']">Date of birth is required</div>
+              <div *ngIf="registerForm.get('dateOfBirth')?.errors?.['underage']">You must be at least 18 years old to register as a parent</div>
+            </div>
+          </div>
         </div>
-
-        <!-- Date of Birth with consistent styling -->
 
         <!-- Error Message Display -->
         <div
           *ngIf="error$ | async as error"
-          class="bg-red-50 text-red-700 p-3 rounded-md mb-4 text-center text-sm"
+          class="bg-red-50 text-red-700 p-4 rounded-lg flex items-center animate-shake"
         >
-          <mat-icon class="align-middle mr-1">error_outline</mat-icon>
-          {{ error }}
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          <span>{{ error }}</span>
         </div>
 
         <!-- Loading Spinner -->
         <div *ngIf="loading$ | async" class="flex justify-center my-4">
-          <mat-spinner diameter="30"></mat-spinner>
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
         </div>
 
-        <!-- Submit Button with better spacing -->
+        <!-- Submit Button with animation -->
         <button
-          mat-raised-button
-          color="primary"
           type="submit"
-          class="w-full py-3 text-lg font-medium mt-6"
           [disabled]="!registerForm.valid || (loading$ | async)"
+          class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors animate-pulse-button"
         >
-          <mat-icon class="mr-2">how_to_reg</mat-icon>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+          </svg>
           Register
         </button>
 
-        <!-- Login Link with better spacing -->
-        <div class="text-center mt-6">
-          <p class="text-gray-600 text-lg">
+        <!-- Login Link -->
+        <div class="text-center mt-6 animate-fadeIn animation-delay-500">
+          <p class="text-gray-600">
             Already have an account?
             <a
               routerLink="/auth/login"
-              class="text-primary-600 hover:text-primary-700 font-medium ml-1"
+              class="text-purple-600 hover:text-purple-800 font-medium transition-colors"
             >
               Sign in
             </a>
@@ -208,3 +225,4 @@
     </div>
   </div>
 </div>
+

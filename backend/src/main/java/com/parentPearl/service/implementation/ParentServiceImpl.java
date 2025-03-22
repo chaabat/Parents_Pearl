@@ -47,18 +47,18 @@ public class ParentServiceImpl implements ParentService {
     @Transactional
     public ParentResponse updateParent(Long id, ParentRequest request) {
         Parent parent = parentRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Parent not found with id: " + id));
-
-        // Update basic fields using mapper
-        parentMapper.updateEntity(parent, request);
-
-        // Handle password update separately
-        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-            parent.setPassword(passwordEncoder.encode(request.getPassword()));
+                .orElseThrow(() -> new RuntimeException("Parent not found"));
+        
+        // If password is being updated, encode it
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            request.setPassword(passwordEncoder.encode(request.getPassword()));
+        } else {
+            // Keep the old password if not updating
+            request.setPassword(parent.getPassword());
         }
-
-        Parent updatedParent = parentRepository.save(parent);
-        return parentMapper.toResponse(updatedParent);
+        
+        parentMapper.updateEntity(parent, request);
+        return parentMapper.toResponse(parent);
     }
 
     @Override
@@ -74,14 +74,14 @@ public class ParentServiceImpl implements ParentService {
     public ChildResponse addChild(Long parentId, ChildRequest request) {
         Parent parent = parentRepository.findById(parentId)
                 .orElseThrow(() -> new NotFoundException("Parent not found with id: " + parentId));
-                
-                Child child = childMapper.toEntity(request);
-                System.out.println("Child added: " + child);
+        
+        Child child = childMapper.toEntity(request);
         if (request.getPassword() != null) {
             child.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         child.setParent(parent);
         child = childRepository.save(child);
+        
         return childMapper.toResponse(child);
     }
 

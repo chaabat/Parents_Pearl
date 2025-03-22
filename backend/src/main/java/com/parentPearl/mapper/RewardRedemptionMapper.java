@@ -13,21 +13,16 @@ public interface RewardRedemptionMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "child.id", source = "childId")
     @Mapping(target = "reward.id", source = "rewardId")
-    @Mapping(target = "redeemedAt", expression = "java(java.time.LocalDateTime.now())")
-    @Mapping(target = "redemptionDate", expression = "java(java.time.LocalDateTime.now())")
-    @Mapping(target = "pointsSpent", source = "pointsSpent")
+    
+    @Mapping(target = "pointsSpent", ignore = true)
     RewardRedemption toEntity(RewardRedemptionRequest request);
     
     @Mapping(target = "childId", source = "child.id")
     @Mapping(target = "rewardId", source = "reward.id")
-    @Mapping(target = "points_spent", source = "pointsSpent")
-    @Mapping(target = "redeemed_at", source = "redeemedAt")
-    @Mapping(target = "redemptionDate", source = "redemptionDate")
-    @Mapping(target = "reward", source = "reward")
     RewardRedemptionResponse toResponse(RewardRedemption redemption);
     
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "redeemedAt", source = "redeemedAt")
+   
     @Mapping(target = "child.id", source = "childId")
     @Mapping(target = "reward.id", source = "rewardId")
     @Mapping(target = "pointsSpent", ignore = true)

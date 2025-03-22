@@ -48,6 +48,25 @@ export class RegisterComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   loading$ = this.store.select(selectAuthLoading);
   error$ = this.store.select(selectAuthError);
+  private ageValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null // Let required validator handle empty values
+    }
+
+    const birthDate = new Date(control.value)
+    const today = new Date()
+
+    // Calculate age
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const monthDiff = today.getMonth() - birthDate.getMonth()
+
+    // Adjust age if birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--
+    }
+
+    return age < 18 ? { underage: true } : null
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -59,7 +78,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
       name: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      dateOfBirth: ['', [Validators.required]],
+      dateOfBirth: ["", [Validators.required, this.ageValidator]],
       picture: [null, [this.fileValidator.bind(this)]],
       role: ['PARENT'],
     });

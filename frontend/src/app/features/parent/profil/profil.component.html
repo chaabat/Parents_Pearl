@@ -14,9 +14,11 @@
       </div>
 
       <!-- Loading State -->
-      <div 
-        *ngIf="(userRole === 'PARENT' && (loading$ | async)) || 
-               (userRole === 'ADMIN' && (adminLoading$ | async))" 
+      <div
+        *ngIf="
+          (userRole === 'PARENT' && (loading$ | async)) ||
+          (userRole === 'ADMIN' && (adminLoading$ | async))
+        "
         class="absolute inset-0 bg-white bg-opacity-70 flex justify-center items-center z-10"
       >
         <div class="bg-white p-4 rounded-lg shadow-lg flex items-center">
@@ -26,23 +28,29 @@
       </div>
 
       <!-- Error Message -->
-      <div 
-        *ngIf="(userRole === 'PARENT' && (error$ | async)) || 
-               (userRole === 'ADMIN' && (adminError$ | async))" 
+      <div
+        *ngIf="
+          (userRole === 'PARENT' && (error$ | async)) ||
+          (userRole === 'ADMIN' && (adminError$ | async))
+        "
         class="bg-red-50 border-l-4 border-red-500 p-4 m-6"
       >
         <div class="flex items-center">
           <mat-icon class="text-red-500 mr-3">error_outline</mat-icon>
           <p class="text-red-700">
-            {{ userRole === 'PARENT' ? (error$ | async) : (adminError$ | async) }}
+            {{
+              userRole === "PARENT" ? (error$ | async) : (adminError$ | async)
+            }}
           </p>
         </div>
       </div>
 
       <!-- Profile Form -->
-      <div 
-        *ngIf="!(userRole === 'PARENT' && (loading$ | async)) && 
-               !(userRole === 'ADMIN' && (adminLoading$ | async))"
+      <div
+        *ngIf="
+          !(userRole === 'PARENT' && (loading$ | async)) &&
+          !(userRole === 'ADMIN' && (adminLoading$ | async))
+        "
         class="p-8"
       >
         <form
@@ -156,18 +164,27 @@
                   formControlName="email"
                   class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                   [ngClass]="{
-                    'border-red-500': profileForm.get('email')?.invalid && profileForm.get('email')?.touched
+                    'border-red-500':
+                      profileForm.get('email')?.invalid &&
+                      profileForm.get('email')?.touched
                   }"
                 />
               </div>
               <!-- Email Change Warning -->
-              <div *ngIf="profileForm.get('email')?.value !== originalProfile?.email" 
-                class="mt-1 text-sm text-amber-600 bg-amber-50 p-2 rounded">
+              <div
+                *ngIf="
+                  profileForm.get('email')?.value !== originalProfile?.email
+                "
+                class="mt-1 text-sm text-amber-600 bg-amber-50 p-2 rounded"
+              >
                 <mat-icon class="align-middle mr-1">warning</mat-icon>
                 Changing your email will require you to login again
               </div>
               <p
-                *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched"
+                *ngIf="
+                  profileForm.get('email')?.invalid &&
+                  profileForm.get('email')?.touched
+                "
                 class="mt-1 text-sm text-red-600"
               >
                 {{ getErrorMessage("email") }}
@@ -214,41 +231,63 @@
               </p>
             </div>
 
-            <!-- Password Field -->
-            <div>
-              <label
-                for="password"
-                class="block text-sm font-medium text-gray-700 mb-1"
-                >Change Password (optional)</label
+            <!-- Password Field with visibility toggle -->
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Password</mat-label>
+              <input
+                matInput
+                [type]="hidePassword ? 'password' : 'text'"
+                formControlName="password"
+                placeholder="Leave blank to keep current password"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hidePassword = !hidePassword"
+                [attr.aria-label]="'Hide password'"
+                [attr.aria-pressed]="hidePassword"
               >
-              <div class="relative rounded-md shadow-sm">
-                <div
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                <mat-icon>{{
+                  hidePassword ? "visibility_off" : "visibility"
+                }}</mat-icon>
+              </button>
+              <mat-hint>Leave blank to keep current password</mat-hint>
+              <mat-error *ngIf="profileForm.get('password')?.errors as errors">
+                <span *ngIf="errors?.['minlength']"
+                  >Password must be at least 6 characters</span
                 >
-                  <mat-icon class="text-gray-400">lock</mat-icon>
-                </div>
-                <input
-                  id="password"
-                  type="password"
-                  formControlName="password"
-                  class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
-                  [ngClass]="{
-                    'border-red-500': profileForm.get('password')?.invalid && profileForm.get('password')?.touched
-                  }"
-                />
+                <span *ngIf="errors?.['noLetter']"
+                  >Password must contain at least one letter</span
+                >
+                <span *ngIf="errors?.['noNumber']"
+                  >Password must contain at least one number</span
+                >
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Add warning message when password is being changed -->
+            <div
+              *ngIf="profileForm.get('password')?.value"
+              class="mt-2 p-3 bg-amber-50 rounded-lg border border-amber-100"
+            >
+              <div class="flex items-center text-amber-800">
+                <mat-icon class="mr-2 text-amber-500">warning</mat-icon>
+                <span
+                  >Changing your password will require you to login again</span
+                >
               </div>
-              <!-- Password Change Warning -->
-              <div *ngIf="profileForm.get('password')?.value" 
-                class="mt-1 text-sm text-amber-600 bg-amber-50 p-2 rounded">
-                <mat-icon class="align-middle mr-1">warning</mat-icon>
-                Changing your password will require you to login again
+            </div>
+
+            <!-- Add similar warning for email changes -->
+            <div
+              *ngIf="profileForm.get('email')?.value !== originalProfile?.email"
+              class="mt-2 p-3 bg-amber-50 rounded-lg border border-amber-100"
+            >
+              <div class="flex items-center text-amber-800">
+                <mat-icon class="mr-2 text-amber-500">warning</mat-icon>
+                <span>Changing your email will require you to login again</span>
               </div>
-              <p
-                *ngIf="profileForm.get('password')?.invalid && profileForm.get('password')?.touched"
-                class="mt-1 text-sm text-red-600"
-              >
-                {{ getErrorMessage("password") }}
-              </p>
             </div>
           </div>
 

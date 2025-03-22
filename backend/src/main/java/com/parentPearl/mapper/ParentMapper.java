@@ -18,6 +18,7 @@ public interface ParentMapper {
     Parent toEntity(ParentRequest request);
     
     @Mapping(target = "childrenIds", expression = "java(parent.getChildren().stream().map(child -> child.getId()).collect(java.util.stream.Collectors.toList()))")
+    @Mapping(target = "role", source = "role")
     ParentResponse toResponse(Parent parent);
     
     @Mapping(target = "id", ignore = true)
@@ -25,6 +26,6 @@ public interface ParentMapper {
     @Mapping(target = "children", ignore = true)
     @Mapping(target = "picture", ignore = true)
     @Mapping(target = "dateOfBirth", ignore = true)
-    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "password", source = "password")
     void updateEntity(@MappingTarget Parent parent, ParentRequest request);
 } 

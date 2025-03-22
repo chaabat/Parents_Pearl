@@ -1,6 +1,7 @@
 package com.parentPearl.config;
 
 import com.parentPearl.model.User;
+import com.parentPearl.model.Admin;  // Add this import
 import com.parentPearl.model.enums.Role;
 import com.parentPearl.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,22 +27,32 @@ public class DataInitializer implements CommandLineRunner {
         // Vérifier si l'admin existe
         if (!userRepository.existsByEmail(adminEmail)) {
             String encodedPassword = passwordEncoder.encode(rawPassword);
-            log.info("Création admin - Email: {}, Password brut: {},Role :{}, Password encodé: {}", 
+            log.info("Création admin - Email: {}, Password brut: {}, Password encodé: {}", 
                 adminEmail, rawPassword, encodedPassword);
             
-            User admin = User.builder()
+            // Use Admin.builder() instead of User.builder()
+            Admin admin = Admin.builder()
                     .email(adminEmail)
                     .password(encodedPassword)
                     .name("Admin")
-                    .role(Role.ADMIN)
+                    .role(Role.ADMIN)  // This will ensure ADMIN role
                     .deleted(false)
                     .build();
+
             userRepository.save(admin);
-            log.info("Admin créé avec succès");
+            log.info("Admin créé avec succès avec le rôle: {}", admin.getRole());
         } else {
             User existingAdmin = userRepository.findByEmail(adminEmail).get();
+            
+            // Update role if it's not ADMIN
+            if (existingAdmin.getRole() != Role.ADMIN) {
+                existingAdmin.setRole(Role.ADMIN);
+                userRepository.save(existingAdmin);
+                log.info("Rôle mis à jour vers ADMIN pour: {}", existingAdmin.getEmail());
+            }
+            
             log.info("Admin existant - Email: {}, Role: {}, PasswordHash: {}", 
                 existingAdmin.getEmail(), existingAdmin.getRole(), existingAdmin.getPassword());
         }
     }
-} 
+}
