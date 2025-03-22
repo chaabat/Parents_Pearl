@@ -1,7 +1,7 @@
 package com.parentPearl.model;
 
 import jakarta.persistence.*;
-    import lombok.Data;
+import lombok.Data;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -31,11 +31,10 @@ public class RewardRedemption {
     private int pointsSpent;
     
     @Column(name = "redeemed_at")
- 
-
+    private LocalDateTime redeemedAt;
+    
     private String message;
     
+    @Column(name = "redemption_date")
     private LocalDateTime redemptionDate;
-
-     
 } 

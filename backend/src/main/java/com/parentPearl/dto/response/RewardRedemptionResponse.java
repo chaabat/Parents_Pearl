@@ -10,5 +10,9 @@ public class RewardRedemptionResponse {
     private Long id;
     private Long childId;
     private Long rewardId;
-    private LocalDateTime redeemedAt;
+    private int points_spent;
+    private String message;
+    private LocalDateTime redeemed_at;
+    private LocalDateTime redemptionDate;
+    private RewardResponse reward;
 }
