@@ -15,6 +15,9 @@ import com.parentPearl.repository.ParentRepository;
 import com.parentPearl.repository.TaskRepository;
 import com.parentPearl.service.interfaces.AdminService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +36,8 @@ public class AdminServiceImpl implements AdminService {
     private final AdminMapper adminMapper;
     private final ParentMapper parentMapper;
     private final ChildMapper childMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final Logger log = LoggerFactory.getLogger(AdminServiceImpl.class);
 
     @Override
     public List<ParentResponse> getAllParents() {
@@ -121,8 +126,33 @@ public class AdminServiceImpl implements AdminService {
     public AdminResponse updateAdmin(Long id, AdminRequest request) {
         Admin admin = adminRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
-        adminMapper.updateEntity(admin, request);
-        return adminMapper.toResponse(admin);
+
+        // Handle password update separately
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            String encodedPassword = passwordEncoder.encode(request.getPassword().trim());
+            log.info("Updating admin password with BCrypt encoded value");
+            admin.setPassword(encodedPassword);
+        }
+        
+        // Update other fields
+        admin.setName(request.getName());
+        admin.setEmail(request.getEmail());
+        if (request.getDateOfBirth() != null) {
+            admin.setDateOfBirth(request.getDateOfBirth());
+        }
+        if (request.getPicture() != null) {
+            admin.setPicture(request.getPicture());
+        }
+
+        Admin updatedAdmin = adminRepository.save(admin);
+        
+        // Verify password encoding if password was updated
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            boolean matches = passwordEncoder.matches(request.getPassword(), updatedAdmin.getPassword());
+            log.info("Password encoding verification: {}", matches);
+        }
+
+        return adminMapper.toResponse(updatedAdmin);
     }
 
     @Override

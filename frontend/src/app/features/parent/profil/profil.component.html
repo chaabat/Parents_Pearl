@@ -106,7 +106,6 @@
             </button>
           </div>
 
-          <!-- Replace the entire form fields section with a cleaner design -->
           <!-- Form Fields -->
           <div class="space-y-6">
             <!-- Name Field -->
@@ -231,40 +230,66 @@
               </p>
             </div>
 
-            <!-- Password Field with visibility toggle -->
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Password</mat-label>
-              <input
-                matInput
-                [type]="hidePassword ? 'password' : 'text'"
-                formControlName="password"
-                placeholder="Leave blank to keep current password"
-              />
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                (click)="hidePassword = !hidePassword"
-                [attr.aria-label]="'Hide password'"
-                [attr.aria-pressed]="hidePassword"
+            <!-- Password Field -->
+            <div>
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Password</label
               >
-                <mat-icon>{{
-                  hidePassword ? "visibility_off" : "visibility"
-                }}</mat-icon>
-              </button>
-              <mat-hint>Leave blank to keep current password</mat-hint>
-              <mat-error *ngIf="profileForm.get('password')?.errors as errors">
-                <span *ngIf="errors?.['minlength']"
-                  >Password must be at least 6 characters</span
+              <div class="relative rounded-md shadow-sm">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
                 >
-                <span *ngIf="errors?.['noLetter']"
-                  >Password must contain at least one letter</span
-                >
-                <span *ngIf="errors?.['noNumber']"
-                  >Password must contain at least one number</span
-                >
-              </mat-error>
-            </mat-form-field>
+                  <mat-icon class="text-gray-400">lock</mat-icon>
+                </div>
+                <input
+                  id="password"
+                  [type]="hidePassword ? 'password' : 'text'"
+                  formControlName="password"
+                  placeholder="Leave blank to keep current password"
+                  class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                  [ngClass]="{
+                    'border-red-500 focus:ring-red-500 focus:border-red-500':
+                      profileForm.get('password')?.invalid &&
+                      profileForm.get('password')?.touched
+                  }"
+                />
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    type="button"
+                    class="text-gray-400 hover:text-gray-500 focus:outline-none"
+                    (click)="hidePassword = !hidePassword"
+                  >
+                    <mat-icon>{{
+                      hidePassword ? "visibility_off" : "visibility"
+                    }}</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <!-- Password Hint -->
+              <p class="mt-1 text-sm text-gray-500">
+                Leave blank to keep current password
+              </p>
+              <!-- Password Error Messages -->
+              <p
+                *ngIf="profileForm.get('password')?.errors as errors"
+                class="mt-1 text-sm text-red-600"
+              >
+                <span *ngIf="errors?.['minlength']" class="flex items-center">
+                  <mat-icon class="mr-1 text-sm">error_outline</mat-icon>
+                  Password must be at least 6 characters
+                </span>
+                <span *ngIf="errors?.['noLetter']" class="flex items-center">
+                  <mat-icon class="mr-1 text-sm">error_outline</mat-icon>
+                  Password must contain at least one letter
+                </span>
+                <span *ngIf="errors?.['noNumber']" class="flex items-center">
+                  <mat-icon class="mr-1 text-sm">error_outline</mat-icon>
+                  Password must contain at least one number
+                </span>
+              </p>
+            </div>
 
             <!-- Add warning message when password is being changed -->
             <div
