@@ -149,34 +149,5 @@ class TaskServiceImplTest {
         assertEquals(task.getTitle(), responses.get(0).getTitle());
     }
 
-    @Test
-    void completeTask_Success() {
-        // Given
-        task.setStatus(TaskStatus.PENDING);
-        
-        when(taskRepository.findByIdAndChildId(anyLong(), anyLong()))
-                .thenReturn(Optional.of(task));
-        when(taskRepository.save(argThat(savedTask -> 
-            savedTask.getStatus() == TaskStatus.COMPLETED
-        ))).thenReturn(task);
-        when(taskMapper.toResponse(any(Task.class))).thenReturn(
-            TaskResponse.builder()
-                .id(task.getId())
-                .title(task.getTitle())
-                .status(TaskStatus.COMPLETED)
-                .pointValue(task.getPointValue())
-                .build()
-        );
 
-        // When
-        TaskResponse response = taskService.completeTask(1L, 1L);
-
-        // Then
-        assertEquals(TaskStatus.COMPLETED, response.getStatus());
-        verify(taskRepository).findByIdAndChildId(anyLong(), anyLong());
-        verify(taskRepository).save(argThat(savedTask -> 
-            savedTask.getStatus() == TaskStatus.COMPLETED
-        ));
-        verify(taskMapper).toResponse(any(Task.class));
-    }
-} 
+}

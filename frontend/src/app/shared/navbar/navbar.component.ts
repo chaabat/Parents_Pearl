@@ -22,7 +22,7 @@ import { takeUntil, filter } from 'rxjs/operators';
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  
+
   user$ = this.store.select(AuthSelectors.selectUser);
   isAuthenticated$ = this.store.select(AuthSelectors.selectIsAuthenticated);
   isAuthenticated = false;
@@ -33,7 +33,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       tap((points) => console.log('Navbar - Current total points:', points))
     );
   defaultImage =
-    'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741258917/uulqrw1ytrup4txl8abb.png';
+    'https://res.cloudinary.com/dlwyetxjd/image/upload/v1742746619/hukxngslbjsopri1djvr.png';
   imageVersion = new Date().getTime();
 
   constructor(
@@ -46,18 +46,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
     // Use combineLatest instead of merge
     combineLatest([
       this.authService.currentUser$,
-      this.store.select(AuthSelectors.selectUser)
-    ]).pipe(
-      takeUntil(this.destroy$),
-      filter(([user1, user2]) => !!user1 || !!user2)
-    ).subscribe(([user1, user2]) => {
-      this.user = user1 || user2;
-      this.imageVersion = new Date().getTime();
-    });
+      this.store.select(AuthSelectors.selectUser),
+    ])
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(([user1, user2]) => !!user1 || !!user2)
+      )
+      .subscribe(([user1, user2]) => {
+        this.user = user1 || user2;
+        this.imageVersion = new Date().getTime();
+      });
 
-    this.authService.isAuthenticated$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(isAuth => this.isAuthenticated = isAuth);
+    this.authService.isAuthenticated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((isAuth) => (this.isAuthenticated = isAuth));
   }
 
   ngOnDestroy() {

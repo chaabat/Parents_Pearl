@@ -33,6 +33,7 @@
           <div
             class="avatar"
             [style.backgroundImage]="getBackgroundImageStyle(user$ | async)"
+            (error)="handleImageError($event)"
           ></div>
           <span class="username">{{ (user$ | async)?.name || "User" }}</span>
           <mat-icon>arrow_drop_down</mat-icon>

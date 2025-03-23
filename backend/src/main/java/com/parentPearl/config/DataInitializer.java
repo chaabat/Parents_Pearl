@@ -1,7 +1,7 @@
 package com.parentPearl.config;
 
 import com.parentPearl.model.User;
-import com.parentPearl.model.Admin;  // Add this import
+import com.parentPearl.model.Admin;
 import com.parentPearl.model.enums.Role;
 import com.parentPearl.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +10,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 
 @Component
 @RequiredArgsConstructor
+@DependsOn({"userRepository"})
 public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -24,35 +26,42 @@ public class DataInitializer implements CommandLineRunner {
         String adminEmail = "admin@parentpearl.com";
         String rawPassword = "admin123";
         
-        // Vérifier si l'admin existe
+        // Check if admin exists
         if (!userRepository.existsByEmail(adminEmail)) {
             String encodedPassword = passwordEncoder.encode(rawPassword);
-            log.info("Création admin - Email: {}, Password brut: {}, Password encodé: {}", 
-                adminEmail, rawPassword, encodedPassword);
             
-            // Use Admin.builder() instead of User.builder()
+            // Log the exact password details for debugging
+            log.info("Creating admin with raw password: {} and encoded password: {}", 
+                rawPassword, encodedPassword);
+            
             Admin admin = Admin.builder()
                     .email(adminEmail)
                     .password(encodedPassword)
                     .name("Admin")
-                    .role(Role.ADMIN)  // This will ensure ADMIN role
+                    .role(Role.ADMIN)
                     .deleted(false)
                     .build();
 
-            userRepository.save(admin);
-            log.info("Admin créé avec succès avec le rôle: {}", admin.getRole());
+            Admin savedAdmin = userRepository.save(admin);
+            
+            // Verify the saved password
+            log.info("Admin created successfully. Saved password hash: {}", 
+                savedAdmin.getPassword());
         } else {
+            // For existing admin, verify the password
             User existingAdmin = userRepository.findByEmail(adminEmail).get();
             
-            // Update role if it's not ADMIN
-            if (existingAdmin.getRole() != Role.ADMIN) {
-                existingAdmin.setRole(Role.ADMIN);
+            // Update password if needed
+            String currentEncodedPassword = existingAdmin.getPassword();
+            if (!passwordEncoder.matches(rawPassword, currentEncodedPassword)) {
+                String newEncodedPassword = passwordEncoder.encode(rawPassword);
+                existingAdmin.setPassword(newEncodedPassword);
                 userRepository.save(existingAdmin);
-                log.info("Rôle mis à jour vers ADMIN pour: {}", existingAdmin.getEmail());
+                log.info("Updated admin password. New hash: {}", newEncodedPassword);
             }
             
-            log.info("Admin existant - Email: {}, Role: {}, PasswordHash: {}", 
-                existingAdmin.getEmail(), existingAdmin.getRole(), existingAdmin.getPassword());
+            log.info("Existing admin found. Current password hash: {}", 
+                existingAdmin.getPassword());
         }
     }
 }
