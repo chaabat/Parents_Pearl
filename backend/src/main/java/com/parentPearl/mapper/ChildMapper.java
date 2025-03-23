@@ -13,12 +13,13 @@ public interface ChildMapper {
     
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "role", constant = "CHILD")
-    @Mapping(target = "parent.id", source = "parentId")
+    @Mapping(target = "parent.id", source = "password")
     @Mapping(target = "tasks", ignore = true)
     @Mapping(target = "points", ignore = true)
     @Mapping(target = "rewardRedemptions", ignore = true)
     @Mapping(target = "totalPoints", ignore = true)
     @Mapping(target = "picture", ignore = true)
+    @Mapping(target = "deleted", constant = "false")
     Child toEntity(ChildRequest request);
     
     @Mapping(target = "parentId", source = "parent.id")

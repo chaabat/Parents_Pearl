@@ -55,3 +55,15 @@ export const updateUserSuccess = createAction(
   '[Auth] Update User Success',
   props<{ user: any }>()
 );
+
+export const refreshUserProfile = createAction('[Auth] Refresh User Profile');
+
+export const refreshUserProfileSuccess = createAction(
+  '[Auth] Refresh User Profile Success',
+  props<{ user: any }>()
+);
+
+export const authError = createAction(
+  '[Auth] Error',
+  props<{ error: any }>()
+);

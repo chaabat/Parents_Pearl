@@ -13,7 +13,9 @@ import com.parentPearl.repository.ChildRepository;
 import com.parentPearl.repository.ParentRepository;
 import com.parentPearl.repository.PointRepository;
 import com.parentPearl.service.interfaces.ParentService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,37 +73,50 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Override
-    public ChildResponse addChild(Long parentId, ChildRequest request) {
+    @Transactional
+    public ChildResponse addChild(Long parentId, ChildRequest childRequest) {
         Parent parent = parentRepository.findById(parentId)
-                .orElseThrow(() -> new NotFoundException("Parent not found with id: " + parentId));
+                .orElseThrow(() -> new NotFoundException("Parent not found"));
         
-        Child child = childMapper.toEntity(request);
-        if (request.getPassword() != null) {
-            child.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
+        Child child = childMapper.toEntity(childRequest);
+        
+        // Set parent
         child.setParent(parent);
-        child = childRepository.save(child);
         
-        return childMapper.toResponse(child);
+        // Set password
+        child.setPassword(passwordEncoder.encode(childRequest.getPassword()));
+        
+        // Set picture (with default if none provided)
+        String picture = childRequest.getPicture();
+        if (picture == null || picture.trim().isEmpty()) {
+            picture = "https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png";
+        }
+        child.setPicture(picture);
+        
+        Child savedChild = childRepository.save(child);
+        return childMapper.toResponse(savedChild);
     }
 
     @Override
     public ChildResponse updateChild(Long parentId, Long childId, ChildRequest request) {
         Child child = childRepository.findByIdAndParentId(childId, parentId)
-                .orElseThrow(() -> new NotFoundException("Child not found with id: " + childId + " for parent: " + parentId));
+                .orElseThrow(() -> new NotFoundException("Child not found"));
         
-        Parent parent = child.getParent();
-        
+        // Update basic fields using mapper
         childMapper.updateEntity(child, request);
         
-        child.setParent(parent);
-        
-        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+        // Handle password separately if provided
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
             child.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         
-        child = childRepository.save(child);
-        return childMapper.toResponse(child);
+        // Handle picture separately
+        if (request.getPicture() != null && !request.getPicture().trim().isEmpty()) {
+            child.setPicture(request.getPicture());
+        }
+        
+        Child updatedChild = childRepository.save(child);
+        return childMapper.toResponse(updatedChild);
     }
 
     @Override

@@ -8,6 +8,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +22,8 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api")
@@ -25,45 +33,55 @@ public class FileUploadController {
     private String uploadDir;
 
     @PostMapping("/uploads/images")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, String>> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             // Create the directory if it doesn't exist
             File directory = new File(uploadDir);
             if (!directory.exists()) {
-                boolean created = directory.mkdirs();
-                if (!created) {
-                    System.err.println("Failed to create directory: " + uploadDir);
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body("Failed to create upload directory");
-                }
+                directory.mkdirs();
             }
 
-            // Generate a unique filename to prevent collisions
-            String originalFilename = file.getOriginalFilename();
-            String filename = UUID.randomUUID().toString();
-
-            // Add original file extension if available
-            if (originalFilename != null && originalFilename.contains(".")) {
-                String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                filename += extension;
-            }
-
-            // Create the full path
+            // Generate unique filename
+            String filename = UUID.randomUUID().toString() + getExtension(file.getOriginalFilename());
             Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
-
-            // Log the file path for debugging
-            System.out.println("Saving file to: " + filePath.toAbsolutePath());
-
+            
             // Save the file
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // Return just the filename
-            return ResponseEntity.ok(filename);
+            // Return JSON response
+            Map<String, String> response = new HashMap<>();
+            response.put("url", filename);
+            return ResponseEntity.ok(response);
 
         } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to upload file: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to upload file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    private String getExtension(String filename) {
+        return filename != null && filename.contains(".") 
+            ? filename.substring(filename.lastIndexOf(".")) 
+            : "";
+    }
+
+    @GetMapping("/uploads/images/{filename}")
+    public ResponseEntity<Resource> getImage(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG) // or use MediaType.parseMediaType()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

@@ -17,7 +17,7 @@ export class AuthResolver implements Resolve<any> {
       first(),
       tap(user => {
         if (!user) {
-          // Handle initial auth state load if needed
+          
         }
       })
     );

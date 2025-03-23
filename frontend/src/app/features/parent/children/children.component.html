@@ -36,7 +36,7 @@
         color="primary"
         (click)="openAddChildDialog(addChildDialog)"
       >
-        <mat-icon>add</mat-icon> Add Your First Child
+        <mat-icon class="white">add</mat-icon> Add Your First Child
       </button>
     </div>
   </ng-container>
@@ -52,7 +52,11 @@
           {{ getChildStatus(child) }}
         </div>
         <div class="avatar-container">
-          <img [src]="getImageUrl(child?.picture)" (error)="onImageError($event)" alt="Child Picture">
+          <img
+            [src]="getImageUrl(child?.picture)"
+            (error)="onImageError($event)"
+            alt="Child Picture"
+          />
         </div>
       </div>
 
@@ -76,13 +80,21 @@
           <div class="detail-item">
             <mat-icon>assignment</mat-icon>
             <span class="label">Tasks:</span>
-            <span class="value">{{ child.id && childStats[child.id] ? childStats[child.id].taskCount : 0 }}</span>
+            <span class="value">{{
+              child.id && childStats[child.id]
+                ? childStats[child.id].taskCount
+                : 0
+            }}</span>
           </div>
 
           <div class="detail-item">
             <mat-icon>redeem</mat-icon>
             <span class="label">Rewards:</span>
-            <span class="value">{{ child.id && childStats[child.id] ? childStats[child.id].rewardCount : 0 }}</span>
+            <span class="value">{{
+              child.id && childStats[child.id]
+                ? childStats[child.id].rewardCount
+                : 0
+            }}</span>
           </div>
         </div>
       </div>
@@ -140,14 +152,19 @@
     <div class="p-6">
       <!-- Dialog Header -->
       <div class="text-center mb-6">
-        <h2 class="text-2xl font-semibold text-gray-800">{{ data?.title || "Add New Child" }}</h2>
+        <h2 class="text-2xl font-semibold text-gray-800">
+          {{ data?.title || "Add New Child" }}
+        </h2>
       </div>
-  
+
       <!-- Profile Picture Upload -->
       <div class="flex justify-center mb-6">
         <div class="relative w-24 h-24 rounded-full overflow-hidden shadow-md">
           <img
-            [src]="imagePreview || 'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'"
+            [src]="
+              imagePreview ||
+              'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
+            "
             alt="Profile Preview"
             class="w-full h-full object-cover"
           />
@@ -167,7 +184,7 @@
           accept="image/*"
         />
       </div>
-  
+
       <!-- Form Fields -->
       <form [formGroup]="childForm" class="space-y-4">
         <!-- Child's Name -->
@@ -181,11 +198,15 @@
               class="w-full"
             />
             <mat-icon matPrefix class="text-gray-500">person</mat-icon>
-            <mat-error *ngIf="hasError(childForm, 'name', 'required')">Name is required</mat-error>
-            <mat-error *ngIf="hasError(childForm, 'name', 'minlength')">Name must be at least 2 characters</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'name', 'required')"
+              >Name is required</mat-error
+            >
+            <mat-error *ngIf="hasError(childForm, 'name', 'minlength')"
+              >Name must be at least 2 characters</mat-error
+            >
           </mat-form-field>
         </div>
-  
+
         <!-- Email Address -->
         <div>
           <mat-form-field appearance="outline" class="w-full">
@@ -197,11 +218,15 @@
               class="w-full"
             />
             <mat-icon matPrefix class="text-gray-500">email</mat-icon>
-            <mat-error *ngIf="hasError(childForm, 'email', 'required')">Email is required</mat-error>
-            <mat-error *ngIf="hasError(childForm, 'email', 'email')">Please enter a valid email address</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'email', 'required')"
+              >Email is required</mat-error
+            >
+            <mat-error *ngIf="hasError(childForm, 'email', 'email')"
+              >Please enter a valid email address</mat-error
+            >
           </mat-form-field>
         </div>
-  
+
         <!-- Password -->
         <div>
           <mat-form-field appearance="outline" class="w-full">
@@ -214,11 +239,15 @@
               class="w-full"
             />
             <mat-icon matPrefix class="text-gray-500">lock</mat-icon>
-            <mat-hint>Leave blank to keep current password (when editing)</mat-hint>
-            <mat-error *ngIf="hasError(childForm, 'password', 'minlength')">Password must be at least 6 characters</mat-error>
+            <mat-hint
+              >Leave blank to keep current password (when editing)</mat-hint
+            >
+            <mat-error *ngIf="hasError(childForm, 'password', 'minlength')"
+              >Password must be at least 6 characters</mat-error
+            >
           </mat-form-field>
         </div>
-  
+
         <!-- Date of Birth -->
         <div>
           <mat-form-field appearance="outline" class="w-full">
@@ -230,11 +259,17 @@
               placeholder="MM/DD/YYYY"
               class="w-full"
             />
-            <mat-datepicker-toggle matIconSuffix [for]="picker" class="text-gray-500"></mat-datepicker-toggle>
+            <mat-datepicker-toggle
+              matIconSuffix
+              [for]="picker"
+              class="text-gray-500"
+            ></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
             <mat-icon matPrefix class="text-gray-500">cake</mat-icon>
             <mat-hint>Child must be between 6 and 18 years old</mat-hint>
-            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'required')">Date of birth is required</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'required')"
+              >Date of birth is required</mat-error
+            >
             <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'ageRange')">
               {{ getErrorMessage(childForm, "dateOfBirth") }}
             </mat-error>
@@ -242,10 +277,14 @@
         </div>
       </form>
     </div>
-  
+
     <!-- Dialog Actions -->
     <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
-      <button mat-button mat-dialog-close class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded">
+      <button
+        mat-button
+        mat-dialog-close
+        class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded"
+      >
         Cancel
       </button>
       <button
@@ -264,14 +303,19 @@
     <div class="p-6">
       <!-- Dialog Header -->
       <div class="text-center mb-6">
-        <h2 class="text-2xl font-semibold text-gray-800">{{ data?.title || "Edit Child Profile" }}</h2>
+        <h2 class="text-2xl font-semibold text-gray-800">
+          {{ data?.title || "Edit Child Profile" }}
+        </h2>
       </div>
-  
+
       <!-- Profile Picture Upload -->
       <div class="flex justify-center mb-6">
         <div class="relative w-24 h-24 rounded-full overflow-hidden shadow-md">
           <img
-            [src]="imagePreview || 'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'"
+            [src]="
+              imagePreview ||
+              'https://res.cloudinary.com/dlwyetxjd/image/upload/v1741440913/qlmeun5wapfrgn5btfur.png'
+            "
             alt="Profile Preview"
             class="w-full h-full object-cover"
           />
@@ -291,7 +335,7 @@
           accept="image/*"
         />
       </div>
-  
+
       <!-- Form Fields -->
       <form [formGroup]="childForm" class="space-y-4">
         <!-- Child's Name -->
@@ -305,11 +349,15 @@
               class="w-full"
             />
             <mat-icon matPrefix class="text-gray-500">person</mat-icon>
-            <mat-error *ngIf="hasError(childForm, 'name', 'required')">Name is required</mat-error>
-            <mat-error *ngIf="hasError(childForm, 'name', 'minlength')">Name must be at least 2 characters</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'name', 'required')"
+              >Name is required</mat-error
+            >
+            <mat-error *ngIf="hasError(childForm, 'name', 'minlength')"
+              >Name must be at least 2 characters</mat-error
+            >
           </mat-form-field>
         </div>
-  
+
         <!-- Email Address -->
         <div>
           <mat-form-field appearance="outline" class="w-full">
@@ -321,11 +369,15 @@
               class="w-full"
             />
             <mat-icon matPrefix class="text-gray-500">email</mat-icon>
-            <mat-error *ngIf="hasError(childForm, 'email', 'required')">Email is required</mat-error>
-            <mat-error *ngIf="hasError(childForm, 'email', 'email')">Please enter a valid email address</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'email', 'required')"
+              >Email is required</mat-error
+            >
+            <mat-error *ngIf="hasError(childForm, 'email', 'email')"
+              >Please enter a valid email address</mat-error
+            >
           </mat-form-field>
         </div>
-  
+
         <!-- Password -->
         <div>
           <mat-form-field appearance="outline" class="w-full">
@@ -339,10 +391,12 @@
             />
             <mat-icon matPrefix class="text-gray-500">lock</mat-icon>
             <mat-hint>Leave blank to keep current password</mat-hint>
-            <mat-error *ngIf="hasError(childForm, 'password', 'minlength')">Password must be at least 6 characters</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'password', 'minlength')"
+              >Password must be at least 6 characters</mat-error
+            >
           </mat-form-field>
         </div>
-  
+
         <!-- Date of Birth -->
         <div>
           <mat-form-field appearance="outline" class="w-full">
@@ -354,11 +408,17 @@
               placeholder="MM/DD/YYYY"
               class="w-full"
             />
-            <mat-datepicker-toggle matIconSuffix [for]="editPicker" class="text-gray-500"></mat-datepicker-toggle>
+            <mat-datepicker-toggle
+              matIconSuffix
+              [for]="editPicker"
+              class="text-gray-500"
+            ></mat-datepicker-toggle>
             <mat-datepicker #editPicker></mat-datepicker>
             <mat-icon matPrefix class="text-gray-500">cake</mat-icon>
             <mat-hint>Child must be between 6 and 18 years old</mat-hint>
-            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'required')">Date of birth is required</mat-error>
+            <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'required')"
+              >Date of birth is required</mat-error
+            >
             <mat-error *ngIf="hasError(childForm, 'dateOfBirth', 'ageRange')">
               {{ getErrorMessage(childForm, "dateOfBirth") }}
             </mat-error>
@@ -366,10 +426,14 @@
         </div>
       </form>
     </div>
-  
+
     <!-- Dialog Actions -->
     <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
-      <button mat-button mat-dialog-close class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded">
+      <button
+        mat-button
+        mat-dialog-close
+        class="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded"
+      >
         Cancel
       </button>
       <button
@@ -383,7 +447,6 @@
       </button>
     </div>
   </ng-template>
-
 
   <!-- Points Dialog -->
   <ng-template #pointsDialog let-dialogRef="dialogRef" let-data="data">
@@ -494,5 +557,3 @@
     </mat-dialog-actions>
   </ng-template>
 </div>
-
- 

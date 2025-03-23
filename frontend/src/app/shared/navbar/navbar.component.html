@@ -32,9 +32,7 @@
         <div class="profile-content">
           <div
             class="avatar"
-            [style.background-image]="
-              'url(' + getProfileImage(user$ | async) + ')'
-            "
+            [style.backgroundImage]="getBackgroundImageStyle(user$ | async)"
           ></div>
           <span class="username">{{ (user$ | async)?.name || "User" }}</span>
           <mat-icon>arrow_drop_down</mat-icon>
@@ -57,8 +55,6 @@
         <mat-icon>person</mat-icon>
         <span>Profile</span>
       </button>
-
-       
 
       <mat-divider></mat-divider>
       <button mat-menu-item (click)="logout()">
