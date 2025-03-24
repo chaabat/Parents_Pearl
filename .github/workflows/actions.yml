@@ -1,42 +1,47 @@
- name: CI/CD ParentPearl
+name: ParentPearl CI/CD
 
 on:
   push:
-    branches: [ main ]
-    paths:
-      - 'backend/**'
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
-    paths:
-      - 'backend/**'
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    defaults:
-      run:
-        working-directory: ./backend
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: chaabat
+          POSTGRES_DB: parentpearl
+        ports:
+          
+5432:5432
+      options: >---health-cmd pg_isready--health-interval 10s--health-timeout 5s--health-retries 5
 
     steps:
-      - uses: actions/checkout@v3
+      
+uses: actions/checkout@v3
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
+      
+name: Configuration JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
 
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
+      
+name: Build avec Maven
+      run: mvn -B package --file pom.xml -DskipTests
 
-      - name: Run tests
-        run: mvn test
-
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+      
+name: Exécuter les tests
+      run: mvn test
+      env:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/parentpearl
+        SPRING_DATASOURCE_USERNAME: postgres
+        SPRING_DATASOURCE_PASSWORD: chaabat
