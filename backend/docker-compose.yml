@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+    backend:
+        container_name: parentpearl
+        build: .
+        ports:
+            - "8081:8080"
+        environment:
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/parentpearl
+            - SPRING_DATASOURCE_USERNAME=postgres
+            - SPRING_DATASOURCE_PASSWORD=chaabat
+            - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+        depends_on:
+            - db
+        networks:
+            - parentpearl-network
+
+    pgadmin:
+        image: dpage/pgadmin4
+        container_name: parentpearl-pgadmin
+        environment:
+            - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+            - PGADMIN_DEFAULT_PASSWORD=admin
+        ports:
+            - "5050:80"
+        volumes:
+            - pgadmin_data:/var/lib/pgadmin
+        networks:
+            - parentpearl-network
+        depends_on:
+            - db
+
+    db:
+        container_name: parentpearl-db
+        image: postgres:15-alpine
+        ports:
+            - "5432:5432"
+        environment:
+            - POSTGRES_DB=parentpearl
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=chaabat
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        networks:
+            - parentpearl-network
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+volumes:
+    postgres_data:
+    pgadmin_data:
+
+networks:
+    parentpearl-network:
+        driver: bridge
