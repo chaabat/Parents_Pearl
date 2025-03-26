@@ -6,11 +6,11 @@
   <div class="p-4">
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-2" *ngIf="isOpen">
-        <mat-icon class="white">person</mat-icon>
-        <span class="font-bold text-lg">Compagnon</span>
+        <mat-icon class="white">home</mat-icon>
+        <span class="font-bold text-lg">ParentPearl</span>
       </div>
       <div *ngIf="!isOpen" class="flex justify-center w-full">
-        <mat-icon class="white">person</mat-icon>
+        <mat-icon class="white">home</mat-icon>
       </div>
       <button mat-icon-button (click)="toggleSidebar()" class="text-white">
         <mat-icon>{{ isOpen ? "chevron_left" : "chevron_right" }}</mat-icon>
@@ -110,7 +110,7 @@
   <!-- Sidebar Footer -->
   <div class="p-4 border-t border-[#7b2cbf]">
     <div
-      class="flex items-center px-4 py-3 text-white hover:bg-white rounded-md transition-colors cursor-pointer"
+      class="flex items-center px-4 py-3 text-white hover:bg-[#7b2cbf] rounded-md transition-colors mb-1"
       (click)="logout()"
     >
       <mat-icon class="white">exit_to_app</mat-icon>
