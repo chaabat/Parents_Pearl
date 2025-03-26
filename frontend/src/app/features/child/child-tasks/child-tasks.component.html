@@ -231,195 +231,88 @@
 
     <!-- Task detail dialog -->
     <ng-template #taskDetailDialog>
-      <div class="p-6 max-w-md">
-        <div class="flex items-center justify-between mb-4">
-          <h2
-            mat-dialog-title
-            class="text-xl font-bold text-indigo-700 flex items-center"
-          >
-            <mat-icon class="mr-2 text-yellow-500">assignment</mat-icon>
-            {{ selectedTask?.title }}
-          </h2>
-          <div
-            [ngClass]="{
-              'bg-yellow-100 text-yellow-800 border border-yellow-300':
-                selectedTask?.status === 'PENDING',
-              'bg-green-100 text-green-800 border border-green-300':
-                selectedTask?.status === 'COMPLETED',
-              'bg-red-100 text-red-800 border border-red-300':
-                selectedTask?.status === 'FAILED'
-            }"
-            class="px-3 py-1 rounded-full text-xs font-medium"
-          >
-            {{ selectedTask?.status }}
-          </div>
-        </div>
-
+      <div class="p-4">
         <mat-dialog-content>
-          <div class="my-4">
-            <p class="text-gray-700 whitespace-pre-line">
-              {{ selectedTask?.description }}
-            </p>
+          <div class="space-y-4">
+            <!-- Task Title and Description -->
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                {{ selectedTask?.title }}
+              </h2>
+              <p class="text-gray-600">{{ selectedTask?.description }}</p>
+            </div>
 
-            <div class="mt-4 p-4 bg-indigo-50 rounded-lg">
-              <!-- Points -->
-              <div class="flex items-center mb-2">
-                <mat-icon class="text-indigo-600 mr-2">stars</mat-icon>
-                <span class="font-medium"
-                  >{{ selectedTask?.pointValue }} points reward</span
-                >
-              </div>
-
-              <!-- Due Date -->
-              <div
-                class="flex items-center mb-2"
-                [ngClass]="
-                  isTaskExpiringSoon(selectedTask)
-                    ? 'text-red-500'
-                    : 'text-gray-500'
-                "
-              >
-                <mat-icon class="mr-2">
-                  {{ isTaskExpiringSoon(selectedTask) ? "alarm" : "event" }}
-                </mat-icon>
-                <span
-                  >Due date:
-                  {{ selectedTask?.dueDate | date : "fullDate" }}</span
-                >
-                <span
-                  *ngIf="isTaskExpiringSoon(selectedTask)"
-                  class="ml-1 text-xs font-bold"
-                  >(Soon!)</span
-                >
-              </div>
-
-              <!-- Assigned By -->
+            <!-- Points and Due Date -->
+            <div
+              class="flex justify-between items-center bg-gray-50 p-4 rounded-lg"
+            >
               <div class="flex items-center">
-                <mat-icon class="text-indigo-600 mr-2">person</mat-icon>
+                <mat-icon class="text-amber-500 mr-2">stars</mat-icon>
+                <span class="font-medium"
+                  >{{ selectedTask?.pointValue }} points</span
+                >
+              </div>
+              <div class="flex items-center text-gray-600">
+                <mat-icon class="mr-2">event</mat-icon>
                 <span
-                  >Assigned by: {{ selectedTask?.parentName || "Parent" }}</span
+                  >Due: {{ selectedTask?.dueDate | date : "mediumDate" }}</span
                 >
               </div>
             </div>
 
-            <!-- Task answer section -->
-            <div *ngIf="selectedTask?.status === 'PENDING'" class="mt-6">
-              <div
-                class="bg-yellow-50 p-3 rounded-lg mb-4 border border-yellow-200"
-              >
-                <div class="flex items-start">
-                  <mat-icon class="text-yellow-600 mr-2">lightbulb</mat-icon>
-                  <div class="text-yellow-800 text-sm">
-                    <p class="font-medium">To complete this task:</p>
-                    <ol class="list-decimal ml-5 mt-1">
-                      <li>Read the task description carefully</li>
-                      <li *ngIf="selectedTask?.correctAnswer">
-                        Provide the exact correct answer
-                      </li>
-                      <li *ngIf="!selectedTask?.correctAnswer">
-                        Explain how you completed the task
-                      </li>
-                      <li *ngIf="!selectedTask?.correctAnswer">
-                        Your parent will review your answer
-                      </li>
-                    </ol>
+            <!-- Answer Section -->
+            <div class="mt-4">
+              <!-- Multiple Choice Options -->
+              <div *ngIf="selectedTask?.choices?.length" class="space-y-2">
+                <mat-radio-group [(ngModel)]="taskAnswer" [disabled]="isTaskAnswered(selectedTask)">
+                  <div *ngFor="let choice of selectedTask?.choices ?? []" class="p-2">
+                    <mat-radio-button [value]="choice">
+                      {{ choice }}
+                    </mat-radio-button>
                   </div>
-                </div>
+                </mat-radio-group>
               </div>
 
-              <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Your Answer</mat-label>
-                <textarea
+              <!-- Simple Input for other types -->
+              <div *ngIf="!selectedTask?.choices?.length">
+                <input
                   matInput
                   [(ngModel)]="taskAnswer"
-                  rows="4"
-                  [placeholder]="
-                    selectedTask?.correctAnswer
-                      ? 'Enter the correct answer...'
-                      : 'I completed this task by...'
-                  "
-                ></textarea>
-                <mat-hint
-                  *ngIf="selectedTask?.correctAnswer"
-                  class="text-yellow-600"
-                >
-                  This task requires the exact correct answer
-                </mat-hint>
-                <mat-hint *ngIf="!selectedTask?.correctAnswer" align="end">
-                  {{ taskAnswer.length }} / 500 characters
-                </mat-hint>
-              </mat-form-field>
-            </div>
-
-            <!-- Completed task info -->
-            <div
-              *ngIf="selectedTask?.status === 'COMPLETED'"
-              class="mt-6 p-4 bg-green-50 rounded-lg border border-green-200"
-            >
-              <div class="flex items-start">
-                <mat-icon class="text-green-600 mr-2">check_circle</mat-icon>
-                <div>
-                  <h3 class="font-medium text-green-800">Task Completed!</h3>
-                  <p class="text-green-700 mt-1">
-                    You earned {{ selectedTask?.pointValue }} points for
-                    completing this task.
-                  </p>
-                  <p
-                    *ngIf="selectedTask?.completedDate"
-                    class="text-sm text-green-600 mt-2"
-                  >
-                    Completed on:
-                    {{ selectedTask?.completedDate | date : "medium" }}
-                  </p>
-                  <div
-                    *ngIf="selectedTask?.answer"
-                    class="mt-3 p-3 bg-white rounded border border-green-200"
-                  >
-                    <p class="text-sm font-medium text-gray-700">
-                      Your answer:
-                    </p>
-                    <p class="text-sm text-gray-600 mt-1">
-                      {{ selectedTask?.answer }}
-                    </p>
-                  </div>
-                </div>
+                  class="w-full p-2 border rounded-md"
+                  placeholder="Enter your answer..."
+                  [disabled]="isTaskAnswered(selectedTask)"
+                />
               </div>
-            </div>
 
-            <!-- Failed task info -->
-            <div
-              *ngIf="selectedTask?.status === 'FAILED'"
-              class="mt-6 p-4 bg-red-50 rounded-lg border border-red-200"
-            >
-              <div class="flex items-start">
-                <mat-icon class="text-red-600 mr-2">cancel</mat-icon>
-                <div>
-                  <h3 class="font-medium text-red-800">Task Failed</h3>
-                  <p class="text-red-700 mt-1">
-                    This task was not completed before the deadline.
-                  </p>
-                  <p class="text-sm text-red-600 mt-2">
-                    Due date: {{ selectedTask?.dueDate | date : "medium" }}
-                  </p>
-                </div>
+              <!-- Submit Button -->
+              <div class="flex justify-end mt-4">
+                <button
+                  mat-raised-button
+                  color="primary"
+                  (click)="submitTaskAnswer()"
+                  [disabled]="isLoading || isTaskAnswered(selectedTask)"
+                >
+                  <mat-icon class="mr-2">send</mat-icon>
+                  {{ isTaskAnswered(selectedTask) ? 'Already Answered' : 'Submit Answer' }}
+                </button>
+              </div>
+
+              <!-- Show submitted answer if task is completed -->
+              <div *ngIf="isTaskAnswered(selectedTask)" class="mt-4 p-4 bg-gray-50 rounded-lg">
+                <p class="text-gray-600">Your answer: {{ selectedTask?.answer }}</p>
+                <p class="text-gray-600 mt-2">
+                  Status: 
+                  <span [ngClass]="{
+                    'text-green-600': selectedTask?.status === 'COMPLETED',
+                    'text-red-600': selectedTask?.status === 'FAILED'
+                  }">
+                    {{ selectedTask?.status }}
+                  </span>
+                </p>
               </div>
             </div>
           </div>
         </mat-dialog-content>
-
-        <mat-dialog-actions align="end">
-          <button mat-button mat-dialog-close>Close</button>
-          <button
-            *ngIf="selectedTask?.status === 'PENDING'"
-            mat-raised-button
-            color="primary"
-            [disabled]="!taskAnswer || taskAnswer.trim().length < 5"
-            (click)="submitTaskAnswer()"
-          >
-            <mat-icon class="mr-2">check_circle</mat-icon>
-            Complete Task
-          </button>
-        </mat-dialog-actions>
       </div>
     </ng-template>
 
@@ -434,19 +327,6 @@
           <p class="text-green-700">
             You earned {{ completedTaskPoints }} points!
           </p>
-        </div>
-      </div>
-    </ng-template>
-
-    <!-- Failed task notification -->
-    <ng-template #failedTaskNotification>
-      <div class="p-4 flex items-center">
-        <div class="bg-red-100 rounded-full p-2 mr-3">
-          <mat-icon class="text-red-600">error_outline</mat-icon>
-        </div>
-        <div>
-          <h3 class="font-medium text-red-800">Task Failed</h3>
-          <p class="text-red-700">{{ failedTaskTitle }} has expired!</p>
         </div>
       </div>
     </ng-template>

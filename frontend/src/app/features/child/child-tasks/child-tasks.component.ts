@@ -24,6 +24,7 @@ import { Subject, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { MatSelectModule } from '@angular/material/select';
+import { MatRadioModule } from '@angular/material/radio';
 
 @Component({
   selector: 'app-child-task',
@@ -35,6 +36,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatDialogModule,
     MatPaginatorModule,
     MatSelectModule,
+    MatRadioModule,
   ],
   templateUrl: './child-tasks.component.html',
   styleUrls: ['./child-tasks.component.css'],
@@ -256,22 +258,26 @@ export class ChildTaskComponent implements OnInit, OnDestroy {
     });
   }
 
+  isTaskAnswered(task: Task | null): boolean {
+    if (!task) return false;
+    return task.status === 'COMPLETED' || task.status === 'FAILED';
+  }
+
   submitTaskAnswer(): void {
-    if (!this.childId || !this.selectedTask || !this.taskAnswer.trim()) return;
+    if (!this.childId || !this.selectedTask) return;
 
     this.isLoading = true;
 
-    // First check if the answer is correct
+    // Check if answer is correct without trimming
     const isCorrect =
-      this.selectedTask.correctAnswer?.toLowerCase() ===
-      this.taskAnswer.trim().toLowerCase();
+      this.selectedTask.correctAnswer?.toLowerCase() === 
+      this.taskAnswer?.toLowerCase();
 
     this.childService
       .submitTaskAnswer(this.childId, this.selectedTask.id, this.taskAnswer)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          // Update task status based on whether answer was correct
+        next: () => {
           if (isCorrect) {
             this.completeTaskWithAnswer(this.selectedTask!, this.taskAnswer);
           } else {
