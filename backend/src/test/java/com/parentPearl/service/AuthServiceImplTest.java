@@ -22,6 +22,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import com.parentPearl.exception.AuthenticationException;
+import com.parentPearl.exception.ResourceNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import com.parentPearl.exception.NotFoundException;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -137,4 +142,40 @@ class AuthServiceImplTest {
         assertEquals("Registration successful. Please login.", response.getMessage());
         verify(parentRepository).save(any(Parent.class));
     }
+
+    @Test
+    void login_UserNotFound() throws Exception {
+        // Given
+        when(authConfig.getAuthenticationManager()).thenReturn(authenticationManager);
+        when(authenticationManager.authenticate(any())).thenReturn(
+            new UsernamePasswordAuthenticationToken(
+                parent,
+                null,
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + parent.getRole()))
+            )
+        );
+        when(userRepository.findByEmailAndNotDeleted(anyString()))
+                .thenReturn(Optional.empty());
+        
+        // When & Then
+        assertThrows(NotFoundException.class, () -> {
+            authService.login(authRequest);
+        });
+    }
+
+    @Test
+    void login_BadCredentials() throws Exception {
+        // Given
+        when(authConfig.getAuthenticationManager()).thenReturn(authenticationManager);
+        when(authenticationManager.authenticate(any()))
+            .thenThrow(new BadCredentialsException("Bad credentials"));
+        
+        // When & Then
+        assertThrows(BadCredentialsException.class, () -> {
+            authService.login(authRequest);
+        });
+    }
+
+    
+   
 } 

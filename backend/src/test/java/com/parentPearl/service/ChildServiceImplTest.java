@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class ChildServiceImplTest {
@@ -139,4 +141,25 @@ class ChildServiceImplTest {
         assertEquals(100, points);
         verify(pointRepository).sumPointsByChildId(1L);
     }
+
+   
+
+
+    @Test
+    void getChildrenByParentId_NoChildren() {
+        // Given
+        when(childRepository.findByParentId(anyLong()))
+                .thenReturn(Collections.emptyList());
+
+        // When
+        List<ChildResponse> responses = childService.getChildrenByParentId(1L);
+
+        // Then
+        assertNotNull(responses);
+        assertTrue(responses.isEmpty());
+        verify(childMapper, never()).toResponse(any(Child.class));
+    }
+
+  
+
 } 

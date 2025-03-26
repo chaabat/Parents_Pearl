@@ -437,7 +437,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const recentTasks = sortedTasks.slice(0, 5)
 
       recentTasks.forEach((task) => {
-        const childName = this.getChildName(task.childId, children)
+        const childName = this.getChildName(task.childId || 0, children)
 
         if (task.status === TaskStatus.COMPLETED) {
           this.recentActivities.push({
